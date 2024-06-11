@@ -1,9 +1,9 @@
 import React from "react"
 import DefaultLayout from "../layouts/default"
-import useStore from "../store"
+import useStore from "../utils/store"
 import { Chart } from "react-google-charts";
 import { useSuspenseQueries } from "@tanstack/react-query";
-import request from "../request";
+import request from "../utils/request";
 
 const statesNameMap = {
   "AC": "Acre",

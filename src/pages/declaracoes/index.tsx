@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import DefaultLayout from "../../layouts/default";
-import request from "../../request";
+import request from "../../utils/request";
 import {
   Column,
   ColumnFiltersState,

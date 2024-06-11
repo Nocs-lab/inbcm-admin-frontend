@@ -1,30 +1,43 @@
-# React + TypeScript + Vite
+# INBCM Frontend Público
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Principais funcionalidades
 
-Currently, two official plugins are available:
+- Submeter declarações
+- Submeter declarações retificadores
+- Visualizar declarações submetidas
+- Verificar os status e pendências das declarações submetidas
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Principais tecnologias e bibliotecas utilizadas
 
-## Expanding the ESLint configuration
+- [Node.js](https://nodejs.org/): Ambiente de execução JavaScript
+- [TypeScript](https://www.typescriptlang.org/): Superset de JavaScript que adiciona tipagem estática
+- [React](https://react.dev/): Biblioteca para construção de interfaces
+- [Tailwind CSS](https://tailwindcss.com/): Framework CSS
+- [Design System do Governo Federal](https://www.gov.br/ds/home): Padrão digital de design do governo federal
+- [Tanstack Query](https://tanstack.com/query/latest/): Biblioteca para gerenciamento de estado e cache de dados vindos da API
+- [Tanstack Table](https://tanstack.com/table/latest/): Biblioteca para construção de tabelas
+- [React Hook Form](https://react-hook-form.com/): Biblioteca para construção de formulários
+- [Vite](https://vitejs.dev/): Bundler e servidor de desenvolvimento
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+## Estrutura de pastas
 
-- Configure the top-level `parserOptions` property like this:
+- `src`: Código-fonte da aplicação
+  - `components`: Componentes React que são utilizados em mais de uma página
+  - `pages`: Páginas da aplicação (cada arquivo corresponde a uma rota, ex: `src/pages/index.tsx` corresponde à rota `/` e `src/pages/submissoes/novo.tsx` corresponde à rota `/submissoes/novo`)
+  - `layouts`: Layouts da aplicação (cabeçalho, rodapé, etc)
+  - `images`: Imagens utilizadas na aplicação
+  - `utils`: Funções utilitárias
+- `parse-xlsx`: Script para parsear arquivos XLSX e validação de dados utilizando [JSON Schema](https://json-schema.org/). Feita utilizando Rust e WebAssembly para maior performance
 
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
-```
+## Como rodar o projeto
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+### Pré-requisitos
+
+- [Node.js](https://nodejs.org/)
+- [PNPM](https://pnpm.io/)
+
+### Passos
+
+1. Clone o repositório
+2. Instale as dependências com `pnpm install`
+3. Execute o servidor de desenvolvimento com `pnpm dev`

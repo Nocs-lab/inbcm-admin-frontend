@@ -1,5 +1,5 @@
 import React from "react"
-import useStore from "../store"
+import useStore from "../utils/store"
 import Footer from "../components/Footer"
 import Header from "../components/Header"
 import { Navigate } from "react-router"

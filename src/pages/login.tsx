@@ -3,11 +3,11 @@ import logoIbram from '../images/logo-ibram.png'
 import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useStore } from '../store'
+import { useStore } from '../utils/store'
 import clsx from 'clsx'
 import { useNavigate } from 'react-router'
 import { useMutation } from '@tanstack/react-query'
-import request from '../request'
+import request from '../utils/request'
 
 const schema = z.object({
   email: z.string({ required_error: "Este campo é obrigatório" }),

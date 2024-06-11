@@ -1,6 +1,6 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import logoImbramSimples from '../images/logo-ibram-simples.png';
-import useStore from '../store';
+import useStore from '../utils/store';
 import React, { useState } from 'react';
 
 const Header: React.FC = () => {
