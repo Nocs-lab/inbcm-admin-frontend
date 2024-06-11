@@ -1,11 +1,9 @@
-# INBCM Frontend Público
+# INBCM Frontend de Administração
 
 ## Principais funcionalidades
 
-- Submeter declarações
-- Submeter declarações retificadores
-- Visualizar declarações submetidas
-- Verificar os status e pendências das declarações submetidas
+- Visualizar declarações recebidas
+- Visualizar gráficos com dados das declarações
 
 ## Principais tecnologias e bibliotecas utilizadas
 
@@ -27,7 +25,6 @@
   - `layouts`: Layouts da aplicação (cabeçalho, rodapé, etc)
   - `images`: Imagens utilizadas na aplicação
   - `utils`: Funções utilitárias
-- `parse-xlsx`: Script para parsear arquivos XLSX e validação de dados utilizando [JSON Schema](https://json-schema.org/). Feita utilizando Rust e WebAssembly para maior performance
 
 ## Como rodar o projeto
 
