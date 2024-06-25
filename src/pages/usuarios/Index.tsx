@@ -88,7 +88,7 @@ const Index: React.FC = () => {
               <th>Nome</th>
               <th>Email</th>
               <th>Admin</th>
-              <th>Profile</th>
+              <th>Perfil</th>
               <th>Museus</th>
               <th>Situação</th>
               <th>Ações</th>
