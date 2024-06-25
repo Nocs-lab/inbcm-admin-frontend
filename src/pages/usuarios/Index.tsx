@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import DefaultLayout from "../../layouts/default";
-import { NotePencil, TrashSimple, UserPlus, Eye } from "@phosphor-icons/react";
+import { NotePencil, TrashSimple, UserPlus, /*Eye*/ } from "@phosphor-icons/react";
 import FormUser from "./FormUser";
 import DeleteUserModal from "./DeleteUserModal";
 
@@ -49,11 +49,11 @@ const Index: React.FC = () => {
     setModalAction(null);
   };
 
-  const handleViewUser = (user: User) => {
+  /*const handleViewUser = (user: User) => {
     setModalAction('view');
     setSelectedUser(user);
     setIsModalOpen(true);
-  };
+  };*/
 
   const handleSaveUser = () => {
     fetchUsers(); // Atualiza a lista de usuários após salvar ou atualizar
@@ -106,7 +106,7 @@ const Index: React.FC = () => {
                 <td>
                   <button className="btn text-blue-950" onClick={() => handleEditUser(user)}><NotePencil size={22} /></button>
                   <button className="btn text-red" onClick={() => handleDeleteUser(user)}><TrashSimple size={22} /></button>
-                  <button className="btn text-blue-950 ml-2" onClick={() => handleViewUser(user)}><Eye size={22} /></button>
+                  {/*<button className="btn text-blue-950 ml-2" onClick={() => handleViewUser(user)}><Eye size={22} /></button>*/}
                 </td>
               </tr>
             ))}
