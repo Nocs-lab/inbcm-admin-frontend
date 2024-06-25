@@ -77,7 +77,7 @@ const Index: React.FC = () => {
       <div className={`flex justify-between items-center mb-4 ${isModalOpen ? 'pointer-events-none opacity-50' : ''}`}>
         <h1>Perfis</h1>
         <div className="flex justify-end">
-          <input type="text" placeholder="Pesquisar usuários" className="input mr-2" />
+          <input type="text" placeholder="Pesquisar perfis" className="input mr-2" />
           <button className="btn flex gap-2" onClick={() => handleOpenModal('create')}><UserPlus size={25} />Novo Perfil</button>
         </div>
       </div>
