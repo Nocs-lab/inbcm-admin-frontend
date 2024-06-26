@@ -2,20 +2,17 @@ import React, { useState } from 'react';
 import DefaultLayout from "../../layouts/default";
 import { NotePencil, TrashSimple, UserPlus } from "@phosphor-icons/react";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import FormUser from "./FormUser";
-import DeleteUserModal from "./DeleteUserModal";
+import FormProfile from "./FormProfile";
+import DeleteProfileModal from "./DeleteProfileModal";
 
-interface User {
-  id: number;
+interface Profile {
+  _id: string;
   name: string;
-  email: string;
-  admin: boolean;
-  profile: string;
-  active: boolean;
+  permissions: string[];
 }
 
-const fetchUsers = async () => {
-  const response = await fetch('/api/users');
+const fetchProfiles = async () => {
+  const response = await fetch('/api/profiles');
   if (!response.ok) {
     throw new Error('Network response was not ok');
   }
@@ -24,19 +21,19 @@ const fetchUsers = async () => {
 
 const Index: React.FC = () => {
   const queryClient = useQueryClient();
-  const { data: users, error, isLoading } = useQuery({
-    queryKey: ['users'],
-    queryFn: fetchUsers,
+  const { data: profiles, error, isLoading } = useQuery({
+    queryKey: ['profiles'],
+    queryFn: fetchProfiles,
   });
 
   const mutation = useMutation({
-    mutationFn: async (user: User) => {
-      const response = await fetch(`/api/users/${user.id}`, {
-        method: user.id ? 'PUT' : 'POST',
+    mutationFn: async (profile: Profile) => {
+      const response = await fetch(`/api/profile/${profile._id}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(user),
+        body: JSON.stringify(profile),
       });
       if (!response.ok) {
         throw new Error('Network response was not ok');
@@ -44,13 +41,13 @@ const Index: React.FC = () => {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['users']);
+      queryClient.invalidateQueries(['profiles']);
     },
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (userId: number) => {
-      const response = await fetch(`/api/users/${userId}`, {
+    mutationFn: async (profileId: string) => {
+      const response = await fetch(`/api/profile/${profileId}`, {
         method: 'DELETE',
       });
       if (!response.ok) {
@@ -59,23 +56,23 @@ const Index: React.FC = () => {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['users']);
+      queryClient.invalidateQueries(['profiles']);
     },
   });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
   const [modalAction, setModalAction] = useState<'create' | 'edit' | 'view' | 'delete' | null>(null);
 
   const handleOpenModal = (action: 'create' | 'edit') => {
     setModalAction(action);
-    setSelectedUser(null);
+    setSelectedProfile(null);
     setIsModalOpen(true);
   };
 
-  const handleEditUser = (user: User) => {
+  const handleEditProfile = (profile: Profile) => {
     setModalAction('edit');
-    setSelectedUser(user);
+    setSelectedProfile(profile);
     setIsModalOpen(true);
   };
 
@@ -84,18 +81,18 @@ const Index: React.FC = () => {
     setModalAction(null);
   };
 
-  const handleSaveUser = () => {
-    fetchUsers(); // Atualiza a lista de usuários após salvar ou atualizar
+  const handleSaveProfile = () => {
+    fetchProfiles(); // Atualiza a lista de perfis após salvar ou atualizar
   };
 
-  const handleDeleteUser = (user: User) => {
-    setSelectedUser(user);
+  const handleDeleteProfile = (profile: Profile) => {
+    setSelectedProfile(profile);
     setModalAction('delete');
     setIsModalOpen(true);
   };
 
-  const handleConfirmDeleteUser = (userId: number) => {
-    deleteMutation.mutate(userId);
+  const handleConfirmDeleteProfile = (profileId: string) => {
+    deleteMutation.mutate(profileId);
     setIsModalOpen(false);
   };
 
@@ -113,24 +110,18 @@ const Index: React.FC = () => {
           <thead>
             <tr>
               <th>Nome</th>
-              <th>Email</th>
-              <th>Admin</th>
-              <th>Profile</th>
-              <th>Situação</th>
+              <th>Permissões</th>
               <th>Ações</th>
             </tr>
           </thead>
           <tbody>
-            {users?.map((user) => (
-              <tr key={user.id}>
-                <td>{user.name}</td>
-                <td>{user.email}</td>
-                <td>{user.admin ? 'Sim' : 'Não'}</td>
-                <td>{user.profile}</td>
-                <td>{user.active ? 'Ativo' : 'Inativo'}</td>
+            {profiles?.map((profile: Profile) => (
+              <tr key={profile._id}>
+                <td>{profile.name}</td>
+                <td>{profile.permissions.join(', ')}</td>
                 <td>
-                  <button className="btn text-blue-950" onClick={() => handleEditUser(user)}><NotePencil size={22} /></button>
-                  <button className="btn text-red" onClick={() => handleDeleteUser(user)}><TrashSimple size={22} /></button>
+                  <button className="btn text-blue-950" onClick={() => handleEditProfile(profile)}><NotePencil size={22} /></button>
+                  <button className="btn text-red" onClick={() => handleDeleteProfile(profile)}><TrashSimple size={22} /></button>
                 </td>
               </tr>
             ))}
@@ -140,9 +131,9 @@ const Index: React.FC = () => {
       {isModalOpen && (
         <div className="fixed z-10 inset-0 overflow-y-auto flex items-center justify-center bg-gray-800 bg-opacity-75">
           {modalAction !== 'delete' ? (
-            <FormUser user={selectedUser} action={modalAction} onClose={handleCloseModal} onSave={handleSaveUser} />
+            <FormProfile profile={selectedProfile} action={modalAction} onClose={handleCloseModal} onSave={handleSaveProfile} />
           ) : (
-            <DeleteUserModal user={selectedUser} onCancel={handleCloseModal} onDelete={handleConfirmDeleteUser} />
+            <DeleteProfileModal profile={selectedProfile} onCancel={handleCloseModal} onDelete={handleConfirmDeleteProfile} />
           )}
         </div>
       )}

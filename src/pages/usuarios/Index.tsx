@@ -8,7 +8,6 @@ interface User {
   id: number;
   nome: string;
   email: string;
-  admin: boolean;
   profile: string;
   active: boolean;
 }
@@ -31,7 +30,7 @@ const Index: React.FC = () => {
   const mutation = useMutation({
     mutationFn: async (user: User) => {
       const response = await fetch(`/api/users/${user.id}`, {
-        method: user.id ? 'PUT' : 'POST',
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -47,12 +46,9 @@ const Index: React.FC = () => {
     },
   });
 
-
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [modalAction, setModalAction] = useState< | 'edit'| null>(null);
-
-
+  const [modalAction, setModalAction] = useState<'edit' | 'view' | null>(null);
 
   const handleEditUser = (user: User) => {
     setModalAction('edit');
@@ -65,10 +61,9 @@ const Index: React.FC = () => {
     setModalAction(null);
   };
 
-  const handleSaveUser = () => {
-    fetchUsers(); // Atualiza a lista de usuários após salvar ou atualizar
+  const handleSaveUser = (user: User) => {
+    mutation.mutate(user); // Salva ou atualiza o usuário
   };
-
 
   return (
     <DefaultLayout>
@@ -76,7 +71,6 @@ const Index: React.FC = () => {
         <h1>Usuários</h1>
         <div className="flex justify-end">
           <input type="text" placeholder="Pesquisar Usuários" className="input mr-2" />
-
         </div>
       </div>
       <div className="flex">
@@ -106,7 +100,6 @@ const Index: React.FC = () => {
       {isModalOpen && (
         <div className="fixed z-10 inset-0 overflow-y-auto flex items-center justify-center bg-gray-800 bg-opacity-75">
           <FormUser user={selectedUser} action={modalAction} onClose={handleCloseModal} onSave={handleSaveUser} />
-
         </div>
       )}
     </DefaultLayout>
