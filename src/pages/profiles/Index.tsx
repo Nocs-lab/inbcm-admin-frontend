@@ -6,7 +6,7 @@ import FormProfile from "./FormProfile";
 import DeleteProfileModal from "./DeleteProfileModal";
 
 interface Profile {
-  _id: string;
+  _id: number;
   name: string;
   permissions: string[];
 }
@@ -117,8 +117,8 @@ const Index: React.FC = () => {
           <tbody>
             {profiles?.map((profile: Profile) => (
               <tr key={profile._id}>
-                <td>{profile.name}</td>
-                <td>{profile.permissions.join(', ')}</td>
+                <td>{profile?.name}</td>
+                <td>{profile?.permissions.join(', ')}</td>
                 <td>
                   <button className="btn text-blue-950" onClick={() => handleEditProfile(profile)}><NotePencil size={22} /></button>
                   <button className="btn text-red" onClick={() => handleDeleteProfile(profile)}><TrashSimple size={22} /></button>
