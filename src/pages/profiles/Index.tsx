@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import DefaultLayout from "../../layouts/default";
-import { NotePencil, TrashSimple, UserPlus,  /*Eye*/ } from "@phosphor-icons/react";
+import { NotePencil, TrashSimple, UserPlus } from "@phosphor-icons/react";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import FormUser from "./FormUser";
 import DeleteUserModal from "./DeleteUserModal";
 
@@ -10,27 +11,61 @@ interface User {
   email: string;
   admin: boolean;
   profile: string;
-  museus: string[]; // Alterado para array de strings para múltiplos museus
   active: boolean;
 }
 
+const fetchUsers = async () => {
+  const response = await fetch('/api/users');
+  if (!response.ok) {
+    throw new Error('Network response was not ok');
+  }
+  return response.json();
+};
+
 const Index: React.FC = () => {
-  const [users, setUsers] = useState<User[]>([]);
+  const queryClient = useQueryClient();
+  const { data: users, error, isLoading } = useQuery({
+    queryKey: ['users'],
+    queryFn: fetchUsers,
+  });
+
+  const mutation = useMutation({
+    mutationFn: async (user: User) => {
+      const response = await fetch(`/api/users/${user.id}`, {
+        method: user.id ? 'PUT' : 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(user),
+      });
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['users']);
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (userId: number) => {
+      const response = await fetch(`/api/users/${userId}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['users']);
+    },
+  });
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [modalAction, setModalAction] = useState<'create' | 'edit' | 'view' | 'delete' | null>(null);
-
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
-  const fetchUsers = () => {
-    const mockUsers: User[] = [
-      { id: 1, name: "João", email: "joao@example.com", museus: ["Museu A"], admin: true, profile: "Admin", active: true },
-      { id: 2, name: "Maria", email: "maria@example.com", museus: ["Museu B", "Museu C"], admin: false, profile: "Regular", active: false }
-    ];
-    setUsers(mockUsers);
-  };
 
   const handleOpenModal = (action: 'create' | 'edit') => {
     setModalAction(action);
@@ -49,12 +84,6 @@ const Index: React.FC = () => {
     setModalAction(null);
   };
 
- /* const handleViewUser = (user: User) => {
-    setModalAction('view');
-    setSelectedUser(user);
-    setIsModalOpen(true);
-  };*/
-
   const handleSaveUser = () => {
     fetchUsers(); // Atualiza a lista de usuários após salvar ou atualizar
   };
@@ -66,9 +95,7 @@ const Index: React.FC = () => {
   };
 
   const handleConfirmDeleteUser = (userId: number) => {
-    // Implemente a lógica para deletar o usuário com o userId informado
-    console.log(`Usuário com ID ${userId} deletado`);
-    // Aqui você pode implementar a lógica para deletar o usuário na sua API ou no estado local
+    deleteMutation.mutate(userId);
     setIsModalOpen(false);
   };
 
@@ -89,24 +116,21 @@ const Index: React.FC = () => {
               <th>Email</th>
               <th>Admin</th>
               <th>Profile</th>
-              <th>Museus</th>
               <th>Situação</th>
               <th>Ações</th>
             </tr>
           </thead>
           <tbody>
-            {users.map((user) => (
+            {users?.map((user) => (
               <tr key={user.id}>
                 <td>{user.name}</td>
                 <td>{user.email}</td>
                 <td>{user.admin ? 'Sim' : 'Não'}</td>
                 <td>{user.profile}</td>
-                <td>{user.museus.join(', ')}</td> {/* Mostra os museus separados por vírgula */}
                 <td>{user.active ? 'Ativo' : 'Inativo'}</td>
                 <td>
                   <button className="btn text-blue-950" onClick={() => handleEditUser(user)}><NotePencil size={22} /></button>
                   <button className="btn text-red" onClick={() => handleDeleteUser(user)}><TrashSimple size={22} /></button>
-                  {/*<button className="btn text-blue-950 ml-2" onClick={() => handleViewUser(user)}><Eye size={22} /></button>*/}
                 </td>
               </tr>
             ))}

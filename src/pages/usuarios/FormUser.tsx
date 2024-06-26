@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 interface User {
   id?: number; // ID será gerado pelo backend
-  name: string;
+  nome: string;
   email: string;
   profile: string;
   active: boolean;
@@ -17,50 +17,29 @@ interface FormUserProps {
   onSave: () => void; // Função para salvar usuário no banco de dados
 }
 
+
+
 const FormUser: React.FC<FormUserProps> = ({ user, action, onClose, onSave }) => {
   const [userData, setUserData] = useState<User>({
-    name: '',
+    nome: '',
     email: '',
     profile: '',
     active: true, // Novo usuário sempre começa ativo
     admin: false, // Valor padrão para o campo admin
-    museus: [] // Valor padrão para o campo museus (array vazio)
+
   });
-
-  // Simulando uma lista de museus disponíveis (para futuro consumo dinâmico)
-  const availableMuseus = [
-    "Museu A",
-    "Museu B",
-    "Museu C",
-    "Museu D",
-    "Museu E"
-  ];
-
-  const [selectedMuseus, setSelectedMuseus] = useState<string[]>([]); // Estado para armazenar museus selecionados
 
   useEffect(() => {
     if (user) {
       setUserData(user); // Preenche o formulário se um usuário existente for passado
-      setSelectedMuseus(user.museus || []); // Define os museus selecionados inicialmente
+
     }
   }, [user]);
-
-  const handleMuseuSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedOption = e.target.value;
-    if (!selectedMuseus.includes(selectedOption)) {
-      setSelectedMuseus([...selectedMuseus, selectedOption]);
-    }
-  };
-
-  const handleRemoveMuseu = (museu: string) => {
-    setSelectedMuseus(selectedMuseus.filter(m => m !== museu));
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setUserData(prevState => ({
-      ...prevState,
-      museus: selectedMuseus
+      ...prevState
     }));
     onSave(); // Chama a função onSave para atualizar a lista de usuários
     onClose();
@@ -79,7 +58,7 @@ const FormUser: React.FC<FormUserProps> = ({ user, action, onClose, onSave }) =>
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label htmlFor="name" className="block text-sm font-medium text-gray-700">Nome</label>
-          <input type="text" id="name" name="name" value={userData.name} onChange={(e) => setUserData(prevState => ({ ...prevState, name: e.target.value }))} className="input w-full" required={action !== 'view'} readOnly={action === 'view'} />
+          <input type="text" id="name" name="name" value={userData.nome} onChange={(e) => setUserData(prevState => ({ ...prevState, name: e.target.value }))} className="input w-full" required={action !== 'view'} readOnly={action === 'view'} />
         </div>
         <div className="mb-4">
           <label htmlFor="email" className="block text-sm font-medium text-gray-700">E-mail</label>
@@ -89,8 +68,8 @@ const FormUser: React.FC<FormUserProps> = ({ user, action, onClose, onSave }) =>
           <label htmlFor="profile" className="block text-sm font-medium text-gray-700">Perfil</label>
           <select id="profile" name="profile" value={userData.profile} onChange={(e) => setUserData(prevState => ({ ...prevState, profile: e.target.value }))} className="input w-full" required={action !== 'view'} readOnly={action === 'view'}>
             <option value="">Selecione o perfil</option>
-            <option value="Administrador">Administrador</option>
-            <option value="Usuário Comum">Usuário Comum</option>
+            <option value="true">Administrador</option>
+            <option value="false">Usuário Comum</option>
           </select>
         </div>
         <div className="mb-4">
@@ -99,24 +78,6 @@ const FormUser: React.FC<FormUserProps> = ({ user, action, onClose, onSave }) =>
             <option value="true">Ativo</option>
             <option value="false">Inativo</option>
           </select>
-        </div>
-        <div className="mb-4">
-          <label htmlFor="museus" className="block text-sm font-medium text-gray-700">Museus</label>
-          <select id="museus" name="museus" value="" onChange={handleMuseuSelect} className="input w-full" disabled={action === 'view'}>
-            <option value="">Selecione o museu</option>
-            {availableMuseus.map(museu => (
-              <option key={museu} value={museu}>{museu}</option>
-            ))}
-          </select>
-          <div className="mt-2">
-            {selectedMuseus.length > 0 && (
-              <ul className="flex flex-wrap gap-2">
-                {selectedMuseus.map(museu => (
-                  <li key={museu} className="bg-gray-200 px-2 py-1 rounded">{museu} <button type="button" className="ml-2 text-red-600" onClick={() => handleRemoveMuseu(museu)}>X</button></li>
-                ))}
-              </ul>
-            )}
-          </div>
         </div>
         {action !== 'view' && (
           <div className="flex justify-end">

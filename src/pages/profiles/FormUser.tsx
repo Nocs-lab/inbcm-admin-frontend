@@ -14,7 +14,7 @@ interface FormUserProps {
   user: User | null;
   action: 'create' | 'edit' | 'view'; // Ação a ser realizada: criar, editar ou visualizar
   onClose: () => void;
-  onSave: () => void; // Função para salvar usuário no banco de dados
+  onSave: (user: User) => void; // Função para salvar usuário no banco de dados
 }
 
 const FormUser: React.FC<FormUserProps> = ({ user, action, onClose, onSave }) => {
@@ -58,11 +58,7 @@ const FormUser: React.FC<FormUserProps> = ({ user, action, onClose, onSave }) =>
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setUserData(prevState => ({
-      ...prevState,
-      museus: selectedMuseus
-    }));
-    onSave(); // Chama a função onSave para atualizar a lista de usuários
+    onSave({ ...userData, museus: selectedMuseus }); // Atualiza o usuário e chama a função onSave
     onClose();
   };
 
