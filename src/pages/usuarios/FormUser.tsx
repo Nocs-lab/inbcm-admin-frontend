@@ -4,7 +4,9 @@ interface User {
   id?: number; // ID será gerado pelo backend
   nome: string;
   email: string;
-  profile: string;
+  profile?: {
+    name: string;
+  };
   active: boolean;
 }
 
@@ -77,7 +79,7 @@ const FormUser: React.FC<FormUserProps> = ({ user, action, onClose, onSave }) =>
             type="text"
             id="profile"
             name="profile"
-            value={userData.profile}
+            value={userData.profile?.name}
             onChange={(e) => setUserData(prevState => ({ ...prevState, profile: e.target.value }))}
             className="input w-full"
             required={action !== 'view'}

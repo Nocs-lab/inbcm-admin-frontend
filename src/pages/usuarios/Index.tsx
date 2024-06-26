@@ -8,7 +8,9 @@ interface User {
   id: number;
   nome: string;
   email: string;
-  profile: string;
+  profile?: {
+    name: string;
+  };
   active: boolean;
 }
 
@@ -88,7 +90,7 @@ const Index: React.FC = () => {
               <tr key={user.id}>
                 <td>{user.nome}</td>
                 <td>{user.email}</td>
-                <td>{user.profile}</td>
+                <td>{user.profile?.name || 'Não especificado'}</td>
                 <td>
                   <button className="btn text-blue-950" onClick={() => handleEditUser(user)}><NotePencil size={22} /></button>
                 </td>
