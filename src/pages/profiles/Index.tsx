@@ -8,7 +8,7 @@ import DeleteProfileModal from "./DeleteProfileModal";
 interface Profile {
   _id: number;
   name: string;
-  permissions: string[];
+  description: string;
 }
 
 const fetchProfiles = async () => {
@@ -62,7 +62,7 @@ const Index: React.FC = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
-  const [modalAction, setModalAction] = useState<'create' | 'edit' | 'view' | 'delete' | null>(null);
+  const [modalAction, setModalAction] = useState<'create' | 'edit' | 'delete' | null>(null);
 
   const handleOpenModal = (action: 'create' | 'edit') => {
     setModalAction(action);
@@ -110,7 +110,7 @@ const Index: React.FC = () => {
           <thead>
             <tr>
               <th>Nome</th>
-              <th>Permissões</th>
+              <th>Descrições</th>
               <th>Ações</th>
             </tr>
           </thead>
@@ -118,7 +118,7 @@ const Index: React.FC = () => {
             {profiles?.map((profile: Profile) => (
               <tr key={profile._id}>
                 <td>{profile?.name}</td>
-                <td>{profile?.permissions.join(', ')}</td>
+                <td>{profile?.description}</td>
                 <td>
                   <button className="btn text-blue-950" onClick={() => handleEditProfile(profile)}><NotePencil size={22} /></button>
                   <button className="btn text-red" onClick={() => handleDeleteProfile(profile)}><TrashSimple size={22} /></button>

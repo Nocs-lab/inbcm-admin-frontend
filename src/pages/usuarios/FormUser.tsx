@@ -21,7 +21,7 @@ const FormUser: React.FC<FormUserProps> = ({ user, action, onClose, onSave }) =>
   const [userData, setUserData] = useState<User>({
     nome: '',
     email: '',
-    profile: '',
+    profile: { name: '' }, // Inicialize profile como um objeto vazio com name
     active: true, // Novo usuário sempre começa ativo
   });
 
@@ -80,7 +80,10 @@ const FormUser: React.FC<FormUserProps> = ({ user, action, onClose, onSave }) =>
             id="profile"
             name="profile"
             value={userData.profile?.name}
-            onChange={(e) => setUserData(prevState => ({ ...prevState, profile: e.target.value }))}
+            onChange={(e) => setUserData(prevState => ({
+              ...prevState,
+              profile: { name: e.target.value } // Atualiza profile.name
+            }))}
             className="input w-full"
             required={action !== 'view'}
             readOnly={action === 'view'}

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 interface Profile {
   _id?: string;
   name: string;
-  permissions: string[];
+  description: string;
 }
 
 interface FormProfileProps {
@@ -16,7 +16,7 @@ interface FormProfileProps {
 const FormProfile: React.FC<FormProfileProps> = ({ profile, action, onClose, onSave }) => {
   const [profileData, setProfileData] = useState<Profile>({
     name: '',
-    permissions: [],
+    description: '',
   });
 
   useEffect(() => {
@@ -28,17 +28,6 @@ const FormProfile: React.FC<FormProfileProps> = ({ profile, action, onClose, onS
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setProfileData(prevState => ({ ...prevState, [name]: value }));
-  };
-
-  const handlePermissionsChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const options = e.target.options;
-    const selectedPermissions: string[] = [];
-    for (let i = 0; i < options.length; i++) {
-      if (options[i].selected) {
-        selectedPermissions.push(options[i].value);
-      }
-    }
-    setProfileData(prevState => ({ ...prevState, permissions: selectedPermissions }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -60,8 +49,8 @@ const FormProfile: React.FC<FormProfileProps> = ({ profile, action, onClose, onS
           <input type="text" id="name" name="name" value={profileData.name} onChange={handleChange} className="input w-full" required={action !== 'view'} readOnly={action === 'view'} />
         </div>
         <div className="mb-4">
-          <label htmlFor="permissions" className="block text-sm font-medium text-gray-700">Permissões</label>
-          <select id="permissions" name="permissions" multiple value={profileData.permissions} onChange={handlePermissionsChange} className="input w-full" required={action !== 'view'} disabled={action === 'view'}>
+          <label htmlFor="description" className="block text-sm font-medium text-gray-700">Descrições</label>
+          <select id="description" name="description" multiple value={profileData.description} onChange={handlePermissionsChange} className="input w-full" required={action !== 'view'} disabled={action === 'view'}>
             <option value="getProfiles">Ver Perfis</option>
             <option value="getProfileById">Ver Perfil por ID</option>
             <option value="createProfile">Criar Perfil</option>
