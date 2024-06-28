@@ -12,8 +12,6 @@ const Header: React.FC = () => {
   const pathnameMap = {
     "/": "Dashboard",
     "/declaracoes": "Declarações recebidas",
-    "/usuarios": "Usuários",
-    "/profiles": "Perfis",
   }
 
   const name = pathnameMap[pathname as keyof typeof pathnameMap] || "Página não encontrada"
@@ -71,6 +69,8 @@ const Header: React.FC = () => {
               <div className="br-list z-50" id="avatar-menu" hidden={!userMenuOpen} role="menu" aria-labelledby="avatar-dropdown-trigger">
                 <a className="br-item" href="javascript:void(0)" role="menuitem">Dados pessoais</a>
                 <button className="br-item" onClick={logout} role="menuitem">Sair</button>
+                <a className="br-item"  href="/profiles">Gerência de perfil</a>
+                <a className="br-item"  href="/usuarios">Gerência de usuários</a>
                 <a className="br-item" href="javascript:void(0)" role="menuitem">Notificações</a>
               </div>
             </div>

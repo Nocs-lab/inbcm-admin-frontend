@@ -70,7 +70,7 @@ const Index: React.FC = () => {
   return (
     <DefaultLayout>
       <div className={`flex justify-between items-center mb-4 ${isModalOpen ? 'pointer-events-none opacity-50' : ''}`}>
-        <h1>Usuários</h1>
+        <h1>Gerência de Usuários</h1>
         <div className="flex justify-end">
           <input type="text" placeholder="Pesquisar Usuários" className="input mr-2" />
         </div>

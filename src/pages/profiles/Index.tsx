@@ -12,12 +12,20 @@ interface Profile {
   permission: string[];
 }
 
+// Mock data
+const mockProfiles: Profile[] = [
+  { _id: 1, name: "Administrador", description: "Administrador do sistema", permission: ["Gerenciar Usuários", "Gerenciar Perfis", "Modificar Declarações"] },
+  { _id: 2, name: "Declarante", description: "Declarante", permission: ["Criar Declaração"] },
+  { _id: 3, name: "Analista", description: "Analista técnico", permission: ["Analisar Declarações", "Modificar Declarações"] }
+];
+
 const fetchProfiles = async () => {
-  const response = await fetch('/api/profiles');
-  if (!response.ok) {
-    throw new Error('Network response was not ok');
-  }
-  return response.json();
+  // Simulating a delay
+  return new Promise<Profile[]>((resolve) => {
+    setTimeout(() => {
+      resolve(mockProfiles);
+    }, 500);
+  });
 };
 
 const Index: React.FC = () => {
@@ -29,17 +37,13 @@ const Index: React.FC = () => {
 
   const mutation = useMutation({
     mutationFn: async (profile: Profile) => {
-      const response = await fetch(`/api/profile/${profile._id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(profile),
+      // Mock updating a profile
+      const updatedProfiles = mockProfiles.map(p => p._id === profile._id ? profile : p);
+      return new Promise<Profile[]>((resolve) => {
+        setTimeout(() => {
+          resolve(updatedProfiles);
+        }, 500);
       });
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['profiles']);
@@ -47,14 +51,14 @@ const Index: React.FC = () => {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (profileId: string) => {
-      const response = await fetch(`/api/profile/${profileId}`, {
-        method: 'DELETE',
+    mutationFn: async (profileId: number) => {
+      // Mock deleting a profile
+      const updatedProfiles = mockProfiles.filter(p => p._id !== profileId);
+      return new Promise<Profile[]>((resolve) => {
+        setTimeout(() => {
+          resolve(updatedProfiles);
+        }, 500);
       });
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['profiles']);
@@ -92,7 +96,7 @@ const Index: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const handleConfirmDeleteProfile = (profileId: string) => {
+  const handleConfirmDeleteProfile = (profileId: number) => {
     deleteMutation.mutate(profileId);
     setIsModalOpen(false);
   };
@@ -100,7 +104,7 @@ const Index: React.FC = () => {
   return (
     <DefaultLayout>
       <div className={`flex justify-between items-center mb-4 ${isModalOpen ? 'pointer-events-none opacity-50' : ''}`}>
-        <h1>Perfis</h1>
+        <h1>Gerência de perfil</h1>
         <div className="flex justify-end">
           <input type="text" placeholder="Pesquisar perfis" className="input mr-2" />
           <button className="btn flex gap-2" onClick={() => handleOpenModal('create')}><UserPlus size={25} />Novo Perfil</button>
@@ -112,7 +116,7 @@ const Index: React.FC = () => {
             <tr>
               <th>Nome</th>
               <th>Descrição</th>
-              <th>Permissão</th>
+              <th>Permissões</th>
               <th>Ações</th>
             </tr>
           </thead>
