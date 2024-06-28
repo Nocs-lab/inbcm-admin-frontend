@@ -9,6 +9,7 @@ interface Profile {
   _id: number;
   name: string;
   description: string;
+  permission: string[];
 }
 
 const fetchProfiles = async () => {
@@ -110,7 +111,8 @@ const Index: React.FC = () => {
           <thead>
             <tr>
               <th>Nome</th>
-              <th>Descrições</th>
+              <th>Descrição</th>
+              <th>Permissão</th>
               <th>Ações</th>
             </tr>
           </thead>
@@ -119,6 +121,7 @@ const Index: React.FC = () => {
               <tr key={profile._id}>
                 <td>{profile?.name}</td>
                 <td>{profile?.description}</td>
+                <td>{profile?.permission.join(', ')}</td>
                 <td>
                   <button className="btn text-blue-950" onClick={() => handleEditProfile(profile)}><NotePencil size={22} /></button>
                   <button className="btn text-red" onClick={() => handleDeleteProfile(profile)}><TrashSimple size={22} /></button>
