@@ -1,4 +1,4 @@
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQuery, useMutation } from "@tanstack/react-query";
 import DefaultLayout from "../../layouts/default";
 import request from "../../utils/request";
 import {
@@ -18,7 +18,6 @@ import {
 } from "@tanstack/react-table";
 import React, { useEffect, useMemo, useState } from "react";
 import { stateRegions } from ".././../utils/regioes"
-import Select from "../../components/Select";
 
 declare module "@tanstack/react-table" {
   interface ColumnMeta<TData extends RowData, TValue> {
@@ -27,6 +26,7 @@ declare module "@tanstack/react-table" {
 }
 
 const columnHelper = createColumnHelper<{
+  _id: string;
   anoDeclaracao: string;
   retificacao: boolean;
   status: string;
@@ -92,8 +92,36 @@ const columns = [
   }),
   columnHelper.accessor("status", {
     cell: (info) => {
+      const { data } = useSuspenseQuery<string[]>({
+        queryKey: ["status"],
+        queryFn: async () => {
+          const response = await request("/api/getStatusEnum");
+          return response.json();
+        },
+      });
+
+      const { mutate } = useMutation({
+        mutationFn: async (status: string) => {
+          await request(`/api/atualizarStatus/${info.row.original._id}`, {
+            method: "PUT",
+            data: {
+              status,
+            },
+          });
+        },
+        onSuccess: () => {
+          window.location.reload();
+        }
+      })
+
       return (
-        <Select items={["Aguardando análise", "Em análise", "Aprovada", "Reprovada"]} value={info.getValue()} />
+        <select value={info.getValue()} onChange={(e) => mutate(e.currentTarget.value)}>
+          {data.map((status) => (
+            <option key={status} value={status}>
+              {status}
+            </option>
+          ))}
+        </select>
       )
     },
     header: "Status",
