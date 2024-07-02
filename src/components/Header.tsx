@@ -11,7 +11,9 @@ const Header: React.FC = () => {
 
   const pathnameMap = {
     "/": "Dashboard",
-    "/declaracoes": "Declarações recebidas"
+    "/declaracoes": "Declarações recebidas",
+
+
   }
 
   const name = pathnameMap[pathname as keyof typeof pathnameMap] || "Página não encontrada"
@@ -68,6 +70,8 @@ const Header: React.FC = () => {
               <button className="br-sign-in" type="button" id="avatar-dropdown-trigger" onClick={() => setUserMenuOpen(old => !old)} data-toggle="dropdown" data-target="avatar-menu" aria-label={`Olá, ${user.name.split(" ")[0]}`}><span className="br-avatar" title={user.name}><span className="content bg-orange-vivid-30 text-pure-0">{user.name.charAt(0).toUpperCase()}</span></span><span className="ml-2 text-gray-80 text-weight-regular">Olá, <span className="text-weight-semi-bold">{user.name.split(" ")[0]}</span></span><i className="fas fa-caret-down" aria-hidden="true"></i></button>
               <div className="br-list z-50" id="avatar-menu" hidden={!userMenuOpen} role="menu" aria-labelledby="avatar-dropdown-trigger">
                 <a className="br-item" href="javascript:void(0)" role="menuitem">Dados pessoais</a>
+                <Link className="br-item" to="/usuarios" role="menuitem">Gerência de Usuários</Link>
+                <Link className="br-item" to="/profiles" role="menuitem">Gerência de Perfis</Link>
                 <button className="br-item" onClick={logout} role="menuitem">Sair</button>
                 <a className="br-item" href="javascript:void(0)" role="menuitem">Notificações</a>
               </div>
