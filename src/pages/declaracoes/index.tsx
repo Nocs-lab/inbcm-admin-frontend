@@ -16,8 +16,9 @@ import {
   createColumnHelper,
   useReactTable,
 } from "@tanstack/react-table";
-import { format } from "date-fns";
 import React, { useEffect, useMemo, useState } from "react";
+import { stateRegions } from ".././../utils/regioes"
+import Select from "../../components/Select";
 
 declare module "@tanstack/react-table" {
   interface ColumnMeta<TData extends RowData, TValue> {
@@ -58,12 +59,14 @@ const columns = [
     },
   }),
   columnHelper.accessor("dataCriacao", {
-    cell: (info) => format(new Date(info.getValue()), "P"),
-    header: "Recebido em"
+    cell: (info) => info.getValue(),
+    header: "Recebido em",
+    enableColumnFilter: false,
   }),
   columnHelper.accessor("museu_id.endereco.regiao", {
     cell: (info) => info.getValue(),
     header: "Região",
+    enableColumnFilter: true,
     meta: {
       filterVariant: "select",
     },
@@ -88,7 +91,11 @@ const columns = [
     },
   }),
   columnHelper.accessor("status", {
-    cell: (info) => info.getValue(),
+    cell: (info) => {
+      return (
+        <Select items={["Aguardando análise", "Em análise", "Aprovada", "Reprovada"]} value={info.getValue()} />
+      )
+    },
     header: "Status",
     meta: {
       filterVariant: "select",
@@ -168,7 +175,7 @@ function Filter({ column }: { column: Column<any, unknown> }) {
 }
 
 const DeclaracoesPage = () => {
-  const { data } = useSuspenseQuery({
+  let { data } = useSuspenseQuery({
     queryKey: ["declaracoes"],
     queryFn: async () => {
       const response = await request("/api/declaracoesFiltradas", {
@@ -177,6 +184,17 @@ const DeclaracoesPage = () => {
       return response.json();
     },
   });
+
+  data = data.map((row) => ({
+  ...row,
+  museu_id: {
+      ...row.museu_id,
+      endereco: {
+        ...row.museu_id.endereco,
+        regiao: stateRegions[row.museu_id.endereco.uf as keyof typeof stateRegions],
+      },
+    },
+  }));
 
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
@@ -337,11 +355,11 @@ const DeclaracoesPage = () => {
                               desc: " 🔽",
                             }[header.column.getIsSorted() as string] ?? null}
                           </div>
-                          {header.column.getCanFilter() ? (
+                          {header.column.getCanFilter() && (
                             <div>
                               <Filter column={header.column} />
                             </div>
-                          ) : null}
+                          )}
                         </>
                       )}
                     </th>
