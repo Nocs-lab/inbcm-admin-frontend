@@ -113,7 +113,7 @@ const EditProfile: React.FC = () => {
         <h1>Editar Perfil</h1>
         <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md max-w-md mx-auto">
           <div className="mb-4">
-            <label htmlFor="name" className="block text-blue-700 mb-2">Nome</label>
+            <label htmlFor="name" className="block text-blue-700 mb-2"><i className="fa-solid fa-user"></i> Nome</label>
             <input
               type="text"
               id="name"
@@ -125,7 +125,7 @@ const EditProfile: React.FC = () => {
             />
           </div>
           <div className="mb-4">
-            <label htmlFor="description" className="block text-blue-700 mb-2">Descrição</label>
+            <label htmlFor="description" className="block text-blue-700 mb-2"><i className="fa-solid fa-comment"></i> Descrição</label>
             <textarea
               id="description"
               name="description"
@@ -135,7 +135,7 @@ const EditProfile: React.FC = () => {
             />
           </div>
           <div className="mb-4">
-            <label htmlFor="permissions" className="block text-gray-700 mb-2">Permissões</label>
+            <label htmlFor="permissions" className="block text-gray-700 mb-2"><i className="fa-solid fa-lock-open"></i> Permissões</label>
             <select
               id="permissions"
               name="permissions"

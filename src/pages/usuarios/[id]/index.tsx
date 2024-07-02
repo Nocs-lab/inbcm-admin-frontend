@@ -114,7 +114,7 @@ const EditUser: React.FC = () => {
         <h1>Editar Usuário</h1>
         <form onSubmit={handleSubmit} className="bg-white p-4 rounded-lg shadow-md max-w-md mx-auto">
           <div className="mb-4">
-            <label htmlFor="nome" className="block text-gray-700 text-sm font-medium mb-2">Nome</label>
+            <label htmlFor="nome" className="block text-gray-700 text-sm font-medium mb-2"><i className="fa-solid fa-user"></i> Nome</label>
             <input
               type="text"
               id="nome"
@@ -125,7 +125,7 @@ const EditUser: React.FC = () => {
           </div>
 
           <div className="mb-4">
-            <label htmlFor="email" className="block text-gray-700 text-sm font-medium mb-2">Email</label>
+            <label htmlFor="email" className="block text-gray-700 text-sm font-medium mb-2"><i className="fa-solid fa-envelope"></i> Email</label>
             <input
               type="email"
               id="email"
@@ -136,7 +136,7 @@ const EditUser: React.FC = () => {
           </div>
 
           <div className="mb-4">
-            <label htmlFor="profile" className="block text-gray-700 text-sm font-medium mb-2">Perfil</label>
+            <label htmlFor="profile" className="block text-gray-700 text-sm font-medium mb-2"><i className="fa-solid fa-user-tie"></i>  Perfil</label>
             <select
               id="profile"
               value={editedUser.profile || ''}

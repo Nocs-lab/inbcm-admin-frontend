@@ -106,7 +106,7 @@ const CreateUser: React.FC = () => {
 
 
               <div className="mb-4 ">
-                <label htmlFor="nome" className="block text-gray-700 text-sm font-medium mb-2">Nome</label>
+                <label htmlFor="nome" className="block text-gray-700 text-sm font-medium mb-2"><i className="fa-solid fa-user"></i> Nome</label>
                 <input
                   type="text"
                   id="nome"
@@ -119,7 +119,8 @@ const CreateUser: React.FC = () => {
               </div>
 
               <div className="mb-4">
-                <label htmlFor="email" className="block text-gray-700 text-sm font-medium mb-2">Email</label>
+
+                <label htmlFor="email" className="block text-gray-700 text-sm font-medium mb-2"><i className="fa-solid fa-envelope"></i> Email</label>
                 <input
                   type="email"
                   id="email"
@@ -132,7 +133,7 @@ const CreateUser: React.FC = () => {
               </div>
 
               <div className="mb-4">
-                <label htmlFor="senha" className="block text-gray-700 text-sm font-medium mb-2">Senha</label>
+                <label htmlFor="senha" className="block text-gray-700 text-sm font-medium mb-2"><i className="fa-solid fa-key"></i> Senha</label>
                 <input
                   type="password"
                   id="senha"
@@ -145,7 +146,7 @@ const CreateUser: React.FC = () => {
               </div>
 
               <div className="mb-4">
-                <label htmlFor="confirmPassword" className="block text-gray-700 text-sm font-medium mb-2">Confirmar Senha</label>
+                <label htmlFor="confirmPassword" className="block text-gray-700 text-sm font-medium mb-2"><i className="fa-solid fa-key"></i> Confirmar Senha</label>
                 <input
                   type="password"
                   id="confirmPassword"
@@ -158,7 +159,7 @@ const CreateUser: React.FC = () => {
               </div>
 
               <div className="mb-4">
-                <label htmlFor="profile" className="block text-gray-700 text-sm font-medium mb-2">Perfil</label>
+                <label htmlFor="profile" className="block text-gray-700 text-sm font-medium mb-2"><i className="fa-solid fa-user-tie"></i>  Perfil</label>
                 <select
                   id="profile"
                   name="profile"
