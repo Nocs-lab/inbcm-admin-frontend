@@ -36,9 +36,13 @@ const fetchProfiles = async () => {
 const EditUser: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate(); // Hook para navegar entre rotas
-  const { data: user, error, isLoading, refetch } = useQuery({
+  const { data: user, error: userError, isLoading: userLoading } = useQuery({
     queryKey: ['user', id],
     queryFn: () => fetchUserById(id!),
+  });
+  const { data: profiles, error: profilesError, isLoading: profilesLoading } = useQuery({
+    queryKey: ['profiles'],
+    queryFn: fetchProfiles,
   });
 
   const [editedUser, setEditedUser] = useState<User>({
@@ -49,25 +53,11 @@ const EditUser: React.FC = () => {
     ativo: false,
   });
 
-  const [profiles, setProfiles] = useState<Profile[]>([]); // Estado para armazenar os perfis
-
-  // Buscar perfis disponíveis ao carregar o componente
   useEffect(() => {
-    const fetchInitialData = async () => {
-      try {
-        const userData = await fetchUserById(id!);
-        setEditedUser(userData);
-
-        const profilesData = await fetchProfiles();
-        setProfiles(profilesData);
-      } catch (error) {
-        console.error('Erro ao buscar dados:', error);
-        // Tratar erro aqui, se necessário
-      }
-    };
-
-    fetchInitialData();
-  }, [id]);
+    if (user && profiles) {
+      setEditedUser(user);
+    }
+  }, [user, profiles]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
@@ -90,12 +80,12 @@ const EditUser: React.FC = () => {
       if (!response.ok) {
         throw new Error('Failed to update user');
       }
-      // Atualiza os dados do usuário após a alteração
-      await refetch();
       // Redireciona de volta para a página de usuários
       navigate('/usuarios');
     } catch (error) {
       console.error('Error updating user:', error);
+      // Adicionar feedback ao usuário em caso de erro
+      alert('Erro ao atualizar usuário. Tente novamente mais tarde.');
     }
   };
 
@@ -104,8 +94,9 @@ const EditUser: React.FC = () => {
     navigate('/usuarios');
   };
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error.message}</div>;
+  if (userLoading || profilesLoading) return <div>Loading...</div>;
+  if (userError) return <div>Error fetching user: {userError.message}</div>;
+  if (profilesError) return <div>Error fetching profiles: {profilesError.message}</div>;
 
   return (
     <DefaultLayout>
@@ -136,7 +127,7 @@ const EditUser: React.FC = () => {
           </div>
 
           <div className="mb-4">
-            <label htmlFor="profile" className="block text-gray-700 text-sm font-medium mb-2"><i className="fa-solid fa-user-tie"></i>  Perfil</label>
+            <label htmlFor="profile" className="block text-gray-700 text-sm font-medium mb-2"><i className="fa-solid fa-user-tie"></i> Perfil</label>
             <select
               id="profile"
               value={editedUser.profile || ''}

@@ -1,8 +1,15 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DefaultLayout from "../../layouts/default";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+
+// Definir tipos de dados para as respostas da API
+interface Profile {
+  _id: string;
+  name: string;
+  description: string;
+}
 
 interface User {
   _id: string;
@@ -14,7 +21,7 @@ interface User {
   ativo: boolean;
 }
 
-const fetchUsers = async () => {
+const fetchUsers = async (): Promise<User[]> => {
   const response = await fetch('/api/users');
   if (!response.ok) {
     throw new Error('Network response was not ok');
@@ -25,7 +32,7 @@ const fetchUsers = async () => {
 const Index: React.FC = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const { data: users, error, isLoading } = useQuery({
+  const { data: users, error, isLoading } = useQuery<User[]>({
     queryKey: ['users'],
     queryFn: fetchUsers,
   });
@@ -72,8 +79,8 @@ const Index: React.FC = () => {
     }
   };
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error.message}</div>;
+  if (isLoading) return <div>Carregando...</div>;
+  if (error) return <div>Erro: {error.message}</div>;
 
   return (
     <DefaultLayout>
@@ -81,7 +88,7 @@ const Index: React.FC = () => {
         <h1>Gerência de Usuários</h1>
         <div className="flex justify-end">
           <input type="text" placeholder="Pesquisar Usuários" className="input mr-2" />
-          <button className="btn flex gap-2" onClick={() => navigate('/usuarios/createuser')}>
+          <button className="btn flex gap-2" onClick={() => navigate('/usuarios/createuser')} aria-label="Criar novo usuário">
             <i className="fa-solid fa-user-plus"></i> Novo Usuário
           </button>
         </div>
@@ -103,11 +110,11 @@ const Index: React.FC = () => {
                 <td>{user.email}</td>
                 <td>{user.profile?.name || 'Não especificado'}</td>
                 <td>
-                  <button className="btn text-blue-950" onClick={() => navigate(`/usuarios/${user._id}`)}>
-                  <i className="fa-solid fa-pen-to-square"></i>
+                  <button className="btn text-blue-950" onClick={() => navigate(`/usuarios/${user._id}`)} aria-label="Editar usuário" title="Editar usuário">
+                    <i className="fa-solid fa-pen-to-square"></i>
                   </button>
-                  <button className="btn text-red" onClick={() => handleOpenModal(user._id)}>
-                  <i data-fa-symbol="delete" className="fa-solid fa-trash fa-fw"></i>
+                  <button className="btn text-red" onClick={() => handleOpenModal(user._id)} aria-label="Excluir usuário" title="Excluir usuário">
+                    <i className="fa-solid fa-trash fa-fw"></i>
                   </button>
                 </td>
               </tr>

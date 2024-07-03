@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DefaultLayout from "../../layouts/default";
-import { NotePencil, TrashSimple, UserPlus } from "@phosphor-icons/react";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 interface Profile {
@@ -11,7 +10,7 @@ interface Profile {
   permissions: string[];
 }
 
-const fetchProfiles = async () => {
+const fetchProfiles = async (): Promise<Profile[]> => {
   const response = await fetch('/api/profiles');
   if (!response.ok) {
     throw new Error('Network response was not ok');
@@ -22,7 +21,7 @@ const fetchProfiles = async () => {
 const Index: React.FC = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const { data: profiles, error, isLoading } = useQuery({
+  const { data: profiles, error, isLoading } = useQuery<Profile[]>({
     queryKey: ['profiles'],
     queryFn: fetchProfiles,
   });
@@ -79,33 +78,47 @@ const Index: React.FC = () => {
         </div>
       </div>
       <div className="flex">
-        <table className="w-full">
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>Descrição</th>
-              <th>Permissões</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {profiles?.map((profile: Profile) => (
-              <tr key={profile._id}>
-                <td>{profile.name}</td>
-                <td>{profile.description || 'Não especificado'}</td>
-                <td>{profile.permissions.join(', ')}</td>
-                <td>
-                  <button className="btn text-blue-950" onClick={() => navigate(`/profiles/${profile._id}`)}>
-                  <i className="fa-solid fa-pen-to-square"></i>
-                  </button>
-                  <button className="btn text-red" onClick={() => handleOpenModal(profile._id)}>
-                  <i data-fa-symbol="delete" className="fa-solid fa-trash fa-fw"></i>
-                  </button>
-                </td>
+        {isLoading ? (
+          <div className="w-full text-center">Carregando perfis...</div>
+        ) : (
+          <table className="w-full">
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Descrição</th>
+                <th>Permissões</th>
+                <th>Ações</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {profiles?.map((profile: Profile) => (
+                <tr key={profile._id}>
+                  <td>{profile.name}</td>
+                  <td>{profile.description || 'Não especificado'}</td>
+                  <td>{profile.permissions.join(', ')}</td>
+                  <td>
+                    <button
+                      className="btn text-blue-950"
+                      onClick={() => navigate(`/profiles/${profile._id}`)}
+                      aria-label="Editar perfil"
+                      title="Editar perfil"
+                    >
+                      <i className="fa-solid fa-pen-to-square"></i>
+                    </button>
+                    <button
+                      className="btn text-red"
+                      onClick={() => handleOpenModal(profile._id)}
+                      aria-label="Excluir perfil"
+                      title="Excluir perfil"
+                    >
+                      <i data-fa-symbol="delete" className="fa-solid fa-trash fa-fw"></i>
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
 
       {/* Modal de Confirmação */}

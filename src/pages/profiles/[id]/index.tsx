@@ -34,9 +34,15 @@ const fetchPermissions = async () => {
 const EditProfile: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { data: profile, error, isLoading, refetch } = useQuery({
+
+  const { data: profile, error, isLoading } = useQuery({
     queryKey: ['profile', id],
-    queryFn: () => fetchProfileById(id!),
+    queryFn: () => fetchProfileById(id!)
+  });
+
+  const { data: permissions, error: permissionsError, isLoading: permissionsLoading } = useQuery<Permission[]>({
+    queryKey: ['permissions'],
+    queryFn: fetchPermissions
   });
 
   const [editedProfile, setEditedProfile] = useState<Profile>({
@@ -46,23 +52,11 @@ const EditProfile: React.FC = () => {
     permissions: [],
   });
 
-  const [permissions, setPermissions] = useState<Permission[]>([]);
-
   useEffect(() => {
-    const fetchInitialData = async () => {
-      try {
-        const profileData = await fetchProfileById(id!);
-        setEditedProfile(profileData);
-
-        const permissionsData = await fetchPermissions();
-        setPermissions(permissionsData);
-      } catch (error) {
-        console.error('Erro ao buscar dados:', error);
-      }
-    };
-
-    fetchInitialData();
-  }, [id]);
+    if (profile) {
+      setEditedProfile(profile);
+    }
+  }, [profile]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -93,7 +87,6 @@ const EditProfile: React.FC = () => {
       if (!response.ok) {
         throw new Error('Failed to update profile');
       }
-      await refetch();
       navigate('/profiles');
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -104,12 +97,12 @@ const EditProfile: React.FC = () => {
     navigate('/profiles');
   };
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error.message}</div>;
+  if (isLoading || permissionsLoading) return <div>Loading...</div>;
+  if (error || permissionsError) return <div>Error: {error?.message || permissionsError?.message}</div>;
 
   return (
     <DefaultLayout>
-         <div className="container mx-auto p-4">
+      <div className="container mx-auto p-4">
         <h1>Editar Perfil</h1>
         <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md max-w-md mx-auto">
           <div className="mb-4">

@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import DefaultLayout from "../../layouts/default";
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-
 interface Profile {
   _id: string;
   name: string;
@@ -23,6 +22,8 @@ const CreateUser: React.FC = () => {
   const [formData, setFormData] = useState<User>({ nome: '', email: '', senha: '', profile: '', active: true });
   const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [profiles, setProfiles] = useState<Profile[]>([]); // Estado para armazenar os perfis
+  const [isLoading, setIsLoading] = useState<boolean>(true); // Estado para carregamento
+  const [error, setError] = useState<string | null>(null); // Estado para erros
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -36,9 +37,11 @@ const CreateUser: React.FC = () => {
         }
         const data = await response.json();
         setProfiles(data);
+        setIsLoading(false); // Carregamento concluído
       } catch (error) {
         console.error('Erro ao buscar perfis:', error);
-        // Tratar erro aqui, se necessário
+        setError('Erro ao buscar perfis. Tente novamente mais tarde.');
+        setIsLoading(false); // Carregamento concluído mesmo em caso de erro
       }
     };
 
@@ -76,7 +79,7 @@ const CreateUser: React.FC = () => {
       await mutation.mutateAsync(formData);
     } catch (error) {
       console.error('Erro ao criar usuário:', error);
-      // Tratar erro aqui, se necessário
+      alert('Erro ao criar usuário. Tente novamente mais tarde.');
     }
   };
 
@@ -101,11 +104,14 @@ const CreateUser: React.FC = () => {
     <DefaultLayout>
       <div className="container mx-auto p-4">
         <h1>Criar Usuário</h1>
-        <form onSubmit={handleSubmit} className="bg-white p-4 rounded-lg shadow-md max-w-md mx-auto ">
-          <div className='max-w-md'>
-
-
-              <div className="mb-4 ">
+        {isLoading ? (
+          <div>Carregando perfis...</div>
+        ) : error ? (
+          <div className="text-red-500">{error}</div>
+        ) : (
+          <form onSubmit={handleSubmit} className="bg-white p-4 rounded-lg shadow-md max-w-md mx-auto">
+            <div className='max-w-md'>
+              <div className="mb-4">
                 <label htmlFor="nome" className="block text-gray-700 text-sm font-medium mb-2"><i className="fa-solid fa-user"></i> Nome</label>
                 <input
                   type="text"
@@ -119,7 +125,6 @@ const CreateUser: React.FC = () => {
               </div>
 
               <div className="mb-4">
-
                 <label htmlFor="email" className="block text-gray-700 text-sm font-medium mb-2"><i className="fa-solid fa-envelope"></i> Email</label>
                 <input
                   type="email"
@@ -159,7 +164,7 @@ const CreateUser: React.FC = () => {
               </div>
 
               <div className="mb-4">
-                <label htmlFor="profile" className="block text-gray-700 text-sm font-medium mb-2"><i className="fa-solid fa-user-tie"></i>  Perfil</label>
+                <label htmlFor="profile" className="block text-gray-700 text-sm font-medium mb-2"><i className="fa-solid fa-user-tie"></i> Perfil</label>
                 <select
                   id="profile"
                   name="profile"
@@ -190,9 +195,9 @@ const CreateUser: React.FC = () => {
                   Cancelar
                 </button>
               </div>
-
-          </div>
-        </form>
+            </div>
+          </form>
+        )}
       </div>
     </DefaultLayout>
   );
