@@ -69,7 +69,7 @@ const Index: React.FC = () => {
   return (
     <DefaultLayout>
       <div className="flex justify-between items-center mb-4">
-        <h1>Gerência de Perfis</h1>
+        <h1>Perfil de Usuários</h1>
         <div className="flex justify-end">
           <input type="text" placeholder="Pesquisar Perfis" className="input mr-2" />
           <button className="btn flex gap-2" onClick={() => navigate('/profiles/createprofile')}>

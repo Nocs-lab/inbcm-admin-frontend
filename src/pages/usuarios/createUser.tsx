@@ -99,10 +99,11 @@ const CreateUser: React.FC = () => {
                   error={errors.password}
                   {...register("password")}
                 />
+
                 <select
                   title='Selecione um perfil'
                   required
-                  className="w-full border border-gray-300 rounded-md p-2 bg-white text-gray-900"
+                  className="w-full border border-gray-300 rounded-md p-2 bg-white text-gray-900 p-3"
                   {...register("profile")}
                 >
                   <option value="">Selecione um perfil</option>
@@ -110,6 +111,7 @@ const CreateUser: React.FC = () => {
                     <option key={profile._id} value={profile._id}>{profile.name}</option>
                   ))}
                 </select>
+
               <div className="flex justify-end space-x-4 mt-6">
               <button
                 className={clsx(

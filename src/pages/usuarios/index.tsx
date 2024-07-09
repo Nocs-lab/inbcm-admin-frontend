@@ -85,7 +85,7 @@ const Index: React.FC = () => {
   return (
     <DefaultLayout>
       <div className="flex justify-between items-center mb-4">
-        <h1>Gerência de Usuários</h1>
+        <h1>Usuários</h1>
         <div className="flex justify-end">
           <input type="text" placeholder="Pesquisar Usuários" className="input mr-2" />
           <button className="btn flex gap-2" onClick={() => navigate('/usuarios/createuser')} aria-label="Criar novo usuário">
