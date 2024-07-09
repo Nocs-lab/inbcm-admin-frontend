@@ -1,7 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import DefaultLayout from "../../layouts/default";
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
+import Input from '../../components/Input';
+import { z } from "zod"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import clsx from "clsx"
+import { Link } from 'react-router-dom';
+import request from '../../utils/request';
+
+const schema = z.object({
+  email: z.string().min(1, "Este campo é obrigatório"),
+  nome: z.string().min(1, "Este campo é obrigatório"),
+  profile: z.string().min(1, "Este campo é obrigatório"),
+  password: z.string().min(1, "Este campo é obrigatório")
+})
+type FormData = z.infer<typeof schema>
 
 interface Profile {
   _id: string;
@@ -9,195 +24,109 @@ interface Profile {
   description: string;
 }
 
-interface User {
-  id?: string;
-  nome: string;
-  email: string;
-  senha: string;
-  profile?: string;
-  active: boolean;
-}
-
 const CreateUser: React.FC = () => {
-  const [formData, setFormData] = useState<User>({ nome: '', email: '', senha: '', profile: '', active: true });
-  const [confirmPassword, setConfirmPassword] = useState<string>('');
-  const [profiles, setProfiles] = useState<Profile[]>([]); // Estado para armazenar os perfis
-  const [isLoading, setIsLoading] = useState<boolean>(true); // Estado para carregamento
-  const [error, setError] = useState<string | null>(null); // Estado para erros
-  const queryClient = useQueryClient();
-  const navigate = useNavigate();
-
-  // Buscar perfis disponíveis ao carregar o componente
-  useEffect(() => {
-    const fetchProfiles = async () => {
-      try {
-        const response = await fetch('/api/profiles'); // Endpoint para buscar os perfis
-        if (!response.ok) {
-          throw new Error('Failed to fetch profiles');
-        }
-        const data = await response.json();
-        setProfiles(data);
-        setIsLoading(false); // Carregamento concluído
-      } catch (error) {
-        console.error('Erro ao buscar perfis:', error);
-        setError('Erro ao buscar perfis. Tente novamente mais tarde.');
-        setIsLoading(false); // Carregamento concluído mesmo em caso de erro
-      }
-    };
-
-    fetchProfiles();
-  }, []);
-
-  const mutation = useMutation({
-    mutationFn: async (newUser: User) => {
-      const response = await fetch('/api/user', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newUser),
-      });
+  const { data: profiles } = useSuspenseQuery<Profile[]>({
+    queryKey: ['profiles'],
+    queryFn: async () => {
+      const response = await fetch('/api/profiles');
       if (!response.ok) {
-        throw new Error('Failed to create user');
+        throw new Error('Failed to fetch profiles');
       }
       return response.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['users']);
-      navigate('/usuarios');
-    },
   });
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting }
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
+    mode: "onBlur"
+  })
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (formData.senha !== confirmPassword) {
-      alert('As senhas não coincidem');
-      return;
+  const { mutate } = useMutation({
+    mutationFn: async ({ email, nome, profile, password }: FormData) => {
+
+      const res = await request('/api/user', {
+        method: 'POST',
+        data: {
+          email,
+          nome,
+          profile,
+          senha: password,
+          museus: []
+        }
+      })
+
+      return await res.json()
+    },
+    onSuccess: () => {
+
+      navigate("/usuarios")
     }
+  })
 
-    try {
-      await mutation.mutateAsync(formData);
-    } catch (error) {
-      console.error('Erro ao criar usuário:', error);
-      alert('Erro ao criar usuário. Tente novamente mais tarde.');
-    }
-  };
+  const navigate = useNavigate()
 
-  const handleCancel = () => {
-    // Navega de volta para a página de usuários ao clicar em Cancelar
-    navigate('/usuarios');
-  };
+  const onSubmit = async ({ email, nome, profile, password }: FormData) => {
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value, type, checked } = e.target;
-    setFormData(prevState => ({
-      ...prevState,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
-  };
-
-  const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setConfirmPassword(e.target.value);
-  };
+    mutate({ email, nome, profile, password })
+  }
 
   return (
     <DefaultLayout>
       <div className="container mx-auto p-4">
         <h1>Criar Usuário</h1>
-        {isLoading ? (
-          <div>Carregando perfis...</div>
-        ) : error ? (
-          <div className="text-red-500">{error}</div>
-        ) : (
-          <form onSubmit={handleSubmit} className="bg-white p-4 rounded-lg shadow-md max-w-md mx-auto">
-            <div className='max-w-md'>
-              <div className="mb-4">
-                <label htmlFor="nome" className="block text-gray-700 text-sm font-medium mb-2"><i className="fa-solid fa-user"></i> Nome</label>
-                <input
+          <form onSubmit={handleSubmit(onSubmit)} className="bg-white p-4 rounded-lg shadow-md max-w-md mx-auto">
+                <Input
                   type="text"
-                  id="nome"
-                  name="nome"
-                  value={formData.nome}
-                  onChange={handleChange}
-                  required
-                  className="w-full border border-gray-300 rounded-md p-2 text-gray-900"
+                  label="Nome"
+                  placeholder="Digite seu nome"
+                  error={errors.nome}
+                  {...register("nome")}
                 />
-              </div>
-
-              <div className="mb-4">
-                <label htmlFor="email" className="block text-gray-700 text-sm font-medium mb-2"><i className="fa-solid fa-envelope"></i> Email</label>
-                <input
+                <Input
                   type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                  className="w-full border border-gray-300 rounded-md p-2 text-gray-900"
+                  label="Email"
+                  placeholder="Digite seu email"
+                  error={errors.email}
+                  {...register("email")}
                 />
-              </div>
-
-              <div className="mb-4">
-                <label htmlFor="senha" className="block text-gray-700 text-sm font-medium mb-2"><i className="fa-solid fa-key"></i> Senha</label>
-                <input
+                <Input
                   type="password"
-                  id="senha"
-                  name="senha"
-                  value={formData.senha}
-                  onChange={handleChange}
-                  required
-                  className="w-full border border-gray-300 rounded-md p-2 text-gray-900"
+                  label="Senha"
+                  placeholder="Digite sua senha"
+                  error={errors.password}
+                  {...register("password")}
                 />
-              </div>
-
-              <div className="mb-4">
-                <label htmlFor="confirmPassword" className="block text-gray-700 text-sm font-medium mb-2"><i className="fa-solid fa-key"></i> Confirmar Senha</label>
-                <input
-                  type="password"
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  value={confirmPassword}
-                  onChange={handleConfirmPasswordChange}
-                  required
-                  className="w-full border border-gray-300 rounded-md p-2 text-gray-900"
-                />
-              </div>
-
-              <div className="mb-4">
-                <label htmlFor="profile" className="block text-gray-700 text-sm font-medium mb-2"><i className="fa-solid fa-user-tie"></i> Perfil</label>
                 <select
-                  id="profile"
-                  name="profile"
-                  value={formData.profile}
-                  onChange={handleChange}
+                  title='Selecione um perfil'
                   required
                   className="w-full border border-gray-300 rounded-md p-2 bg-white text-gray-900"
+                  {...register("profile")}
                 >
                   <option value="">Selecione um perfil</option>
                   {profiles.map(profile => (
                     <option key={profile._id} value={profile._id}>{profile.name}</option>
                   ))}
                 </select>
-              </div>
-
               <div className="flex justify-end space-x-4 mt-6">
-                <button
-                  type="submit"
-                  className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  Criar
-                </button>
-                <button
-                  type="button"
-                  onClick={handleCancel}
-                  className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500"
-                >
-                  Cancelar
-                </button>
+              <button
+                className={clsx(
+                  "br-button block primary mt-3",
+                  isSubmitting && "loading"
+                )}
+                type="submit"
+              >
+                Criar
+              </button>
+                <Link
+                to={"/usuarios"}
+                className= "br-button block secondary mt-3">
+                  Voltar
+                </Link>
               </div>
-            </div>
           </form>
-        )}
       </div>
     </DefaultLayout>
   );

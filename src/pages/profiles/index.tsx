@@ -95,7 +95,7 @@ const Index: React.FC = () => {
                 <tr key={profile._id}>
                   <td>{profile.name}</td>
                   <td>{profile.description || 'Não especificado'}</td>
-                  <td>{profile.permissions.join(', ')}</td>
+                  <td>{profile.permissions.length}</td>
                   <td>
                     <button
                       className="btn text-blue-950"

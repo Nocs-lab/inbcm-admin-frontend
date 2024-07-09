@@ -1,15 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import DefaultLayout from "../../../layouts/default";
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useSuspenseQueries } from '@tanstack/react-query';
+import Input from '../../../components/Input';
+import { z } from "zod"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import clsx from "clsx"
+import { Link } from 'react-router-dom';
+import request from '../../../utils/request';
 
-interface User {
-  _id: string;
-  nome: string;
-  email: string;
-  profile?: string; // Alterado para armazenar apenas o ID do perfil
-  ativo: boolean;
-}
+const schema = z.object({
+  email: z.string().min(1, "Este campo é obrigatório"),
+  nome: z.string().min(1, "Este campo é obrigatório"),
+  profile: z.string().min(1, "Este campo é obrigatório")
+})
+type FormData = z.infer<typeof schema>
 
 interface Profile {
   _id: string;
@@ -17,10 +23,10 @@ interface Profile {
   description: string;
 }
 
-const fetchUserById = async (id: string) => {
-  const response = await fetch(`/api/user/${id}`);
+const userById = async (id: string) => {
+  const response = await request(`/api/user/${id}`);
   if (!response.ok) {
-    throw new Error('Network response was not ok');
+    throw new Error('usuario nao encontrado');
   }
   return response.json();
 };
@@ -28,110 +34,99 @@ const fetchUserById = async (id: string) => {
 const fetchProfiles = async () => {
   const response = await fetch('/api/profiles'); // Endpoint para buscar os perfis
   if (!response.ok) {
-    throw new Error('Failed to fetch profiles');
+    throw new Error('perfil nao encontrado');
   }
   return response.json();
 };
 
 const EditUser: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate(); // Hook para navegar entre rotas
-  const { data: user, error: userError, isLoading: userLoading } = useQuery({
-    queryKey: ['user', id],
-    queryFn: () => fetchUserById(id!),
-  });
-  const { data: profiles, error: profilesError, isLoading: profilesLoading } = useQuery({
-    queryKey: ['profiles'],
-    queryFn: fetchProfiles,
-  });
-
-  const [editedUser, setEditedUser] = useState<User>({
-    _id: '',
-    nome: '',
-    email: '',
-    profile: '', // Inicialmente vazio até carregar dados
-    ativo: false,
-  });
-
-  useEffect(() => {
-    if (user && profiles) {
-      setEditedUser(user);
+  const [{ data: user }, { data: profiles }] = useSuspenseQueries(
+    {queries:
+    [
+    {
+      queryKey: ['user', id],
+      queryFn: () => userById(id!),
+    },
+    {
+      queryKey: ['profiles'],
+      queryFn: fetchProfiles,
     }
-  }, [user, profiles]);
+  ]
+    }
+);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { id, value } = e.target;
-    setEditedUser(prevUser => ({
-      ...prevUser,
-      [id]: value,
-    }));
-  };
+  const {
+    register,
+    handleSubmit,
+    formState: {errors ,isSubmitting }
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
+    mode: "onBlur",
+    defaultValues: {
+      email: user.email,
+      nome: user.nome,
+      profile: user.profile
+    }
+  })
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    try {
-      const response = await fetch(`/api/user/${id}`, {
+
+  const { mutate } = useMutation({
+    mutationFn: async ({ email, nome, profile }: FormData) => {
+
+      const res = await request(`/api/user/${id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(editedUser),
-      });
-      if (!response.ok) {
-        throw new Error('Failed to update user');
-      }
-      // Redireciona de volta para a página de usuários
-      navigate('/usuarios');
-    } catch (error) {
-      console.error('Error updating user:', error);
-      // Adicionar feedback ao usuário em caso de erro
-      alert('Erro ao atualizar usuário. Tente novamente mais tarde.');
+        data: {
+          email,
+          nome,
+          profile,
+          museus: []
+        }
+      })
+
+      return await res.json()
+    },
+    onSuccess: () => {
+
+      navigate("/usuarios")
     }
-  };
+  })
 
-  const handleCancel = () => {
-    // Navega de volta para a página de usuários ao clicar em Cancelar
-    navigate('/usuarios');
-  };
+  const navigate = useNavigate()
 
-  if (userLoading || profilesLoading) return <div>Loading...</div>;
-  if (userError) return <div>Error fetching user: {userError.message}</div>;
-  if (profilesError) return <div>Error fetching profiles: {profilesError.message}</div>;
+  const onSubmit = async ({ email, nome, profile }: FormData) => {
+
+    mutate({ email, nome, profile })
+  }
 
   return (
     <DefaultLayout>
 
       <div className="container mx-auto p-4">
         <h1>Editar Usuário</h1>
-        <form onSubmit={handleSubmit} className="bg-white p-4 rounded-lg shadow-md max-w-md mx-auto">
-          <div className="mb-4">
-            <label htmlFor="nome" className="block text-gray-700 text-sm font-medium mb-2"><i className="fa-solid fa-user"></i> Nome</label>
-            <input
+        <form onSubmit={handleSubmit(onSubmit)} className="bg-white p-4 rounded-lg shadow-md max-w-md mx-auto">
+
+            <Input
               type="text"
-              id="nome"
-              value={editedUser.nome}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded-md p-2 text-gray-900"
-            />
-          </div>
+              label="Nome"
+              error={errors.nome}
+              {...register("nome")}
 
-          <div className="mb-4">
-            <label htmlFor="email" className="block text-gray-700 text-sm font-medium mb-2"><i className="fa-solid fa-envelope"></i> Email</label>
-            <input
+            />
+
+            <Input
               type="email"
-              id="email"
-              value={editedUser.email}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded-md p-2 text-gray-900"
-            />
-          </div>
+              label="Email"
+              error={errors.email}
+              {...register("email")}
 
-          <div className="mb-4">
-            <label htmlFor="profile" className="block text-gray-700 text-sm font-medium mb-2"><i className="fa-solid fa-user-tie"></i> Perfil</label>
+            />
+
+
+
             <select
-              id="profile"
-              value={editedUser.profile || ''}
-              onChange={handleChange}
+              title='Selecione um perfil'
+              {...register("profile")}
               className="w-full border border-gray-300 rounded-md p-2 bg-white text-gray-900"
               required
             >
@@ -140,22 +135,23 @@ const EditUser: React.FC = () => {
                 <option key={profile._id} value={profile._id}>{profile.name}</option>
               ))}
             </select>
-          </div>
+
 
           <div className="flex justify-end space-x-4 mt-6">
             <button
+              className={clsx(
+                "br-button block primary mt-3",
+                isSubmitting && "loading"
+              )}
               type="submit"
-              className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               Salvar Alterações
             </button>
-            <button
-              type="button"
-              onClick={handleCancel}
-              className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500"
-            >
-              Cancelar
-            </button>
+            <Link
+                to={"/usuarios"}
+                className= "br-button block secondary mt-3">
+                  Voltar
+            </Link>
           </div>
         </form>
       </div>
