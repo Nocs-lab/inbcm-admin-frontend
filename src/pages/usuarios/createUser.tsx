@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import DefaultLayout from "../../layouts/default";
 import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
 import Input from '../../components/Input';
+import Select from '../../components/Select';
 import { z } from "zod"
-import { useForm } from "react-hook-form"
+import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import clsx from "clsx"
 import { Link } from 'react-router-dom';

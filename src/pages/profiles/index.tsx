@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DefaultLayout from "../../layouts/default";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import request from '../../utils/request';
 
 interface Profile {
   _id: string;
@@ -11,7 +12,7 @@ interface Profile {
 }
 
 const fetchProfiles = async (): Promise<Profile[]> => {
-  const response = await fetch('/api/profiles');
+  const response = await request('/api/profiles');
   if (!response.ok) {
     throw new Error('Network response was not ok');
   }
@@ -21,14 +22,14 @@ const fetchProfiles = async (): Promise<Profile[]> => {
 const Index: React.FC = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const { data: profiles, error, isLoading } = useQuery<Profile[]>({
+  const { data: profiles } = useQuery<Profile[]>({
     queryKey: ['profiles'],
     queryFn: fetchProfiles,
   });
 
   const deleteMutation = useMutation({
     mutationFn: async (profileId: string) => {
-      const response = await fetch(`/api/profile/${profileId}`, {
+      const response = await request(`/api/profile/${profileId}`, {
         method: 'DELETE',
       });
       if (!response.ok) {
@@ -63,8 +64,7 @@ const Index: React.FC = () => {
     }
   };
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error.message}</div>;
+
 
   return (
     <DefaultLayout>
@@ -78,9 +78,6 @@ const Index: React.FC = () => {
         </div>
       </div>
       <div className="flex">
-        {isLoading ? (
-          <div className="w-full text-center">Carregando perfis...</div>
-        ) : (
           <table className="w-full">
             <thead>
               <tr>
@@ -95,7 +92,8 @@ const Index: React.FC = () => {
                 <tr key={profile._id}>
                   <td>{profile.name}</td>
                   <td>{profile.description || 'Não especificado'}</td>
-                  <td>{profile.permissions.length}</td>
+                  <td>{profile.permissions.map(
+                    (permission) => permission.name).join(', ')}</td>
                   <td>
                     <button
                       className="btn text-blue-950"
@@ -118,7 +116,7 @@ const Index: React.FC = () => {
               ))}
             </tbody>
           </table>
-        )}
+
       </div>
 
       {/* Modal de Confirmação */}

@@ -1,15 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DefaultLayout from "../../layouts/default";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import request from '../../utils/request';
 
 // Definir tipos de dados para as respostas da API
-interface Profile {
-  _id: string;
-  name: string;
-  description: string;
-}
 
 interface User {
   _id: string;
@@ -22,7 +17,7 @@ interface User {
 }
 
 const fetchUsers = async (): Promise<User[]> => {
-  const response = await fetch('/api/users');
+  const response = await request('/api/users');
   if (!response.ok) {
     throw new Error('Network response was not ok');
   }
@@ -32,14 +27,14 @@ const fetchUsers = async (): Promise<User[]> => {
 const Index: React.FC = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const { data: users, error, isLoading } = useQuery<User[]>({
+  const { data: users } = useQuery<User[]>({
     queryKey: ['users'],
     queryFn: fetchUsers,
   });
 
   const mutation = useMutation({
     mutationFn: async (userId: string) => {
-      const response = await fetch(`/api/user/${userId}`, {
+      const response = await request(`/api/user/${userId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -79,8 +74,6 @@ const Index: React.FC = () => {
     }
   };
 
-  if (isLoading) return <div>Carregando...</div>;
-  if (error) return <div>Erro: {error.message}</div>;
 
   return (
     <DefaultLayout>
