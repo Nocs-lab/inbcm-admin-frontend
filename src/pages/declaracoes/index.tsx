@@ -1,4 +1,4 @@
-import { useSuspenseQuery, useMutation } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import DefaultLayout from "../../layouts/default";
 import request from "../../utils/request";
 import {
@@ -18,6 +18,7 @@ import {
 } from "@tanstack/react-table";
 import React, { useEffect, useMemo, useState } from "react";
 import { stateRegions } from ".././../utils/regioes"
+import { format } from "date-fns"
 
 declare module "@tanstack/react-table" {
   interface ColumnMeta<TData extends RowData, TValue> {
@@ -59,7 +60,7 @@ const columns = [
     },
   }),
   columnHelper.accessor("dataCriacao", {
-    cell: (info) => info.getValue(),
+    cell: (info) => format(info.getValue(), "dd/MM/yyyy HH:mm"),
     header: "Recebido em",
     enableColumnFilter: false,
   }),
@@ -70,10 +71,6 @@ const columns = [
     meta: {
       filterVariant: "select",
     },
-  }),
-  columnHelper.accessor("museu_id._id", {
-    cell: (info) => info.getValue(),
-    header: "Id. Museu",
   }),
   columnHelper.accessor("museu_id.nome", {
     cell: (info) => info.getValue(),
@@ -86,45 +83,6 @@ const columns = [
   columnHelper.accessor("museu_id.endereco.uf", {
     cell: (info) => info.getValue(),
     header: "UF",
-    meta: {
-      filterVariant: "select",
-    },
-  }),
-  columnHelper.accessor("status", {
-    cell: (info) => {
-      const { data } = useSuspenseQuery<string[]>({
-        queryKey: ["status"],
-        queryFn: async () => {
-          const response = await request("/api/getStatusEnum");
-          return response.json();
-        },
-      });
-
-      const { mutate } = useMutation({
-        mutationFn: async (status: string) => {
-          await request(`/api/atualizarStatus/${info.row.original._id}`, {
-            method: "PUT",
-            data: {
-              status,
-            },
-          });
-        },
-        onSuccess: () => {
-          window.location.reload();
-        }
-      })
-
-      return (
-        <select value={info.getValue()} onChange={(e) => mutate(e.currentTarget.value)}>
-          {data.map((status) => (
-            <option key={status} value={status}>
-              {status}
-            </option>
-          ))}
-        </select>
-      )
-    },
-    header: "Status",
     meta: {
       filterVariant: "select",
     },
@@ -172,7 +130,7 @@ function Filter({ column }: { column: Column<any, unknown> }) {
 
   return filterVariant === "select" ? (
     <select
-      onChange={(e) => column.setFilterValue(e.currentTarget.value)}
+      onChange={(e) => column.setFilterValue(e.target.value ?? "")}
       value={columnFilterValue?.toString()}
     >
       <option value="">Todas</option>
@@ -194,7 +152,7 @@ function Filter({ column }: { column: Column<any, unknown> }) {
         value={(columnFilterValue ?? "") as string}
         onChange={(value) => column.setFilterValue(value)}
         placeholder={`Pesquisar... (${column.getFacetedUniqueValues().size})`}
-        className="w-36 border shadow rounded"
+        className="w-full border shadow rounded"
         list={column.id + "list"}
       />
       <div className="h-1" />
