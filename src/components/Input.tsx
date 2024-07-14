@@ -1,24 +1,25 @@
-import { useState, useRef } from "preact/hooks"
-import { forwardRef, useImperativeHandle } from "preact/compat"
-import clsx from "clsx"
-import type { FieldError } from "react-hook-form"
+import React, { useState, useRef, forwardRef, useImperativeHandle } from "react";
+import clsx from "clsx";
+import type { FieldError } from "react-hook-form";
 
 type Props = React.HTMLAttributes<HTMLInputElement> & {
-  label: string
-  error?: FieldError
-}
+  label: string;
+  error?: FieldError;
+  type: string;
+  placeholder?: string; // Adicionei o placeholder aqui
+};
 
-const Input = forwardRef<HTMLInputElement, Props>(({ label, name, type, error, ...rest }, outerRef) => {
-  const innerRef = useRef<HTMLInputElement>(null)
+const Input = forwardRef<HTMLInputElement, Props>(({ label, name, type, error, placeholder, ...rest }, outerRef) => {
+  const innerRef = useRef<HTMLInputElement>(null);
   useImperativeHandle(outerRef, () => innerRef.current!, []);
 
-  const [seePassword, setSeePassword] = useState(false)
+  const [seePassword, setSeePassword] = useState(false);
 
-  const isPassword = type === "password"
-  const isFile = type === "file"
-  const inputType = isPassword && seePassword ? "text" : type
+  const isPassword = type === "password";
+  const isFile = type === "file";
+  const inputType = isPassword && seePassword ? "text" : type;
 
-  const [file, setFile] = useState<File | null>(null)
+  const [file, setFile] = useState<File | null>(null);
 
   return (
     <div
@@ -26,9 +27,7 @@ const Input = forwardRef<HTMLInputElement, Props>(({ label, name, type, error, .
       data-danger={isFile && error ? "data-danger" : undefined}
     >
       <label className={clsx(isFile && "upload-label")} htmlFor={name}>
-        <span>
-          {label}
-        </span>
+        <span>{label}</span>
       </label>
       <input
         className={clsx(isFile && "upload-input")}
@@ -36,10 +35,11 @@ const Input = forwardRef<HTMLInputElement, Props>(({ label, name, type, error, .
         {...rest}
         ref={innerRef}
         name={name}
+        placeholder={placeholder} // Adicionei o placeholder aqui
         onChange={(e) => {
-          rest.onChange?.(e)
+          rest.onChange?.(e);
           if (isFile) {
-            setFile(e.currentTarget.files?.[0] ?? null)
+            setFile(e.currentTarget.files?.[0] ?? null);
           }
         }}
       />
@@ -66,14 +66,9 @@ const Input = forwardRef<HTMLInputElement, Props>(({ label, name, type, error, .
               <div className="br-item d-flex">
                 <div className="content text-primary-default mr-auto">{file.name}</div>
                 <div className="name"></div>
-                <div
-                  className="br-tooltip"
-                  role="tooltip"
-                  data-popper-placement="top"
-                  style="position: absolute; inset: auto auto 0px 0px; margin: 0px; transform: translate(130px, -46px);"
-                >
+                <div className="br-tooltip" role="tooltip" data-popper-placement="top">
                   <span className="text" role="tooltip">{file.name}</span>
-                  <div data-popper-arrow="" className="arrow" style="position: absolute; left: 0px; transform: translate(68px, 0px);"></div>
+                  <div data-popper-arrow="" className="arrow"></div>
                 </div>
                 <div className="support mr-n2">
                   <span className="mr-1">{(file.size / 1024).toFixed(2)} KB</span>
@@ -82,8 +77,8 @@ const Input = forwardRef<HTMLInputElement, Props>(({ label, name, type, error, .
                     type="button"
                     aria-label={`Remover ${file.name}`}
                     onClick={() => {
-                      innerRef.current!.value = ""
-                      setFile(null)
+                      innerRef.current!.value = "";
+                      setFile(null);
                     }}
                   >
                     <i className="fa fa-trash"></i>
@@ -101,8 +96,7 @@ const Input = forwardRef<HTMLInputElement, Props>(({ label, name, type, error, .
         </span>
       )}
     </div>
-  )
-})
+  );
+});
 
-export default Input
-
+export default Input;
