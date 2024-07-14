@@ -85,7 +85,7 @@ const CreateProfile: React.FC = () => {
               label="Name"
               error={errors.name}
               {...register("name")}
-              required
+              
             />
 
             <Input

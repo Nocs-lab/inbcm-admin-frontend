@@ -102,7 +102,7 @@ const EditUser: React.FC = () => {
   }
 
     // Transformar perfis em opções para o componente Select
-    const profileOptions = profiles.map(profile => ({
+    const profileOptions = profiles.map((profile: Profile) => ({
       label: profile.name,
       value: profile._id
     }));
