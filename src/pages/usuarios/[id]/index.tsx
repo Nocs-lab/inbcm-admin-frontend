@@ -72,7 +72,8 @@ const EditUser: React.FC = () => {
     }
   })
 
-
+  const navigate = useNavigate()
+  
   const { mutate } = useMutation({
     mutationFn: async ({ email, nome, profile }: FormData) => {
 
@@ -94,9 +95,7 @@ const EditUser: React.FC = () => {
     }
   })
 
-  const navigate = useNavigate()
-
-  const onSubmit = async ({ email, nome, profile }: FormData) => {
+  const onSubmit = ({ email, nome, profile }: FormData) => {
 
     mutate({ email, nome, profile })
   }

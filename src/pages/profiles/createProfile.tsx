@@ -42,6 +42,7 @@ const CreateProfile: React.FC = () => {
     resolver: zodResolver(schema),
     mode: "onBlur"
   })
+  const navigate = useNavigate()
 
   const {mutate} = useMutation({
     mutationFn: async ({ name, description, permissions }: FormData) => {
@@ -62,9 +63,8 @@ const CreateProfile: React.FC = () => {
     }
   })
 
-  const navigate = useNavigate()
 
-  const onSubmit = async ({ name, description, permissions }: FormData) => {
+  const onSubmit = ({ name, description, permissions }: FormData) => {
 
     mutate({ name, description, permissions })
   }
@@ -85,7 +85,7 @@ const CreateProfile: React.FC = () => {
               label="Name"
               error={errors.name}
               {...register("name")}
-              
+
             />
 
             <Input

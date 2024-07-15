@@ -46,6 +46,8 @@ const CreateUser: React.FC = () => {
     mode: "onBlur"
   })
 
+  const navigate = useNavigate()
+
   const { mutate } = useMutation({
     mutationFn: async ({ email, nome, profile, password }: FormData) => {
 
@@ -68,9 +70,7 @@ const CreateUser: React.FC = () => {
     }
   })
 
-  const navigate = useNavigate()
-
-  const onSubmit = async ({ email, nome, profile, password }: FormData) => {
+  const onSubmit = ({ email, nome, profile, password }: FormData) => {
 
     mutate({ email, nome, profile, password })
   }

@@ -3,12 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import DefaultLayout from "../../layouts/default";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import request from '../../utils/request';
+import clsx from 'clsx';
 
 interface Profile {
   _id: string;
   name: string;
   description?: string;
-  permissions: string[];
+  permissions: object[];
 }
 
 const fetchProfiles = async (): Promise<Profile[]> => {
@@ -65,7 +66,6 @@ const Index: React.FC = () => {
   };
 
 
-
   return (
     <DefaultLayout>
       <div className="flex justify-between items-center mb-4">
@@ -104,10 +104,11 @@ const Index: React.FC = () => {
                       <i className="fa-solid fa-pen-to-square"></i>
                     </button>
                     <button
-                      className="btn text-red"
+                      className={clsx("btn text-red-500", deleteMutation.isPending && 'loading')}
                       onClick={() => handleOpenModal(profile._id)}
                       aria-label="Excluir perfil"
                       title="Excluir perfil"
+
                     >
                       <i data-fa-symbol="delete" className="fa-solid fa-trash fa-fw"></i>
                     </button>

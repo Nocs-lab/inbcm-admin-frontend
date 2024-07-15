@@ -70,6 +70,7 @@ const EditProfile: React.FC = () => {
       permissions: profile?.permissions.map((permission: Permission) => permission._id)
     }
   })
+  const navigate = useNavigate()
 
   const {mutate} = useMutation({
     mutationFn: async ({ name, description, permissions }: FormData) => {
@@ -90,13 +91,10 @@ const EditProfile: React.FC = () => {
     }
   })
 
-  const navigate = useNavigate()
-
-  const onSubmit = async ({ name, description, permissions }: FormData) => {
+  const onSubmit = ({ name, description, permissions }: FormData) => {
 
     mutate({ name, description, permissions })
   }
-
 
    // Transformar permissões em opções para o componente Select
    const permissionOptions = permissions.map((permission: Permission) => ({
@@ -138,7 +136,6 @@ const EditProfile: React.FC = () => {
               />
             )}
           />
-            <p className="text-gray-500 text-sm mt-1">Mantenha pressionada a tecla Ctrl (ou Cmd) para selecionar múltiplas permissões.</p>
 
           <div className="flex justify-end space-x-4 mt-6">
             <button
