@@ -26,17 +26,41 @@ interface Permission {
 const profileById = async (id: string) => {
   const response = await fetch(`/api/profile/${id}`);
   if (!response.ok) {
-    throw new Error('perfil nao encontrado');
+    let errorMessage = 'Perfil não encontrado';
+    try {
+      const errorData = await response.json();
+      errorMessage = errorData.message || errorMessage;
+    } catch (e) {
+      // Se a resposta não for JSON, mantenha a mensagem de erro padrão
+    }
+    throw new Error(errorMessage);
   }
-  return response.json();
+
+  try {
+    return await response.json();
+  } catch (error) {
+    throw new Error('Falha ao analisar a resposta JSON');
+  }
 };
 
 const fetchPermissions = async () => {
   const response = await fetch('/api/permissions');
   if (!response.ok) {
-    throw new Error('permissao nao encontrada');
+   let errorMessage = 'Permissões não encontradas';
+    try {
+      const errorData = await response.json();
+      errorMessage = errorData.message || errorMessage;
+    } catch {
+      // Se a resposta não for JSON, mantenha a mensagem de erro padrão
+    }
+    throw new Error(errorMessage);
   }
-  return response.json();
+
+  try {
+    return await response.json();
+  } catch {
+    throw new Error('Falha ao analisar a resposta JSON');
+  }
 };
 
 const EditProfile: React.FC = () => {

@@ -19,9 +19,22 @@ interface User {
 const fetchUsers = async (): Promise<User[]> => {
   const response = await request('/api/users');
   if (!response.ok) {
-    throw new Error('Network response was not ok');
+    let errorMessage = 'Perfil não encontrado';
+    try {
+      const errorData = await response.json();
+      errorMessage = errorData.message || errorMessage;
+    } catch (e) {
+      // Se a resposta não for JSON, mantenha a mensagem de erro padrão
+    }
+    throw new Error(errorMessage);
   }
-  return response.json();
+  
+  try {
+    return await response.json();
+  }
+  catch (error) {
+    throw new Error('Failed to parse JSON response');
+  }
 };
 
 const Index: React.FC = () => {

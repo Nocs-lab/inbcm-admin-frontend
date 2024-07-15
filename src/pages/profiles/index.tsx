@@ -9,7 +9,7 @@ interface Profile {
   _id: string;
   name: string;
   description?: string;
-  permissions: object[];
+  permissions: {name: string}[];
 }
 
 const fetchProfiles = async (): Promise<Profile[]> => {
@@ -17,7 +17,11 @@ const fetchProfiles = async (): Promise<Profile[]> => {
   if (!response.ok) {
     throw new Error('Network response was not ok');
   }
-  return response.json();
+  try {
+    return await response.json();
+  } catch (error) {
+    throw new Error('Failed to parse JSON response');
+  }
 };
 
 const Index: React.FC = () => {

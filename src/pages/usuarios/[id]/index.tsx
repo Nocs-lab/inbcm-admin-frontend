@@ -27,17 +27,41 @@ interface Profile {
 const userById = async (id: string) => {
   const response = await request(`/api/user/${id}`);
   if (!response.ok) {
-    throw new Error('usuario nao encontrado');
+    let errorMessage = 'Usuário não encontrado';
+    try {
+      const errorData = await response.json();
+      errorMessage = errorData.message || errorMessage;
+    } catch {
+      // Se a resposta não for JSON, mantenha a mensagem de erro padrão
+    }
+    throw new Error(errorMessage);
   }
-  return response.json();
+
+  try {
+    return await response.json();
+  } catch {
+    throw new Error('Falha ao analisar a resposta JSON');
+  }
 };
 
 const fetchProfiles = async () => {
   const response = await fetch('/api/profiles'); // Endpoint para buscar os perfis
   if (!response.ok) {
-    throw new Error('perfil nao encontrado');
+    let errorMessage = 'Perfil não encontrado';
+    try {
+      const errorData = await response.json();
+      errorMessage = errorData.message || errorMessage;
+    } catch {
+      // Se a resposta não for JSON, mantenha a mensagem de erro padrão
+    }
+    throw new Error(errorMessage);
   }
-  return response.json();
+
+  try {
+    return await response.json();
+  } catch {
+    throw new Error('Falha ao analisar a resposta JSON');
+  }
 };
 
 const EditUser: React.FC = () => {
@@ -73,7 +97,7 @@ const EditUser: React.FC = () => {
   })
 
   const navigate = useNavigate()
-  
+
   const { mutate } = useMutation({
     mutationFn: async ({ email, nome, profile }: FormData) => {
 
@@ -129,10 +153,6 @@ const EditUser: React.FC = () => {
               {...register("email")}
 
             />
-
-
-
-
                 <Controller
                   name="profile"
                   control={control}
