@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import DefaultLayout from "../../layouts/default";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import request from '../../utils/request';
-
+import { Modal, Button } from 'react-dsgov';
 // Definir tipos de dados para as respostas da API
 
 interface User {
@@ -93,7 +93,7 @@ const Index: React.FC = () => {
       <div className="flex justify-between items-center mb-4">
         <h1>Usuários</h1>
         <div className="flex justify-end">
-          
+
           <button className="btn flex gap-2" onClick={() => navigate('/usuarios/createuser')} aria-label="Criar novo usuário">
             <i className="fa-solid fa-user-plus"></i> Novo Usuário
           </button>
@@ -132,18 +132,15 @@ const Index: React.FC = () => {
       {/* Modal de Confirmação */}
       {showModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
-          <div className="bg-white p-4 rounded shadow-lg max-w-md w-full">
-            <p className="text-lg font-semibold">Desativar Usuário</p>
-            <p className="text-sm mt-2">Tem certeza que deseja desativar este usuário?</p>
-            <div className="mt-4 flex justify-end">
-              <button className="btn mr-2" onClick={handleCloseModal}>
-                Cancelar
-              </button>
-              <button className="btn text-red" onClick={handleDeleteUser}>
-                Confirmar
-              </button>
-            </div>
-          </div>
+          <Modal showCloseButton title="Desativar usuário?">
+            <Modal.Body>
+                Você tem certeza que deseja desativar este usuário?
+            </Modal.Body>
+            <Modal.Footer justify-content='end'>
+                <Button secondary small m={2} onClick={handleCloseModal}>Cancelar</Button>
+                <Button primary small m={2} onClick={handleDeleteUser}>Confirmar</Button>
+            </Modal.Footer>
+          </Modal>
         </div>
       )}
     </DefaultLayout>

@@ -4,6 +4,7 @@ import DefaultLayout from "../../layouts/default";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import request from '../../utils/request';
 import clsx from 'clsx';
+import { Modal, Button } from 'react-dsgov';
 
 interface Profile {
   _id: string;
@@ -75,7 +76,7 @@ const Index: React.FC = () => {
       <div className="flex justify-between items-center mb-4">
         <h1>Perfil de Usuários</h1>
         <div className="flex justify-end">
-          
+
           <button className="btn flex gap-2" onClick={() => navigate('/profiles/createprofile')}>
              <i className="fa-solid fa-user-tie"></i> Novo Perfil
           </button>
@@ -127,18 +128,15 @@ const Index: React.FC = () => {
       {/* Modal de Confirmação */}
       {showModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
-          <div className="bg-white p-4 rounded shadow-lg max-w-md w-full">
-            <p className="text-lg font-semibold">Excluir Perfil</p>
-            <p className="text-sm mt-2">Tem certeza que deseja excluir este perfil?</p>
-            <div className="mt-4 flex justify-end">
-              <button className="btn mr-2" onClick={handleCloseModal}>
-                Cancelar
-              </button>
-              <button className="btn text-red" onClick={handleDeleteProfile}>
-                Confirmar
-              </button>
-            </div>
-          </div>
+          <Modal showCloseButton title="Remover perfil?">
+            <Modal.Body>
+                Você tem certeza que deseja remover este perfil?
+            </Modal.Body>
+            <Modal.Footer justify-content='end'>
+                <Button secondary small m={2} onClick={handleCloseModal}>Cancelar</Button>
+                <Button primary small m={2} onClick={handleDeleteProfile}>Confirmar</Button>
+            </Modal.Footer>
+          </Modal>
         </div>
       )}
     </DefaultLayout>
