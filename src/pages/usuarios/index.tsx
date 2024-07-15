@@ -28,7 +28,7 @@ const fetchUsers = async (): Promise<User[]> => {
     }
     throw new Error(errorMessage);
   }
-  
+
   try {
     return await response.json();
   }
@@ -93,7 +93,7 @@ const Index: React.FC = () => {
       <div className="flex justify-between items-center mb-4">
         <h1>Usuários</h1>
         <div className="flex justify-end">
-          <input type="text" placeholder="Pesquisar Usuários" className="input mr-2" />
+          
           <button className="btn flex gap-2" onClick={() => navigate('/usuarios/createuser')} aria-label="Criar novo usuário">
             <i className="fa-solid fa-user-plus"></i> Novo Usuário
           </button>
