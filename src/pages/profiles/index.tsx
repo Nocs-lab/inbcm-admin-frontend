@@ -109,7 +109,7 @@ const Index: React.FC = () => {
                       <i className="fa-solid fa-pen-to-square"></i>
                     </button>
                     <button
-                      className={clsx("btn text-red-500", deleteMutation.isPending && 'loading')}
+                      className={clsx("btn text-red", deleteMutation.isPending && 'loading')}
                       onClick={() => handleOpenModal(profile._id)}
                       aria-label="Excluir perfil"
                       title="Excluir perfil"
