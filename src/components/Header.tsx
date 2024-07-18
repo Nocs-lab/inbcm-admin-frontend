@@ -11,7 +11,7 @@ const Header: React.FC = () => {
 
   const pathnameMap = {
     "/": "Dashboard",
-    "/declaracoes": "Declarações recebidas"
+    "/declaracoes": "Declarações"
   }
 
   const name = pathnameMap[pathname as keyof typeof pathnameMap] || "Página não encontrada"
