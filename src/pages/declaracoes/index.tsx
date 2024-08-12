@@ -15,9 +15,13 @@ import {
   getSortedRowModel,
   createColumnHelper,
   useReactTable,
+  PaginationState,
+  VisibilityState,
 } from "@tanstack/react-table";
-import { format } from "date-fns";
 import React, { useEffect, useMemo, useState } from "react";
+import { stateRegions } from ".././../utils/regioes"
+import { format } from "date-fns"
+import clsx from "clsx";
 
 declare module "@tanstack/react-table" {
   interface ColumnMeta<TData extends RowData, TValue> {
@@ -26,6 +30,7 @@ declare module "@tanstack/react-table" {
 }
 
 const columnHelper = createColumnHelper<{
+  _id: string;
   anoDeclaracao: string;
   retificacao: boolean;
   status: string;
@@ -58,19 +63,17 @@ const columns = [
     },
   }),
   columnHelper.accessor("dataCriacao", {
-    cell: (info) => format(new Date(info.getValue()), "P"),
-    header: "Recebido em"
+    cell: (info) => format(info.getValue(), "dd/MM/yyyy HH:mm"),
+    header: "Recebido em",
+    enableColumnFilter: false,
   }),
   columnHelper.accessor("museu_id.endereco.regiao", {
     cell: (info) => info.getValue(),
     header: "Região",
+    enableColumnFilter: true,
     meta: {
       filterVariant: "select",
     },
-  }),
-  columnHelper.accessor("museu_id._id", {
-    cell: (info) => info.getValue(),
-    header: "Id. Museu",
   }),
   columnHelper.accessor("museu_id.nome", {
     cell: (info) => info.getValue(),
@@ -90,10 +93,8 @@ const columns = [
   columnHelper.accessor("status", {
     cell: (info) => info.getValue(),
     header: "Status",
-    meta: {
-      filterVariant: "select",
-    },
-  })
+    enableColumnFilter: false
+  }),
 ];
 
 function DebouncedInput({
@@ -137,7 +138,7 @@ function Filter({ column }: { column: Column<any, unknown> }) {
 
   return filterVariant === "select" ? (
     <select
-      onChange={(e) => column.setFilterValue(e.currentTarget.value)}
+      onChange={(e) => column.setFilterValue(e.target.value ?? "")}
       value={columnFilterValue?.toString()}
     >
       <option value="">Todas</option>
@@ -159,7 +160,7 @@ function Filter({ column }: { column: Column<any, unknown> }) {
         value={(columnFilterValue ?? "") as string}
         onChange={(value) => column.setFilterValue(value)}
         placeholder={`Pesquisar... (${column.getFacetedUniqueValues().size})`}
-        className="w-36 border shadow rounded"
+        className="w-full border shadow rounded"
         list={column.id + "list"}
       />
       <div className="h-1" />
@@ -168,7 +169,7 @@ function Filter({ column }: { column: Column<any, unknown> }) {
 }
 
 const DeclaracoesPage = () => {
-  const { data } = useSuspenseQuery({
+  let { data } = useSuspenseQuery({
     queryKey: ["declaracoes"],
     queryFn: async () => {
       const response = await request("/api/declaracoesFiltradas", {
@@ -178,15 +179,29 @@ const DeclaracoesPage = () => {
     },
   });
 
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  data = useMemo(() => data.map((row) => ({
+    ...row,
+    museu_id: {
+      ...row.museu_id,
+      endereco: {
+        ...row.museu_id.endereco,
+        regiao: stateRegions[row.museu_id.endereco.uf as keyof typeof stateRegions],
+      },
+    },
+  })), [data]);
+
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  const [visibility, setVisibility] = useState<VisibilityState>({})
 
   const table = useReactTable({
     data,
     columns,
     state: {
       columnFilters,
+      columnVisibility: visibility,
     },
     onColumnFiltersChange: setColumnFilters,
+    onColumnVisibilityChange: setVisibility,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -198,6 +213,61 @@ const DeclaracoesPage = () => {
 
   return (
     <DefaultLayout>
+      <h2>Declaracoes</h2>
+      <div className="br-tab small">
+        <nav className="tab-nav">
+          <ul>
+            <li className={clsx("tab-item", !columnFilters.some(f => f.id === "status") && "active")} title="Todas">
+              <button
+                type="button"
+                data-panel="panel-1-small"
+                onClick={() => {
+                  table.setColumnFilters(old => old.filter(f => f.id !== "status"))
+                  table.setColumnVisibility(old => ({ ...old, status: true }))
+                }}
+              >
+                <span className="name">Todas</span>
+              </button>
+            </li>
+            <li className={clsx("tab-item", columnFilters.some(f => f.id === "status" && f.value === "Em conformidade") && "active")} title="Em conformidade">
+              <button
+                type="button"
+                data-panel="panel-2-small"
+                onClick={() => {
+                  table.setColumnFilters(old => [...old.filter(f => f.id !== "status"), { id: "status", value: "Em conformidade" }])
+                  table.setColumnVisibility(old => ({ ...old, status: false }))
+                }}
+              >
+                <span className="name">Em conformidade</span>
+              </button>
+            </li>
+            <li className={clsx("tab-item", columnFilters.some(f => f.id === "status" && f.value === "Em análise") && "active")} title="Em análise">
+              <button
+                type="button"
+                data-panel="panel-3-small"
+                onClick={() => {
+                  table.setColumnFilters(old => [...old.filter(f => f.id !== "status"), { id: "status", value: "Em análise" }])
+                  table.setColumnVisibility(old => ({ ...old, status: false }))
+                }}
+              >
+                <span className="name">Em análise</span>
+              </button>
+            </li>
+            <li className={clsx("tab-item", columnFilters.some(f => f.id === "status" && f.value === "Recebida") && "active")} title="Recebidas">
+              <button
+                type="button"
+                data-panel="panel-4-small"
+                onClick={() => {
+                  table.setColumnFilters(old => [...old.filter(f => f.id !== "status"), { id: "status", value: "Recebida" }])
+                  table.setColumnVisibility(old => ({ ...old, status: false }))
+                }}
+              >
+                <span className="name">Recebidas</span>
+              </button>
+            </li>
+          </ul>
+        </nav>
+      </div>
       <div
         className="br-table overflow-auto"
         data-search="data-search"
@@ -205,114 +275,6 @@ const DeclaracoesPage = () => {
         data-collapse="data-collapse"
         data-random="data-random"
       >
-        <div className="table-header">
-          <div className="top-bar">
-            <div className="table-title">Declarações recebidas</div>
-            <div className="actions-trigger text-nowrap">
-              <button
-                className="br-button circle"
-                type="button"
-                id="button-dropdown-density"
-                title="Ver mais opções"
-                data-toggle="dropdown"
-                data-target="target01-3415"
-                aria-label="Definir densidade da tabela"
-                aria-haspopup="true"
-                aria-live="polite"
-              >
-                <i className="fas fa-ellipsis-v" aria-hidden="true"></i>
-              </button>
-              <div
-                className="br-list"
-                id="target01-3415"
-                role="menu"
-                aria-labelledby="button-dropdown-density"
-                hidden
-              >
-                <button className="br-item" type="button" data-density="small" role="menuitem">
-                  Densidade alta
-                </button>
-                <span className="br-divider"></span>
-                <button className="br-item" type="button" data-density="medium" role="menuitem">
-                  Densidade média
-                </button>
-                <span className="br-divider"></span>
-                <button className="br-item" type="button" data-density="large" role="menuitem">
-                  Densidade baixa
-                </button>
-              </div>
-            </div>
-            <div className="search-trigger">
-              <button
-                className="br-button circle"
-                type="button"
-                id="button-input-search"
-                data-toggle="search"
-                aria-label="Abrir busca"
-                aria-controls="table-searchbox-3415"
-              >
-                <i className="fas fa-search" aria-hidden="true"></i>
-              </button>
-            </div>
-          </div>
-          <div className="search-bar">
-            <div className="br-input">
-              <label htmlFor="table-searchbox-3415">Buscar na tabela</label>
-              <input
-                id="table-searchbox-3415"
-                type="search"
-                placeholder="Buscar na tabela"
-                aria-labelledby="button-input-search"
-                aria-label="Buscar na tabela"
-              />
-              <button className="br-button" type="button" aria-label="Buscar">
-                <i className="fas fa-search" aria-hidden="true"></i>
-              </button>
-            </div>
-            <button
-              className="br-button circle"
-              type="button"
-              data-dismiss="search"
-              aria-label="Fechar busca"
-            >
-              <i className="fas fa-times" aria-hidden="true"></i>
-            </button>
-          </div>
-          <div className="selected-bar">
-            <div className="info">
-              <span className="count">0</span><span className="text">item selecionado</span>
-            </div>
-            <div className="actions-trigger text-nowrap">
-              <button
-                className="br-button circle inverted"
-                type="button"
-                id="button-dropdown-selection"
-                data-toggle="dropdown"
-                data-target="target02-3415"
-                aria-controls="target02-3415"
-                aria-label="Ver mais opções de ação"
-                aria-haspopup="true"
-              >
-                <i className="fas fa-ellipsis-v" aria-hidden="true"></i>
-              </button>
-              <div
-                className="br-list"
-                id="target02-3415"
-                role="menu"
-                aria-labelledby="button-dropdown-selection"
-                hidden
-              >
-                <button className="br-item" type="button" data-toggle="" role="menuitem">
-                  Ação 1
-                </button>
-                <span className="br-divider"></span>
-                <button className="br-item" type="button" role="menuitem">
-                  Ação 2
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
         <table>
           <caption>Título da Tabela</caption>
           <thead>
@@ -337,11 +299,11 @@ const DeclaracoesPage = () => {
                               desc: " 🔽",
                             }[header.column.getIsSorted() as string] ?? null}
                           </div>
-                          {header.column.getCanFilter() ? (
+                          {header.column.getCanFilter() && (
                             <div>
                               <Filter column={header.column} />
                             </div>
-                          ) : null}
+                          )}
                         </>
                       )}
                     </th>
