@@ -1,6 +1,7 @@
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import DefaultLayout from "../../layouts/default";
 import request from "../../utils/request";
+import { Modal, Button } from "react-dsgov";
 import {
   Column,
   ColumnFiltersState,
@@ -17,6 +18,7 @@ import {
   useReactTable,
   PaginationState,
   VisibilityState,
+  ColumnDef,
 } from "@tanstack/react-table";
 import React, { useEffect, useMemo, useState } from "react";
 import { stateRegions } from ".././../utils/regioes";
@@ -94,6 +96,129 @@ const columns = [
     cell: (info) => info.getValue(),
     header: "Status",
     enableColumnFilter: false,
+  }),
+  columnHelper.display({
+    id: "enviarParaAnalise",
+    header: "Ações",
+    cell: ({ row }) => {
+      const [modalAberta, setModalAberta] = useState(false);
+
+      const { mutate, isPending } = useMutation({
+        mutationFn: () => {
+          return request(`/api/atualizarStatus/${row.original._id}`, {
+            method: "PUT",
+            data: {
+              status: "Em análise",
+            },
+          });
+        },
+        onSuccess: () => {
+          window.location.reload();
+        },
+      });
+
+      return (
+        <>
+          <Modal
+            useScrim
+            showCloseButton
+            title="Confirmar"
+            modalOpened={modalAberta}
+            onCloseButtonClick={() => setModalAberta(false)}
+          >
+            <Modal.Body>
+              Tem certeza que deseja enviar esta declaração para análise?
+            </Modal.Body>
+            <Modal.Footer justify-content="end">
+              <Button primary small m={2} loading={isPending} onClick={mutate}>
+                Confirmar
+              </Button>
+              <Button
+                secondary
+                small
+                m={2}
+                onClick={() => setModalAberta(false)}
+                disabled={isPending}
+              >
+                Cancelar
+              </Button>
+            </Modal.Footer>
+          </Modal>
+          <Button small onClick={() => setModalAberta(true)}>
+            Enviar para análise
+          </Button>
+        </>
+      );
+    },
+  }),
+  columnHelper.display({
+    id: "definirStatus",
+    header: "Ações",
+    cell: ({ row }) => {
+      const [modalAberta, setModalAberta] = useState(false);
+
+      const { mutate, isPending } = useMutation({
+        mutationFn: (status: "Em conformidade" | "Não conformidade") => {
+          return request(`/api/atualizarStatus/${row.original._id}`, {
+            method: "PUT",
+            data: {
+              status,
+            },
+          });
+        },
+        onSuccess: () => {
+          window.location.reload();
+        },
+      });
+
+      return (
+        <>
+          <Modal
+            useScrim
+            showCloseButton
+            title="Confirmar"
+            modalOpened={modalAberta}
+            onCloseButtonClick={() => setModalAberta(false)}
+          >
+            <Modal.Body>
+              Tem certeza que deseja enviar esta declaração para análise?
+            </Modal.Body>
+            <Modal.Footer justify-content="end">
+              <Button
+                primary
+                small
+                m={2}
+                loading={isPending}
+                onClick={() => mutate("Em conformidade")}
+              >
+                Alterar para "Em conformidade"
+              </Button>
+              <Button
+                primary
+                small
+                m={2}
+                loading={isPending}
+                onClick={() => mutate("Não conformidade")}
+              >
+                Alterar para "Não conformidade"
+              </Button>
+              <Button
+                secondary
+                small
+                m={2}
+                onClick={() => setModalAberta(false)}
+                disabled={isPending}
+              >
+                Cancelar
+              </Button>
+            </Modal.Footer>
+          </Modal>
+          <Button small onClick={() => setModalAberta(true)}>
+            Concluir análise
+          </Button>
+        </>
+      );
+    },
   }),
 ];
 
@@ -249,6 +374,8 @@ const DeclaracoesPage = () => {
                   table.setColumnVisibility((old) => ({
                     ...old,
                     status: false,
+                    enviarParaAnalise: true,
+                    definirStatus: false,
                   }));
                 }}
               >
@@ -275,6 +402,8 @@ const DeclaracoesPage = () => {
                   table.setColumnVisibility((old) => ({
                     ...old,
                     status: false,
+                    enviarParaAnalise: false,
+                    definirStatus: true,
                   }));
                 }}
               >
@@ -301,6 +430,8 @@ const DeclaracoesPage = () => {
                   table.setColumnVisibility((old) => ({
                     ...old,
                     status: false,
+                    enviarParaAnalise: false,
+                    definirStatus: false,
                   }));
                 }}
               >
@@ -327,6 +458,8 @@ const DeclaracoesPage = () => {
                   table.setColumnVisibility((old) => ({
                     ...old,
                     status: false,
+                    enviarParaAnalise: false,
+                    definirStatus: false,
                   }));
                 }}
               >
@@ -350,6 +483,8 @@ const DeclaracoesPage = () => {
                   table.setColumnVisibility((old) => ({
                     ...old,
                     status: true,
+                    enviarParaAnalise: false,
+                    definirStatus: false,
                   }));
                 }}
               >
