@@ -176,13 +176,11 @@ const columns = [
           <Modal
             useScrim
             showCloseButton
-            title="Confirmar"
+            title="Alterar status"
             modalOpened={modalAberta}
             onCloseButtonClick={() => setModalAberta(false)}
           >
-            <Modal.Body>
-              Tem certeza que deseja enviar esta declaração para análise?
-            </Modal.Body>
+            <Modal.Body>Informe o novo status da declaração:</Modal.Body>
             <Modal.Footer justify-content="end">
               <Button
                 primary
@@ -328,7 +326,10 @@ const DeclaracoesPage = () => {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([
     { id: "status", value: "Recebida" },
   ]);
-  const [visibility, setVisibility] = useState<VisibilityState>({});
+  const [visibility, setVisibility] = useState<VisibilityState>({
+    status: false,
+    definirStatus: false,
+  });
 
   const table = useReactTable({
     data,
