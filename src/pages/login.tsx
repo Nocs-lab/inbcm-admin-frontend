@@ -9,6 +9,7 @@ import request from "../utils/request";
 import React, { useState } from "react";
 import logoIbram from "../images/logo-ibram.png";
 import Input from "../components/Input";
+import { Carousel, Row, Col } from "react-dsgov"
 
 const schema = z.object({
   email: z.string().min(1, "Este campo é obrigatório"),
@@ -127,7 +128,31 @@ const LoginPage: React.FC = () => {
           </button>
         </form>
       </div>
-      <div className="hidden lg:block w-7/12 bg-blue-700"></div>
+
+ <div className="hidden lg:flex justify-center items-center w-7/12 h-full bg-blue-700 mx-auto">
+      <Row className="w-full flex justify-center">
+        <Col sm={12} md={8} className="flex justify-center">
+          <Carousel
+            circular={true} // Permite navegação circular entre os slides
+            hybrid="horizontal" // Botões de passos dentro do carrossel
+            interno={true} // Botões de navegação fora do carrossel
+            textual={false} // Não usa navegação textual
+          >
+            <Carousel.Page active backgroundColor="blue-10" stepName="Step 01">
+              <img src="/src/images/museu-velha-serpa.png" alt="Imagem do Carrossel 1" className="w-full h-full" />
+            </Carousel.Page>
+
+            <Carousel.Page backgroundColor="blue-10">
+              <img src="/src/images/ibram15anos.png" alt="Imagem do Carrossel 2" className="w-full h-full" />
+            </Carousel.Page>
+
+            <Carousel.Page backgroundColor="blue-10">
+              <img src="/src/images/museu-lupa.png" alt="Imagem do Carrossel 3" className="w-full h-full" />
+            </Carousel.Page>
+          </Carousel>
+        </Col>
+      </Row>
+    </div>
     </div>
   );
 };
