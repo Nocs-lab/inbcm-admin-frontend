@@ -1,6 +1,7 @@
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import DefaultLayout from "../../layouts/default";
 import request from "../../utils/request";
+import { getColorStatus } from "../../utils/colorStatus";
 import { Modal, Button } from "react-dsgov";
 import {
   Column,
@@ -93,7 +94,16 @@ const columns = [
     },
   }),
   columnHelper.accessor("status", {
-    cell: (info) => info.getValue(),
+    cell: (info) => {
+      const status = info.getValue();
+      const colorStatus = getColorStatus(status);
+
+      return (
+        <span style={colorStatus} className="whitespace-nowrap">
+          {status}
+        </span>
+      )
+    },
     header: "Status",
     enableColumnFilter: false,
   }),
@@ -351,7 +361,7 @@ const DeclaracoesPage = () => {
 
   return (
     <DefaultLayout>
-      <h2>Declaracoes</h2>
+      <h2>Listagem de Declarações</h2>
       <div className="br-tab small">
         <nav className="tab-nav">
           <ul>
