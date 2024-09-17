@@ -154,7 +154,8 @@ const columns = [
               </Button>
             </Modal.Footer>
           </Modal>
-          <Button small onClick={() => setModalAberta(true)}>
+          <Button small onClick={() => setModalAberta(true)} className="!font-thin">
+            <i className="fa-solid fa-magnifying-glass-arrow-right p-2"></i>
             Enviar para análise
           </Button>
         </>
