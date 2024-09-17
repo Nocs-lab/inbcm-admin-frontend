@@ -53,7 +53,7 @@ const columnHelper = createColumnHelper<{
 const columns = [
   columnHelper.accessor("anoDeclaracao", {
     cell: (info) => info.getValue(),
-    header: "Ano da Declaração",
+    header: "Ano",
     meta: {
       filterVariant: "select",
     },
