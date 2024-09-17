@@ -64,6 +64,7 @@ const columns = [
     meta: {
       filterVariant: "select",
     },
+
   }),
   columnHelper.accessor("dataCriacao", {
     cell: (info) => format(info.getValue(), "dd/MM/yyyy HH:mm"),
@@ -280,7 +281,7 @@ function Filter({ column }: { column: Column<any, unknown> }) {
       value={columnFilterValue?.toString()}
     >
       <option value="">Todas</option>
-      {sortedUniqueValues.map((value) => (
+      {sortedUniqueValues.sort((a, b) => b - a).map((value) => (
         <option value={value} key={value}>
           {value}
         </option>
