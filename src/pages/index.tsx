@@ -147,7 +147,11 @@ const IndexPage = () => {
         chartType="ColumnChart"
         data={[
           ["Status", "Quantidade", { role: "style" }],
-          ...Object.entries(declaracoesPorStatus).map(([status, quantidade]) => [status, quantidade, getColorStatus(status).backgroundColor])
+          ...orderedStatuses.map(status => [
+            status,
+            declaracoesPorStatus[status] || 0,  // Se o status não estiver presente, exibe 0
+            getColorStatus(status).backgroundColor // Cor correspondente ao status
+          ])
         ]}
         width="100%"
         height="400px"
