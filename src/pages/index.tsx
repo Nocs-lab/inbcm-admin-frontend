@@ -4,6 +4,8 @@ import useStore from "../utils/store"
 import { Chart } from "react-google-charts";
 import { useSuspenseQueries } from "@tanstack/react-query";
 import request from "../utils/request";
+import { getColorStatus } from "../utils/colorStatus";
+
 
 const statesNameMap = {
   "AC": "Acre",
@@ -69,6 +71,9 @@ const IndexPage = () => {
       }
     }]
   })
+
+  const orderedStatuses = ["Recebida", "Em análise", "Em conformidade", "Não conformidade"];
+
 
   return (
     <DefaultLayout>
@@ -141,8 +146,8 @@ const IndexPage = () => {
       <Chart
         chartType="ColumnChart"
         data={[
-          ["Status", "Quantidade"],
-          ...Object.entries(declaracoesPorStatus).map(([status, quantidade]) => [status, quantidade])
+          ["Status", "Quantidade", { role: "style" }],
+          ...Object.entries(declaracoesPorStatus).map(([status, quantidade]) => [status, quantidade, getColorStatus(status).backgroundColor])
         ]}
         width="100%"
         height="400px"
@@ -151,6 +156,7 @@ const IndexPage = () => {
           title: "Declarações por status",
         }}
       />
+
     </DefaultLayout>
   )
 }
