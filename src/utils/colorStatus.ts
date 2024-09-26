@@ -2,29 +2,29 @@ export const getColorStatus = (status: string) => {
   switch (status) {
     case "Recebida":
       return {
-        color: "white",
-        backgroundColor: "#071d41",
+        color: "black",
+        backgroundColor: "#a8f2ff",
         padding: "4px 8px",
         borderRadius: "4px",
       };
     case "Em análise":
       return {
-        color: "white",
-        backgroundColor: "#C2BA0F",
+        color: "black",
+        backgroundColor: "#ffe396",
         padding: "4px 8px",
         borderRadius: "4px",
       };
     case "Em conformidade":
       return {
-        color: "white",
-        backgroundColor: "#118316",
+        color: "black",
+        backgroundColor: "#b7f5bd",
         padding: "4px 8px",
         borderRadius: "4px",
       };
     case "Não conformidade":
       return {
-        color: "white",
-        backgroundColor: "#D11111",
+        color: "black",
+        backgroundColor: "#fbbaa7",
         padding: "4px 8px",
         borderRadius: "4px",
       };
