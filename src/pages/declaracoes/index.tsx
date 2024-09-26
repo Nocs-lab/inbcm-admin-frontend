@@ -104,7 +104,7 @@ const columns = [
         </span>
       )
     },
-    header: "Status",
+    header: "Situação",
     enableColumnFilter: false,
   }),
   columnHelper.display({
