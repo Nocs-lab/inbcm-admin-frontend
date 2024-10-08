@@ -123,7 +123,7 @@ const IndexPage = () => {
 
   return (
     <DefaultLayout>
-      <h1>Olá {user?.name.split(" ")[0]}!</h1>
+      <h1>Painel analítico</h1>
       <Chart
         chartType="ColumnChart"
         data={[
@@ -137,7 +137,7 @@ const IndexPage = () => {
         height="400px"
         legendToggle
         options={{
-          title: "Declarações por ano",
+          title: "Quantidade de declarações por ano",
           legend: { position: "bottom", alignment: "center" },
         }}
       />
@@ -176,9 +176,14 @@ const IndexPage = () => {
         height="400px"
         legendToggle
         options={{
-          title: "Declarações por região",
+          title: "Quantidade de declarações por região",
+          legend: {
+            position: "bottom",
+            alignment: "center",
+          },
         }}
       />
+      {/*
       <Chart
         chartType="ColumnChart"
         data={[
@@ -217,6 +222,7 @@ const IndexPage = () => {
           },
         }}
       />
+      */}
        <Chart
         chartType="ColumnChart"
         data={[
@@ -231,8 +237,8 @@ const IndexPage = () => {
         height="400px"
         legendToggle
         options={{
-          title: "Declarações por situação",
-          vAxis: { title: "Quantidade", minValue: 0 },
+          title: "Quantidade de declarações por situação",
+          vAxis: { title: "", minValue: 0 },
           colors: statusColors,
           legend: {
             position: "bottom",
@@ -258,7 +264,7 @@ const IndexPage = () => {
         height="400px"
         options={{
           title: "Quantidade de declarações por analista",
-          vAxis: { title: "Quantidade", minValue: 0 },
+          vAxis: { minValue: 0 },
           colors: ["#1f77b4", "#ff7f0e", "#2ca02c", "#17becf"], // Cores para 2021, 2022, 2023, 2024
           legend: { position: "bottom", alignment: "center" },
           bar: { groupWidth: "60%" },

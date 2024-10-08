@@ -61,8 +61,7 @@ const Header: React.FC = () => {
               </div>
             </div>
             <div className="header-search-trigger">
-              <button className="br-button circle" type="button" aria-label="Abrir Busca" data-toggle="search" data-target=".header-search"><i className="fas fa-search" aria-hidden="true"></i>
-              </button>
+              
             </div>
             <div>
               <button className="br-sign-in" type="button" id="avatar-dropdown-trigger" onClick={() => setUserMenuOpen(old => !old)} data-toggle="dropdown" data-target="avatar-menu" aria-label={`${user.name.split(" ")[0]}`}><span className="br-avatar" title={user.name}><span className="content bg-orange-vivid-30 text-pure-0">{user.name.charAt(0).toUpperCase()}</span></span><span className="ml-2 text-gray-80 text-weight-regular"><span className="text-weight-semi-bold">{user.name.split(" ")[0]}</span></span><i className="fas fa-caret-down" aria-hidden="true"></i></button>
