@@ -73,6 +73,7 @@ const IndexPage = () => {
   })
 
   const orderedStatuses = ["Recebida", "Em análise", "Em conformidade", "Não conformidade"];
+  const statusColors = orderedStatuses.map((status) => getColorStatus(status).backgroundColor);
 
 
   return (
@@ -146,18 +147,26 @@ const IndexPage = () => {
       <Chart
         chartType="ColumnChart"
         data={[
-          ["Status", "Quantidade", { role: "style" }],
-          ...orderedStatuses.map(status => [
-            status,
-            declaracoesPorStatus[status] || 0,  // Se o status não estiver presente, exibe 0
-            getColorStatus(status).backgroundColor // Cor correspondente ao status
-          ])
+          ["Ano", "Recebida", "Em análise", "Em conformidade", "Não conformidade"],
+          ["2021", 100, 80, 50, 20],
+          ["2022", 120, 90, 60, 30],
+          ["2023", 130, 100, 70, 40],
+          ["2024", 140, 110, 80, 50],
         ]}
         width="100%"
         height="400px"
         legendToggle
         options={{
-          title: "Declarações por status",
+          title: "Declarações por situação",
+          vAxis: { title: "Quantidade", minValue: 0 },
+          colors: statusColors,
+          legend: {
+            position: "right",
+            textStyle: {
+              fontSize: 14,
+            },
+          },
+          bar: { groupWidth: "70%" },
         }}
       />
 

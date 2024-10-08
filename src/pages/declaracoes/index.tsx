@@ -1,7 +1,6 @@
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import DefaultLayout from "../../layouts/default";
 import request from "../../utils/request";
-import { getColorStatus } from "../../utils/colorStatus";
 import { Modal, Button } from "react-dsgov";
 import {
   Column,
@@ -96,10 +95,9 @@ const columns = [
   columnHelper.accessor("status", {
     cell: (info) => {
       const status = info.getValue();
-      const colorStatus = getColorStatus(status);
 
       return (
-        <span style={colorStatus} className="whitespace-nowrap">
+        <span className="whitespace-nowrap font-bold">
           {status}
         </span>
       )
