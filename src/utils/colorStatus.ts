@@ -35,6 +35,13 @@ export const getColorStatus = (status: string) => {
         padding: "4px 8px",
         borderRadius: "4px",
       };
+    case "Total":
+      return {
+        color: "black",
+        backgroundColor: "#000000",
+        padding: "4px 8px",
+        borderRadius: "4px",
+      };
     default:
       return {};
   }

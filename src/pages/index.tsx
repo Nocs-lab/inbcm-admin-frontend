@@ -52,6 +52,9 @@ const IndexPage = () => {
     { data: declaracoesPorAno },
     { data: declaracoesPorEstado },
     { data: declaracoesPorStatus },
+    { data: status },
+    { data: statusAno },
+    { data: declaracoesPorRegiao },
   ] = useSuspenseQueries({
     queries: [
       {
@@ -75,15 +78,45 @@ const IndexPage = () => {
           return await res.json();
         },
       },
+      {
+        queryKey: ["status"],
+        queryFn: async () => {
+          const res = await request("/api/admin/dashboard/getStatusEnum")
+          return await res.json()
+        }
+      },
+      {
+        queryKey: ["statusAno"],
+        queryFn: async () => {
+          const res = await request("/api/admin/dashboard/declaraoes-status-ano")
+          return await res.json()
+        }
+      },
+      {
+        queryKey: ["declaracoesPorRegiao"],
+        queryFn: async () => {
+          const res = await request("/api/admin/dashboard/regiao")
+          return await res.json()
+        }
+      },
     ],
   });
+  console.log(statusAno);
 
+  // Definindo a ordem dos status conforme os dados que temos em statusAno
   const orderedStatuses = [
-    "Recebida",
-    "Em análise",
+    "Total",
     "Em conformidade",
+    "Em análise",
     "Não conformidade",
+    "Recebida",
+    "Não enviada"
   ];
+
+  // Ordena o statusAno por ano
+  const sortedStatusAno = statusAno.sort((a, b) => a[0] - b[0]);
+
+  // Mapeia as cores corretas para cada status
   const statusColors = orderedStatuses.map(
     (status) => getColorStatus(status).backgroundColor
   );
@@ -136,14 +169,8 @@ const IndexPage = () => {
       <Chart
         chartType="ColumnChart"
         data={[
-          ["Região", "Quantidade"],
-          ...Object.entries(regioes).map(([regiao, estados]) => [
-            regiao,
-            estados.reduce(
-              (acc, uf) => acc + (declaracoesPorEstado[uf] || 0),
-              0
-            ),
-          ]),
+          ["Região", "Total", ...status],
+          ...declaracoesPorRegiao
         ]}
         width="100%"
         height="400px"
@@ -174,17 +201,31 @@ const IndexPage = () => {
       <Chart
         chartType="ColumnChart"
         data={[
+          ["Tipo", "Quantidade"],
+          ["Meta de declarações", 100],
+          ["Declarações realizadas", 80],
+        ]}
+        width="100%"
+        height="400px"
+        legendToggle
+        options={{
+          title: "Meta de declarações x Declarações realizadas",
+          vAxis: {
+            viewWindow: {
+              min: 0,
+            },
+          },
+        }}
+      />
+       <Chart
+        chartType="ColumnChart"
+        data={[
           [
             "Ano",
-            "Recebida",
-            "Em análise",
-            "Em conformidade",
-            "Não conformidade",
+            "Total",
+           ...status
           ],
-          ["2021", 100, 80, 50, 20],
-          ["2022", 120, 90, 60, 30],
-          ["2023", 130, 100, 70, 40],
-          ["2024", 140, 110, 80, 50],
+          ...statusAno
         ]}
         width="100%"
         height="400px"
