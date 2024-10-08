@@ -1,14 +1,14 @@
-import { z } from "zod";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import useStore from "../utils/store";
-import clsx from "clsx";
-import { useNavigate } from "react-router";
 import { useMutation } from "@tanstack/react-query";
-import request from "../utils/request";
+import clsx from "clsx";
 import React, { useState } from "react";
-import logoIbram from "../images/logo-ibram.png";
+import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router";
+import { z } from "zod";
 import Input from "../components/Input";
+import logoIbram from "../images/logo-ibram.png";
+import request from "../utils/request";
+import useStore from "../utils/store";
 
 const schema = z.object({
   email: z.string().min(1, "Este campo é obrigatório"),
@@ -31,7 +31,7 @@ const LoginPage: React.FC = () => {
 
   const { mutate, error, isError } = useMutation({
     mutationFn: async ({ email, password }: FormData) => {
-      const res = await request("/api/auth/login?admin=true", {
+      const res = await request("/api/admin/auth/login?admin=true", {
         method: "POST",
         data: {
           email,

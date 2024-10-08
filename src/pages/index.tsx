@@ -1,10 +1,9 @@
-import React from "react";
-import DefaultLayout from "../layouts/default";
-import useStore from "../utils/store";
-import { Chart } from "react-google-charts";
 import { useSuspenseQueries } from "@tanstack/react-query";
-import request from "../utils/request";
+import { Chart } from "react-google-charts";
+import DefaultLayout from "../layouts/default";
 import { getColorStatus } from "../utils/colorStatus";
+import request from "../utils/request";
+import useStore from "../utils/store";
 
 const statesNameMap = {
   AC: "Acre",
@@ -58,21 +57,21 @@ const IndexPage = () => {
       {
         queryKey: ["declaracoesPorAno"],
         queryFn: async () => {
-          const res = await request("/api/dashboard/anoDeclaracao");
+          const res = await request("/api/admin/dashboard/anoDeclaracao");
           return await res.json();
         },
       },
       {
         queryKey: ["declaracoesPorEstado"],
         queryFn: async () => {
-          const res = await request("/api/dashboard/UF");
+          const res = await request("/api/admin/dashboard/UF");
           return await res.json();
         },
       },
       {
         queryKey: ["declaracoesPorStatus"],
         queryFn: async () => {
-          const res = await request("/api/dashboard/status");
+          const res = await request("/api/admin/dashboard/status");
           return await res.json();
         },
       },

@@ -1,11 +1,10 @@
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
-import DefaultLayout from "../../layouts/default";
-import request from "../../utils/request";
-import { Modal, Button } from "react-dsgov";
 import {
   Column,
   ColumnFiltersState,
   RowData,
+  VisibilityState,
+  createColumnHelper,
   flexRender,
   getCoreRowModel,
   getFacetedMinMaxValues,
@@ -14,16 +13,15 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  createColumnHelper,
-  useReactTable,
-  PaginationState,
-  VisibilityState,
-  ColumnDef,
+  useReactTable
 } from "@tanstack/react-table";
-import React, { useEffect, useMemo, useState } from "react";
-import { stateRegions } from ".././../utils/regioes";
-import { format } from "date-fns";
 import clsx from "clsx";
+import { format } from "date-fns";
+import React, { useEffect, useMemo, useState } from "react";
+import { Button, Modal } from "react-dsgov";
+import DefaultLayout from "../../layouts/default";
+import request from "../../utils/request";
+import { stateRegions } from ".././../utils/regioes";
 
 declare module "@tanstack/react-table" {
   interface ColumnMeta<TData extends RowData, TValue> {
@@ -113,7 +111,7 @@ const columns = [
 
       const { mutate, isPending } = useMutation({
         mutationFn: () => {
-          return request(`/api/atualizarStatus/${row.original._id}`, {
+          return request(`/api/admin/atualizarStatus/${row.original._id}`, {
             method: "PUT",
             data: {
               status: "Em análise",
@@ -167,7 +165,7 @@ const columns = [
 
       const { mutate, isPending } = useMutation({
         mutationFn: (status: "Em conformidade" | "Não conformidade") => {
-          return request(`/api/atualizarStatus/${row.original._id}`, {
+          return request(`/api/admin/atualizarStatus/${row.original._id}`, {
             method: "PUT",
             data: {
               status,
@@ -306,13 +304,13 @@ const DeclaracoesPage = () => {
   const { data: result } = useSuspenseQuery({
     queryKey: ["declaracoes"],
     queryFn: async () => {
-      const response = await request("/api/declaracoesFiltradas", {
+      const response = await request("/api/admin/declaracoes/declaracoesFiltradas", {
         method: "POST",
       });
       return response.json();
     },
   });
-  
+
   const data = useMemo(
     () =>
       result.data.map((row) => ({

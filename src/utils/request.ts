@@ -1,4 +1,4 @@
-import { unpack, pack } from "msgpackr"
+import { pack, unpack } from "msgpackr"
 
 export default async function request(path: string, init?: RequestInit & { data?: any }): Promise<Response> {
   const headers = { "Accept": "application/x-msgpack", ...init?.headers } as any
@@ -17,7 +17,7 @@ export default async function request(path: string, init?: RequestInit & { data?
     })
 
   if (res.status === 401) {
-    const refreshRes = await fetch("/api/auth/refresh", { method: "POST", credentials: "include" })
+    const refreshRes = await fetch("/api/admin/auth/refresh", { method: "POST", credentials: "include" })
     if (refreshRes.ok) {
       return request(path, init)
     } else {
