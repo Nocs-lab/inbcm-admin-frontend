@@ -28,6 +28,13 @@ export const getColorStatus = (status: string) => {
         padding: "4px 8px",
         borderRadius: "4px",
       };
+    case "Não enviada":
+      return {
+        color: "black",
+        backgroundColor: "#808080",
+        padding: "4px 8px",
+        borderRadius: "4px",
+      };
     default:
       return {};
   }
