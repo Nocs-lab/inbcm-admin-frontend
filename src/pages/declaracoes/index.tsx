@@ -303,7 +303,7 @@ function Filter({ column }: { column: Column<any, unknown> }) {
 }
 
 const DeclaracoesPage = () => {
-  let { data } = useSuspenseQuery({
+  const { data: result } = useSuspenseQuery({
     queryKey: ["declaracoes"],
     queryFn: async () => {
       const response = await request("/api/declaracoesFiltradas", {
@@ -312,10 +312,10 @@ const DeclaracoesPage = () => {
       return response.json();
     },
   });
-
-  data = useMemo(
+  
+  const data = useMemo(
     () =>
-      data.map((row) => ({
+      result.data.map((row) => ({
         ...row,
         museu_id: {
           ...row.museu_id,
@@ -328,7 +328,7 @@ const DeclaracoesPage = () => {
           },
         },
       })),
-    [data],
+    [result],
   );
 
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([
