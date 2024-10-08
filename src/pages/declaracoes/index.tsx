@@ -56,7 +56,7 @@ const columns = [
     },
   }),
   columnHelper.accessor("retificacao", {
-    cell: (info) => (info.getValue() ? "Retificadora" : "Normal"),
+    cell: (info) => (info.getValue() ? "Retificada" : "Original"),
     header: "Tipo",
     meta: {
       filterVariant: "select",
