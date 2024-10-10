@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useSuspenseQueries } from "@tanstack/react-query";
 import { Chart } from "react-google-charts";
 import DefaultLayout from "../layouts/default";
@@ -55,6 +56,7 @@ const IndexPage = () => {
     { data: status },
     { data: statusAno },
     { data: declaracoesPorRegiao },
+    { data: declaracoesPorAnalista },
   ] = useSuspenseQueries({
     queries: [
       {
@@ -81,27 +83,38 @@ const IndexPage = () => {
       {
         queryKey: ["status"],
         queryFn: async () => {
-          const res = await request("/api/admin/dashboard/getStatusEnum")
-          return await res.json()
-        }
+          const res = await request("/api/admin/dashboard/getStatusEnum");
+          return await res.json();
+        },
       },
       {
         queryKey: ["statusAno"],
         queryFn: async () => {
-          const res = await request("/api/admin/dashboard/declaraoes-status-ano")
-          return await res.json()
-        }
+          const res = await request(
+            "/api/admin/dashboard/declaraoes-status-ano"
+          );
+          return await res.json();
+        },
       },
       {
         queryKey: ["declaracoesPorRegiao"],
         queryFn: async () => {
-          const res = await request("/api/admin/dashboard/regiao")
-          return await res.json()
-        }
+          const res = await request("/api/admin/dashboard/regiao");
+          return await res.json();
+        },
+      },
+      {
+        queryKey: ["declaracoesPorAnalista"],
+        queryFn: async () => {
+          const res = await request(
+            "/api/admin/declaracoes/analistas-filtrados"
+          );
+          return await res.json();
+        },
       },
     ],
   });
-  console.log(statusAno);
+  console.log(declaracoesPorAnalista);
 
   // Definindo a ordem dos status conforme os dados que temos em statusAno
   const orderedStatuses = [
@@ -110,7 +123,7 @@ const IndexPage = () => {
     "Em análise",
     "Não conformidade",
     "Recebida",
-    "Não enviada"
+    "Não enviada",
   ];
 
   // Ordena o statusAno por ano
@@ -120,6 +133,37 @@ const IndexPage = () => {
   const statusColors = orderedStatuses.map(
     (status) => getColorStatus(status).backgroundColor
   );
+
+  const analistasData = useMemo(() => {
+    // Definindo os anos que você quer mostrar, incluindo os novos anos (2025, 2026)
+    const anos = ["2021", "2022", "2023", "2024"];
+
+    // Função pura que organiza os dados dos analistas
+    const analistasMap = declaracoesPorAnalista.reduce(
+      (acc, { analista, anoDeclaracao, quantidadeDeclaracoes }) => {
+        // Se o analista ainda não está no mapa, inicializamos com um array de zeros
+        if (!acc[analista.nome]) {
+          acc[analista.nome] = Array(anos.length).fill(0); // Inicializa com zeros
+        }
+        // Encontrando o índice do ano
+        const anoIndex = anos.indexOf(anoDeclaracao);
+        if (anoIndex !== -1) {
+          acc[analista.nome][anoIndex] = quantidadeDeclaracoes; // Atribui a quantidade correta
+        }
+        return acc; // Retorna o acumulador imutável
+      },
+      {}
+    );
+
+    // Estrutura final para o gráfico: cabeçalho seguido pelos dados de cada analista
+    return [
+      ["Analista", ...anos],
+      ...Object.entries(analistasMap).map(([analista, quantidades]) => [
+        analista,
+        ...quantidades,
+      ]),
+    ];
+  }, [declaracoesPorAnalista]);
 
   return (
     <DefaultLayout>
@@ -168,10 +212,7 @@ const IndexPage = () => {
       />
       <Chart
         chartType="ColumnChart"
-        data={[
-          ["Região", "Total", ...status],
-          ...declaracoesPorRegiao
-        ]}
+        data={[["Região", "Total", ...status], ...declaracoesPorRegiao]}
         width="100%"
         height="400px"
         legendToggle
@@ -223,16 +264,9 @@ const IndexPage = () => {
         }}
       />
       */}
-       <Chart
+      <Chart
         chartType="ColumnChart"
-        data={[
-          [
-            "Ano",
-            "Total",
-           ...status
-          ],
-          ...statusAno
-        ]}
+        data={[["Ano", "Total", ...status], ...statusAno]}
         width="100%"
         height="400px"
         legendToggle
@@ -249,23 +283,15 @@ const IndexPage = () => {
           bar: { groupWidth: "70%" },
         }}
       />
-
       <Chart
         chartType="ColumnChart"
-        data={[
-          ["Analista", "2021", "2022", "2023", "2024"],
-          ["Andrea Simões", 600, 1000, 800, 300],
-          ["Carla Pimenta", 400, 300, 600, 200],
-          ["Carlos André", 500, 700, 800, 50],
-          ["Eduardo Cavalcanti", 300, 900, 1000, 600],
-          ["Felipe Arruda", 700, 100, 800, 500],
-        ]}
+        data={analistasData}
         width="100%"
         height="400px"
         options={{
           title: "Quantidade de declarações por analista",
           vAxis: { minValue: 0 },
-          colors: ["#1f77b4", "#ff7f0e", "#2ca02c", "#17becf"], // Cores para 2021, 2022, 2023, 2024
+          colors: ["#1f77b4", "#ff7f0e", "#2ca02c", "#17becf"],
           legend: { position: "bottom", alignment: "center" },
           bar: { groupWidth: "60%" },
         }}
