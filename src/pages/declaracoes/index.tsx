@@ -1,12 +1,10 @@
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
-import DefaultLayout from "../../layouts/default";
-import request from "../../utils/request";
-import { getColorStatus } from "../../utils/colorStatus";
-import { Modal, Button } from "react-dsgov";
 import {
   Column,
   ColumnFiltersState,
   RowData,
+  VisibilityState,
+  createColumnHelper,
   flexRender,
   getCoreRowModel,
   getFacetedMinMaxValues,
@@ -15,16 +13,15 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  createColumnHelper,
-  useReactTable,
-  PaginationState,
-  VisibilityState,
-  ColumnDef,
+  useReactTable
 } from "@tanstack/react-table";
-import React, { useEffect, useMemo, useState } from "react";
-import { stateRegions } from ".././../utils/regioes";
-import { format } from "date-fns";
 import clsx from "clsx";
+import { format } from "date-fns";
+import React, { useEffect, useMemo, useState } from "react";
+import { Button, Modal } from "react-dsgov";
+import DefaultLayout from "../../layouts/default";
+import request from "../../utils/request";
+import { stateRegions } from ".././../utils/regioes";
 
 declare module "@tanstack/react-table" {
   interface ColumnMeta<TData extends RowData, TValue> {
@@ -59,7 +56,7 @@ const columns = [
     },
   }),
   columnHelper.accessor("retificacao", {
-    cell: (info) => (info.getValue() ? "Retificadora" : "Normal"),
+    cell: (info) => (info.getValue() ? "Retificada" : "Original"),
     header: "Tipo",
     meta: {
       filterVariant: "select",
@@ -96,15 +93,14 @@ const columns = [
   columnHelper.accessor("status", {
     cell: (info) => {
       const status = info.getValue();
-      const colorStatus = getColorStatus(status);
 
       return (
-        <span style={colorStatus} className="whitespace-nowrap">
+        <span className="whitespace-nowrap font-bold">
           {status}
         </span>
       )
     },
-    header: "Status",
+    header: "Situação",
     enableColumnFilter: false,
   }),
   columnHelper.display({
@@ -115,7 +111,7 @@ const columns = [
 
       const { mutate, isPending } = useMutation({
         mutationFn: () => {
-          return request(`/api/atualizarStatus/${row.original._id}`, {
+          return request(`/api/admin/atualizarStatus/${row.original._id}`, {
             method: "PUT",
             data: {
               status: "Em análise",
@@ -169,7 +165,7 @@ const columns = [
 
       const { mutate, isPending } = useMutation({
         mutationFn: (status: "Em conformidade" | "Não conformidade") => {
-          return request(`/api/atualizarStatus/${row.original._id}`, {
+          return request(`/api/admin/atualizarStatus/${row.original._id}`, {
             method: "PUT",
             data: {
               status,
@@ -305,19 +301,19 @@ function Filter({ column }: { column: Column<any, unknown> }) {
 }
 
 const DeclaracoesPage = () => {
-  let { data } = useSuspenseQuery({
+  const { data: result } = useSuspenseQuery({
     queryKey: ["declaracoes"],
     queryFn: async () => {
-      const response = await request("/api/declaracoesFiltradas", {
+      const response = await request("/api/admin/declaracoes/declaracoesFiltradas", {
         method: "POST",
       });
       return response.json();
     },
   });
 
-  data = useMemo(
+  const data = useMemo(
     () =>
-      data.map((row) => ({
+      result.data.map((row) => ({
         ...row,
         museu_id: {
           ...row.museu_id,
@@ -330,7 +326,7 @@ const DeclaracoesPage = () => {
           },
         },
       })),
-    [data],
+    [result],
   );
 
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([
