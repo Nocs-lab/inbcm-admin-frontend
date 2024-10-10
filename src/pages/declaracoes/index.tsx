@@ -50,7 +50,7 @@ const columnHelper = createColumnHelper<{
 const columns = [
   columnHelper.accessor("anoDeclaracao", {
     cell: (info) => info.getValue(),
-    header: "Ano da Declaração",
+    header: "Ano",
     meta: {
       filterVariant: "select",
     },
@@ -61,6 +61,7 @@ const columns = [
     meta: {
       filterVariant: "select",
     },
+
   }),
   columnHelper.accessor("dataCriacao", {
     cell: (info) => format(info.getValue(), "dd/MM/yyyy HH:mm"),
@@ -150,7 +151,8 @@ const columns = [
               </Button>
             </Modal.Footer>
           </Modal>
-          <Button small onClick={() => setModalAberta(true)}>
+          <Button small onClick={() => setModalAberta(true)} className="!font-thin">
+            <i className="fa-solid fa-magnifying-glass-arrow-right p-2"></i>
             Enviar para análise
           </Button>
         </>
@@ -217,7 +219,8 @@ const columns = [
               </Button>
             </Modal.Footer>
           </Modal>
-          <Button small onClick={() => setModalAberta(true)}>
+          <Button small onClick={() => setModalAberta(true)} className="!font-thin">
+            <i className="fa-solid fa-circle-check p-2"></i>
             Concluir análise
           </Button>
         </>
@@ -274,7 +277,7 @@ function Filter({ column }: { column: Column<any, unknown> }) {
       value={columnFilterValue?.toString()}
     >
       <option value="">Todas</option>
-      {sortedUniqueValues.map((value) => (
+      {sortedUniqueValues.sort((a, b) => b - a).map((value) => (
         <option value={value} key={value}>
           {value}
         </option>
