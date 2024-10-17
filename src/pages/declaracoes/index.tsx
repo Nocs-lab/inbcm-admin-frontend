@@ -22,6 +22,7 @@ import { Button, Modal } from "react-dsgov";
 import DefaultLayout from "../../layouts/default";
 import request from "../../utils/request";
 import { stateRegions } from ".././../utils/regioes";
+import { Link } from "react-router-dom";
 
 declare module "@tanstack/react-table" {
   interface ColumnMeta<TData extends RowData, TValue> {
@@ -112,7 +113,7 @@ const columns = [
 
       const { mutate, isPending } = useMutation({
         mutationFn: () => {
-          return request(`/api/admin/atualizarStatus/${row.original._id}`, {
+          return request(`/api/admin/declaracoes/atualizarStatus/${row.original._id}`, {
             method: "PUT",
             data: {
               status: "Em análise",
@@ -167,7 +168,7 @@ const columns = [
 
       const { mutate, isPending } = useMutation({
         mutationFn: (status: "Em conformidade" | "Não conformidade") => {
-          return request(`/api/admin/atualizarStatus/${row.original._id}`, {
+          return request(`/api/admin/declaracoes/atualizarStatus/${row.original._id}`, {
             method: "PUT",
             data: {
               status,
@@ -226,6 +227,13 @@ const columns = [
         </>
       );
     },
+  }),
+  columnHelper.accessor("_id", {
+    cell: (info) => (
+      <Link to={`/declaracoes/${info.getValue()}`}>Visualizar</Link>
+    ),
+    header: "Visualizar",
+    enableColumnFilter: false,
   }),
 ];
 
@@ -338,6 +346,7 @@ const DeclaracoesPage = () => {
   const [visibility, setVisibility] = useState<VisibilityState>({
     status: false,
     definirStatus: false,
+    _id: true
   });
 
   const table = useReactTable({
