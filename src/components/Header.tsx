@@ -1,4 +1,4 @@
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import logoImbramSimples from '../images/logo-ibram-simples.png';
 import useStore from '../utils/store';
 import React, { useState } from 'react';
@@ -7,14 +7,11 @@ const Header: React.FC = () => {
   const { setUser, ...rest } = useStore()
   const user = rest.user!
   const navigate = useNavigate()
-  const { pathname } = useLocation()
 
   const pathnameMap = {
-    "/": "Dashboard",
+    "/": "Painel analítico",
     "/declaracoes": "Declarações"
   }
-
-  const name = pathnameMap[pathname as keyof typeof pathnameMap] || "Página não encontrada"
 
   const logout = () => {
     setUser(null)
@@ -61,7 +58,7 @@ const Header: React.FC = () => {
               </div>
             </div>
             <div className="header-search-trigger">
-              
+
             </div>
             <div>
               <button className="br-sign-in" type="button" id="avatar-dropdown-trigger" onClick={() => setUserMenuOpen(old => !old)} data-toggle="dropdown" data-target="avatar-menu" aria-label={`${user.name.split(" ")[0]}`}><span className="br-avatar" title={user.name}><span className="content bg-orange-vivid-30 text-pure-0">{user.name.charAt(0).toUpperCase()}</span></span><span className="ml-2 text-gray-80 text-weight-regular"><span className="text-weight-semi-bold">{user.name.split(" ")[0]}</span></span><i className="fas fa-caret-down" aria-hidden="true"></i></button>
