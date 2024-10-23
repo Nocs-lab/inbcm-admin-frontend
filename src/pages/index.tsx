@@ -121,10 +121,15 @@ const IndexPage = () => {
       <div className="mb-5">
         <span className="text-lg font-extrabold">Filtros</span>
         <div className="flex flex-wrap gap-5">
-          <Select label="Ano" value={ano} options={[{ label: "2021", value: "2021" }, { label: "2022", value: "2022" }, { label: "2023", value: "2023" }, { label: "2024", value: "2024" }]} onChange={(ano: string) => setAno(ano)} />
-          <Select label="Museu" value={museu ?? undefined} options={museus?.map((museu: { nome: string, _id: string }) => ({ label: museu.nome, value: museu._id })) ?? []} onChange={(museu: string) => setMuseu(museu)} placeholder="Selecione um museu" />
+          <Select label="Inicio" value={ano} options={[{ label: "2021", value: "2021" }, { label: "2022", value: "2022" }, { label: "2023", value: "2023" }, { label: "2024", value: "2024" }]} onChange={(ano: string) => setAno(ano)} />
+          <Select label="Fim" value={ano} options={[{ label: "2021", value: "2021" }, { label: "2022", value: "2022" }, { label: "2023", value: "2023" }, { label: "2024", value: "2024" }].filter((ano) => Number(ano.value) > Number(ano))} onChange={(ano: string) => setAno(ano)} />
+          <Select label="Região" value={museu ?? undefined} options={Object.keys(regionsMap).map((regiao) => ({ label: regiao, value: regiao }))} onChange={(regiao: string) => setMuseu(regiao)} placeholder="Selecione uma região" />
+          <Select label="Estado" disabled value={museu ?? undefined} options={states.map((uf) => ({ label: statesNameMap[uf], value: uf }))} onChange={(uf: string) => setMuseu(uf)} placeholder="Selecione um estado" />
+          <Select label="Municipio" disabled value={museu ?? undefined} options={museus?.map((museu: { nome: string, _id: string }) => ({ label: museu.nome, value: museu._id })) ?? []} onChange={(museu: string) => setMuseu(museu)} placeholder="Selecione uma cidade" />
+          <Select label="Museu" disabled value={museu ?? undefined} options={museus?.map((museu: { nome: string, _id: string }) => ({ label: museu.nome, value: museu._id })) ?? []} onChange={(museu: string) => setMuseu(museu)} placeholder="Selecione um museu" />
         </div>
       </div>
+      <button className="br-button mb-5">aplicar filtros</button>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 mb-50 gap-10 auto-rows-fr">
         <div className="br-card p-3">
           <div className="card-header">
