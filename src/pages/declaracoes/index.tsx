@@ -349,6 +349,8 @@ const DeclaracoesPage = () => {
     _id: true
   });
 
+  console.log(result)
+
   const table = useReactTable({
     data,
     columns,
@@ -398,7 +400,7 @@ const DeclaracoesPage = () => {
                   }));
                 }}
               >
-                <span className="name">Recebidas</span>
+                <span className="name">Recebidas ({result.statusCount.Recebida})</span>
               </button>
             </li>
             <li
@@ -426,7 +428,7 @@ const DeclaracoesPage = () => {
                   }));
                 }}
               >
-                <span className="name">Em análise</span>
+                <span className="name">Em análise ({result.statusCount["Em análise"]})</span>
               </button>
             </li>
             <li
@@ -454,7 +456,7 @@ const DeclaracoesPage = () => {
                   }));
                 }}
               >
-                <span className="name">Em conformidade</span>
+                <span className="name">Em conformidade ({result.statusCount["Em conformidade"]})</span>
               </button>
             </li>
             <li
@@ -482,7 +484,7 @@ const DeclaracoesPage = () => {
                   }));
                 }}
               >
-                <span className="name">Não conformidade</span>
+                <span className="name">Não conformidade ({result.statusCount["Não conformidade"]})</span>
               </button>
             </li>
             <li
@@ -507,7 +509,7 @@ const DeclaracoesPage = () => {
                   }));
                 }}
               >
-                <span className="name">Todas</span>
+                <span className="name">Todas ({result.statusCount.Recebida + result.statusCount["Em análise"] + result.statusCount["Em conformidade"] + result.statusCount["Não conformidade"]})</span>
               </button>
             </li>
           </ul>
