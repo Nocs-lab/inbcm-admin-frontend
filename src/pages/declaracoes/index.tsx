@@ -490,6 +490,34 @@ const DeclaracoesPage = () => {
             <li
               className={clsx(
                 "tab-item",
+                columnFilters.some(
+                  (f) => f.id === "status" && f.value === "Excluída",
+                ) && "active",
+              )}
+              title="Excluídas"
+            >
+              <button
+                type="button"
+                data-panel="panel-4-small"
+                onClick={() => {
+                  table.setColumnFilters((old) => [
+                    ...old.filter((f) => f.id !== "status"),
+                    { id: "status", value: "Excluída" },
+                  ]);
+                  table.setColumnVisibility((old) => ({
+                    ...old,
+                    status: false,
+                    enviarParaAnalise: true,
+                    definirStatus: false,
+                  }));
+                }}
+              >
+                <span className="name">Excluídas ({result.statusCount.Recebida})</span>
+              </button>
+            </li>
+            <li
+              className={clsx(
+                "tab-item",
                 !columnFilters.some((f) => f.id === "status") && "active",
               )}
               title="Todas"
