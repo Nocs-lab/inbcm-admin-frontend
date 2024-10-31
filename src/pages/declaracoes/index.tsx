@@ -23,6 +23,8 @@ import DefaultLayout from "../../layouts/default";
 import request from "../../utils/request";
 import { stateRegions } from ".././../utils/regioes";
 import { Link } from "react-router-dom";
+import { Tooltip } from 'react-tooltip'
+
 
 declare module "@tanstack/react-table" {
   interface ColumnMeta<TData extends RowData, TValue> {
@@ -123,7 +125,7 @@ const columns = [
         onSuccess: () => {
           window.location.reload();
         },
-      });
+      })
 
       return (
         <>
@@ -152,10 +154,91 @@ const columns = [
               </Button>
             </Modal.Footer>
           </Modal>
-          <Button small onClick={() => setModalAberta(true)} className="!font-thin">
+          <div className="flex space-x-2">
+          <Button small onClick={() => setModalAberta(true)} className="!font-thin analise">
             <i className="fa-solid fa-magnifying-glass-arrow-right p-2"></i>
-            Enviar para análise
           </Button>
+          <Tooltip anchorSelect=".analise" place="top">
+            Enviar para análise
+          </Tooltip>
+
+          <Link to={`/declaracoes/${row.original._id}`} className="!font-thin visualizar">
+          <Button>
+          <i className="fa-solid fa-timeline p-2"></i>
+          </Button>
+          <Tooltip anchorSelect=".visualizar" place="top">
+            Visualizar histórico
+          </Tooltip>
+          </Link>
+          </div>
+        </>
+      );
+    },
+  }),
+  columnHelper.display({
+    id: "excluirDeclaracao",
+    header: "Ações",
+    cell: ({ row }) => {
+      const [modalAberta, setModalAberta] = useState(false);
+
+      const { mutate, isPending } = useMutation({
+        mutationFn: () => {
+          return request(`/api/admin/declaracoes/atualizarStatus/${row.original._id}`, {
+            method: "PUT",
+            data: {
+              status: "Recebida",
+            },
+          });
+        },
+        onSuccess: () => {
+          window.location.reload();
+        },
+      })
+
+      return (
+        <>
+          <Modal
+            useScrim
+            showCloseButton
+            title="Confirmar"
+            modalOpened={modalAberta}
+            onCloseButtonClick={() => setModalAberta(false)}
+          >
+            <Modal.Body>
+              Tem certeza que deseja alterar esta declaração para recebida?
+            </Modal.Body>
+            <Modal.Footer justify-content="end">
+              <Button primary small m={2} loading={isPending} onClick={mutate}>
+                Confirmar
+              </Button>
+              <Button
+                secondary
+                small
+                m={2}
+                onClick={() => setModalAberta(false)}
+                disabled={isPending}
+              >
+                Cancelar
+              </Button>
+            </Modal.Footer>
+          </Modal>
+          <div className="flex space-x-2">
+          <Button small onClick={() => setModalAberta(true)} className="!font-thin recuperar">
+            <i className="fa-solid fa-recycle p-2"></i>
+          </Button>
+          <Tooltip anchorSelect=".recuperar" place="top">
+            Recuperar declaração
+          </Tooltip>
+
+          <Link to={`/declaracoes/${row.original._id}`} className="!font-thin visualizar">
+          <Button>
+          <i className="fa-solid fa-timeline p-2"></i>
+          </Button>
+          <Tooltip anchorSelect=".visualizar" place="top">
+            Visualizar histórico
+          </Tooltip>
+          </Link>
+          </div>
         </>
       );
     },
@@ -220,20 +303,26 @@ const columns = [
               </Button>
             </Modal.Footer>
           </Modal>
-          <Button small onClick={() => setModalAberta(true)} className="!font-thin">
+          <div className="flex space-x-2">
+          <Button small onClick={() => setModalAberta(true)} className="!font-thin concluir">
             <i className="fa-solid fa-circle-check p-2"></i>
-            Concluir análise
           </Button>
+          <Tooltip anchorSelect=".concluir" place="top">
+            Concluir análise
+          </Tooltip>
+
+          <Link to={`/declaracoes/${row.original._id}`} className="!font-thin visualizar">
+          <Button>
+          <i className="fa-solid fa-timeline p-2"></i>
+          </Button>
+          <Tooltip anchorSelect=".visualizar" place="top">
+            Visualizar histórico
+          </Tooltip>
+          </Link>
+          </div>
         </>
       );
     },
-  }),
-  columnHelper.accessor("_id", {
-    cell: (info) => (
-      <Link to={`/declaracoes/${info.getValue()}`}>Visualizar</Link>
-    ),
-    header: "Visualizar",
-    enableColumnFilter: false,
   }),
 ];
 
@@ -396,6 +485,7 @@ const DeclaracoesPage = () => {
                     ...old,
                     status: false,
                     enviarParaAnalise: true,
+                    excluirDeclaracao: false,
                     definirStatus: false,
                   }));
                 }}
@@ -424,6 +514,7 @@ const DeclaracoesPage = () => {
                     ...old,
                     status: false,
                     enviarParaAnalise: false,
+                    excluirDeclaracao: false,
                     definirStatus: true,
                   }));
                 }}
@@ -452,6 +543,7 @@ const DeclaracoesPage = () => {
                     ...old,
                     status: false,
                     enviarParaAnalise: false,
+                    excluirDeclaracao: false,
                     definirStatus: false,
                   }));
                 }}
@@ -480,11 +572,41 @@ const DeclaracoesPage = () => {
                     ...old,
                     status: false,
                     enviarParaAnalise: false,
+                    excluirDeclaracao: false,
                     definirStatus: false,
                   }));
                 }}
               >
                 <span className="name">Não conformidade ({result.statusCount["Não conformidade"]})</span>
+              </button>
+            </li>
+            <li
+              className={clsx(
+                "tab-item",
+                columnFilters.some(
+                  (f) => f.id === "status" && f.value === "Excluída",
+                ) && "active",
+              )}
+              title="Excluídas"
+            >
+              <button
+                type="button"
+                data-panel="panel-4-small"
+                onClick={() => {
+                  table.setColumnFilters((old) => [
+                    ...old.filter((f) => f.id !== "status"),
+                    { id: "status", value: "Excluída" },
+                  ]);
+                  table.setColumnVisibility((old) => ({
+                    ...old,
+                    status: false,
+                    enviarParaAnalise: false,
+                    excluirDeclaracao: true,
+                    definirStatus: false,
+                  }));
+                }}
+              >
+                <span className="name">Excluídas ({result.statusCount.Excluída})</span>
               </button>
             </li>
             <li
@@ -505,11 +627,12 @@ const DeclaracoesPage = () => {
                     ...old,
                     status: true,
                     enviarParaAnalise: false,
+                    excluirDeclaracao: false,
                     definirStatus: false,
                   }));
                 }}
               >
-                <span className="name">Todas ({result.statusCount.Recebida + result.statusCount["Em análise"] + result.statusCount["Em conformidade"] + result.statusCount["Não conformidade"]})</span>
+                <span className="name">Todas ({result.statusCount.Recebida + result.statusCount["Em análise"] + result.statusCount["Em conformidade"] + result.statusCount["Não conformidade"] + result.statusCount["Excluída"]})</span>
               </button>
             </li>
           </ul>
