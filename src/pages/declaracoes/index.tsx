@@ -123,7 +123,7 @@ const columns = [
         onSuccess: () => {
           window.location.reload();
         },
-      });
+      })
 
       return (
         <>
@@ -155,6 +155,61 @@ const columns = [
           <Button small onClick={() => setModalAberta(true)} className="!font-thin">
             <i className="fa-solid fa-magnifying-glass-arrow-right p-2"></i>
             Enviar para análise
+          </Button>
+        </>
+      );
+    },
+  }),
+  columnHelper.display({
+    id: "excluirDeclaracao",
+    header: "Ações",
+    cell: ({ row }) => {
+      const [modalAberta, setModalAberta] = useState(false);
+
+      const { mutate, isPending } = useMutation({
+        mutationFn: () => {
+          return request(`/api/admin/declaracoes/atualizarStatus/${row.original._id}`, {
+            method: "PUT",
+            data: {
+              status: "Recebida",
+            },
+          });
+        },
+        onSuccess: () => {
+          window.location.reload();
+        },
+      })
+
+      return (
+        <>
+          <Modal
+            useScrim
+            showCloseButton
+            title="Confirmar"
+            modalOpened={modalAberta}
+            onCloseButtonClick={() => setModalAberta(false)}
+          >
+            <Modal.Body>
+              Tem certeza que deseja alterar esta declaração para recebida?
+            </Modal.Body>
+            <Modal.Footer justify-content="end">
+              <Button primary small m={2} loading={isPending} onClick={mutate}>
+                Confirmar
+              </Button>
+              <Button
+                secondary
+                small
+                m={2}
+                onClick={() => setModalAberta(false)}
+                disabled={isPending}
+              >
+                Cancelar
+              </Button>
+            </Modal.Footer>
+          </Modal>
+          <Button small onClick={() => setModalAberta(true)} className="!font-thin">
+            <i className="fa-solid fa-recycle p-2"></i>
+            Recuperar declaração
           </Button>
         </>
       );
@@ -396,6 +451,7 @@ const DeclaracoesPage = () => {
                     ...old,
                     status: false,
                     enviarParaAnalise: true,
+                    excluirDeclaracao: false,
                     definirStatus: false,
                   }));
                 }}
@@ -424,6 +480,7 @@ const DeclaracoesPage = () => {
                     ...old,
                     status: false,
                     enviarParaAnalise: false,
+                    excluirDeclaracao: false,
                     definirStatus: true,
                   }));
                 }}
@@ -452,6 +509,7 @@ const DeclaracoesPage = () => {
                     ...old,
                     status: false,
                     enviarParaAnalise: false,
+                    excluirDeclaracao: false,
                     definirStatus: false,
                   }));
                 }}
@@ -480,6 +538,7 @@ const DeclaracoesPage = () => {
                     ...old,
                     status: false,
                     enviarParaAnalise: false,
+                    excluirDeclaracao: false,
                     definirStatus: false,
                   }));
                 }}
@@ -507,12 +566,13 @@ const DeclaracoesPage = () => {
                   table.setColumnVisibility((old) => ({
                     ...old,
                     status: false,
-                    enviarParaAnalise: true,
+                    enviarParaAnalise: false,
+                    excluirDeclaracao: true,
                     definirStatus: false,
                   }));
                 }}
               >
-                <span className="name">Excluídas ({result.statusCount.Recebida})</span>
+                <span className="name">Excluídas ({result.statusCount.Excluída})</span>
               </button>
             </li>
             <li
@@ -533,6 +593,7 @@ const DeclaracoesPage = () => {
                     ...old,
                     status: true,
                     enviarParaAnalise: false,
+                    excluirDeclaracao: false,
                     definirStatus: false,
                   }));
                 }}
