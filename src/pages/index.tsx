@@ -43,14 +43,54 @@ const regionsMap = {
   "Sul": ["PR", "SC", "RS"],
 }
 
+const statePreposicaoMap = {
+  "AC": "do",
+  "AL": "de",
+  "AP": "do",
+  "AM": "do",
+  "BA": "da",
+  "CE": "do",
+  "DF": "do",
+  "ES": "do",
+  "GO": "de",
+  "MA": "do",
+  "MT": "do",
+  "MS": "do",
+  "MG": "de",
+  "PA": "do",
+  "PB": "da",
+  "PR": "do",
+  "PE": "de",
+  "PI": "do",
+  "RJ": "do",
+  "RN": "do",
+  "RS": "do",
+  "RO": "de",
+  "RR": "de",
+  "SC": "de",
+  "SP": "de",
+  "SE": "de",
+  "TO": "de",
+}
+
 const states = Object.keys(statesNameMap);
 
 const IndexPage = () => {
-  const [ano, setAno] = useState("2024");
+  const [inicio, setInicio] = useState("2024");
+  const [fim, setFim] = useState("2024");
+  const [regiao, setRegiao] = useState<string | null>(null);
+  const [estado, setEstado] = useState<string | null>(null);
   const [museu, setMuseu] = useState<string | null>(null);
 
   const params = new URLSearchParams();
-  params.append("anos", ano);
+  params.append("anos", Array.from({ length: Number(fim) - Number(inicio) + 1 }, (_, i) => String(Number(inicio) + i)).join(","));
+
+  const estados = estado ? [estado] : regiao ? regionsMap[regiao as keyof typeof regionsMap] : [];
+
+  for (const uf of estados) {
+    params.append("estados", uf)
+  }
+
   if (museu) {
     params.append("museu", museu);
   }
@@ -75,6 +115,14 @@ const IndexPage = () => {
       }
     }
   });
+
+  let locationText = ""
+
+  if (estado) {
+    locationText = ` no estado ${statePreposicaoMap[estado as keyof typeof statePreposicaoMap]} ${statesNameMap[estado as keyof typeof statesNameMap]}`;
+  } else if (regiao) {
+    locationText = ` na região ${regiao}`;
+  }
 
   const { data: museus } = useQuery({
     queryKey: ["museus"],
@@ -118,25 +166,22 @@ const IndexPage = () => {
   return (
     <DefaultLayout>
       <h1>Painel analítico</h1>
-      <div className="mb-5">
-        <span className="text-lg font-extrabold">Filtros</span>
-        <div className="flex flex-wrap gap-5">
-          <Select label="Inicio" value={ano} options={[{ label: "2021", value: "2021" }, { label: "2022", value: "2022" }, { label: "2023", value: "2023" }, { label: "2024", value: "2024" }]} onChange={(ano: string) => setAno(ano)} />
-          <Select label="Fim" value={ano} options={[{ label: "2021", value: "2021" }, { label: "2022", value: "2022" }, { label: "2023", value: "2023" }, { label: "2024", value: "2024" }].filter((ano) => Number(ano.value) > Number(ano))} onChange={(ano: string) => setAno(ano)} />
-          <Select label="Região" value={museu ?? undefined} options={Object.keys(regionsMap).map((regiao) => ({ label: regiao, value: regiao }))} onChange={(regiao: string) => setMuseu(regiao)} placeholder="Selecione uma região" />
-          <Select label="Estado" disabled value={museu ?? undefined} options={states.map((uf) => ({ label: statesNameMap[uf], value: uf }))} onChange={(uf: string) => setMuseu(uf)} placeholder="Selecione um estado" />
-          <Select label="Municipio" disabled value={museu ?? undefined} options={museus?.map((museu: { nome: string, _id: string }) => ({ label: museu.nome, value: museu._id })) ?? []} onChange={(museu: string) => setMuseu(museu)} placeholder="Selecione uma cidade" />
-          <Select label="Museu" disabled value={museu ?? undefined} options={museus?.map((museu: { nome: string, _id: string }) => ({ label: museu.nome, value: museu._id })) ?? []} onChange={(museu: string) => setMuseu(museu)} placeholder="Selecione um museu" />
-        </div>
-      </div>
-      <button className="br-button mb-5">aplicar filtros</button>
+      <fieldset className="rounded-lg p-3 flex flex-wrap gap-5" style={{ border: "2px solid #e0e0e0" }}>
+        <legend className="text-lg font-extrabold px-3 m-0">Filtros</legend>
+        <Select label="Inicio" value={inicio} options={[{ label: "2021", value: "2021" }, { label: "2022", value: "2022" }, { label: "2023", value: "2023" }, { label: "2024", value: "2024" }]} onChange={(ano: string) => setInicio(ano)} />
+        <Select label="Fim" value={fim} options={[{ label: "2021", value: "2021" }, { label: "2022", value: "2022" }, { label: "2023", value: "2023" }, { label: "2024", value: "2024" }].filter((ano) => Number(ano.value) >= Number(inicio))} onChange={(ano: string) => setFim(ano)} />
+        <Select label="Região" value={regiao ?? undefined} options={Object.keys(regionsMap).map((regiao) => ({ label: regiao, value: regiao }))} onChange={(regiao: string) => setRegiao(regiao)} placeholder="Selecione uma região" />
+        <Select label="Estado" disabled={!regiao} value={estado ?? undefined} options={states.map((uf) => ({ label: statesNameMap[uf as keyof typeof statesNameMap], value: uf })).filter((uf) => regiao ? regionsMap[regiao as keyof typeof regionsMap].includes(uf.value) : true)} onChange={(uf: string) => setEstado(uf)} placeholder="Selecione um estado" />
+        <Select label="Municipio" disabled value={museu ?? undefined} options={museus?.map((museu: { nome: string, _id: string }) => ({ label: museu.nome, value: museu._id })) ?? []} onChange={(museu: string) => setMuseu(museu)} placeholder="Selecione uma cidade" />
+        <Select label="Museu" disabled value={museu ?? undefined} options={museus?.map((museu: { nome: string, _id: string }) => ({ label: museu.nome, value: museu._id })) ?? []} onChange={(museu: string) => setMuseu(museu)} placeholder="Selecione um museu" />
+      </fieldset>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 mb-50 gap-10 auto-rows-fr">
         <div className="br-card p-3">
           <div className="card-header">
             <span className="text-6xl font-extrabold">{declaracoesCount}</span>
           </div>
           <div className="card-content mt-1">
-            <span className="text-3xl font-bold">Declarações de {ano} recebidas</span>
+            <span className="text-3xl font-bold">{fim !== inicio ? `Declarações de ${inicio} a ${fim} recebidas` : `Declarações de ${inicio} recebidas`}</span>
           </div>
         </div>
         <div className="br-card p-3">
@@ -144,7 +189,7 @@ const IndexPage = () => {
             <span className="text-6xl font-extrabold">{declaracoesEmConformidade}</span>
           </div>
           <div className="card-content mt-1">
-            <span className="text-3xl font-bold">Declarações de {ano} analisadas</span>
+            <span className="text-3xl font-bold">{fim !== inicio ? `Declarações de ${inicio} a ${fim} analisadas` : `Declarações de ${inicio} analisadas`}</span>
           </div>
         </div>
         <div className="br-card p-3">
@@ -152,7 +197,7 @@ const IndexPage = () => {
             <span className="text-6xl font-extrabold">10%</span>
           </div>
           <div className="card-content mt-1">
-            <span className="text-3xl font-bold">% da meta de {ano} concluida</span>
+            <span className="text-3xl font-bold">{fim !== inicio ? `% das metas de ${inicio} a ${fim} concluida` : `% da meta de ${inicio} concluida`}</span>
           </div>
         </div>
         <div className="br-card p-3">
@@ -160,7 +205,7 @@ const IndexPage = () => {
             <span className="text-6xl font-extrabold">{bensCountTotal}</span>
           </div>
           <div className="card-content mt-1">
-            <span className="text-3xl font-bold">Bens de {ano} declarados</span>
+            <span className="text-3xl font-bold">{fim !== inicio ? `Bens de ${inicio} a ${fim} cadastrados` : `Bens de ${inicio} cadastrados`}</span>
           </div>
         </div>
       </div>
@@ -211,7 +256,7 @@ const IndexPage = () => {
       />
       </div>
       <div>
-      <span className="text-lg font-gray-600 font-bold">Quantidade de declarações por estado em {ano}</span>
+      <span className="text-lg font-gray-600 font-bold">{fim !== inicio ? `Quantidade de declarações por estado de ${inicio} a ${fim}` : `Quantidade de declarações por estado em ${inicio}`}</span>
       <Chart
         chartType="GeoChart"
         data={[
@@ -264,7 +309,7 @@ const IndexPage = () => {
       />
       </div>
       <div>
-      <span className="text-lg font-gray-600 font-bold">Quantidade de declarações por região em {ano}</span>
+      <span className="text-lg font-gray-600 font-bold">{fim !== inicio ? `Quantidade de declarações por região de ${inicio} a ${fim}` : `Quantidade de declarações por região em ${inicio}`}</span>
       <Chart
         chartType="GeoChart"
         data={[
@@ -316,7 +361,7 @@ const IndexPage = () => {
       />
       </div>
       <div>
-      <span className="text-lg font-gray-600 font-bold">Situação das declarações por região em {ano}</span>
+      <span className="text-lg font-gray-600 font-bold">{fim !== inicio ? `Situação das declarações por região de ${inicio} a ${fim}` : `Situação das declarações por região em ${inicio}`}</span>
       <Chart
         chartType="ColumnChart"
         data={[["Região", ...status], ...declaracoesPorRegiao.map(([regiao, ...quantidades]) => {
@@ -398,7 +443,7 @@ const IndexPage = () => {
       />
       */}
       <div>
-      <span className="text-lg font-gray-600 font-bold">Situação das declarações por ano</span>
+      <span className="text-lg font-gray-600 font-bold">Situação das declarações por ano{locationText}</span>
       <Chart
         chartType="ColumnChart"
         data={[["Ano", "Total", ...status], ...declaracoesPorStatusPorAno.sort((a: number[], b: number[]) => a[0] - b[0])]}
@@ -440,7 +485,7 @@ const IndexPage = () => {
       />
       </div>
       <div>
-      <span className="text-lg font-gray-600 font-bold">Quantidade de declarações por analista</span>
+      <span className="text-lg font-gray-600 font-bold">Quantidade de declarações por analista{locationText}</span>
       <Chart
         chartType="ColumnChart"
         data={analistasData}
@@ -478,7 +523,7 @@ const IndexPage = () => {
       />
       </div>
       <div>
-      <span className="text-lg font-gray-600 font-bold">Quantidade de bens por tipo em {ano}</span>
+      <span className="text-lg font-gray-600 font-bold">{fim !== inicio ? `Quantidade de bens por tipo de ${inicio} a ${fim}${locationText}` : `Quantidade de bens por tipo em ${inicio}${locationText}`}</span>
       <Chart
         chartType="ColumnChart"
         data={[
