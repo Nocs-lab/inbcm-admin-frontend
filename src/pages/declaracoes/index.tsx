@@ -109,7 +109,7 @@ const columns = [
   }),
   columnHelper.display({
     id: "enviarParaAnalise",
-    header: "Ações",
+    header: () => <div className="text-center w-full">Ações</div>,
     cell: ({ row }) => {
       const [modalAberta, setModalAberta] = useState(false);
 
@@ -177,7 +177,7 @@ const columns = [
   }),
   columnHelper.display({
     id: "excluirDeclaracao",
-    header: "Ações",
+    header: () => <div className="text-center w-full">Ações</div>,
     cell: ({ row }) => {
       const [modalAberta, setModalAberta] = useState(false);
 
@@ -245,7 +245,7 @@ const columns = [
   }),
   columnHelper.display({
     id: "definirStatus",
-    header: "Ações",
+    header: () => <div className="text-center w-full">Ações</div>,
     cell: ({ row }) => {
       const [modalAberta, setModalAberta] = useState(false);
 
@@ -435,10 +435,22 @@ const DeclaracoesPage = () => {
   const [visibility, setVisibility] = useState<VisibilityState>({
     status: false,
     definirStatus: false,
-    _id: true
+    _id: true,
+    excluirDeclaracao: false,
   });
 
-  console.log(result)
+  useEffect(() => {
+    if (columnFilters.some((f) => f.id === "status" && f.value === "Recebida")) {
+      setVisibility({
+        status: false,
+        enviarParaAnalise: true,
+        excluirDeclaracao: false,
+        definirStatus: false,
+      });
+    }
+  }, [columnFilters]);
+
+
 
   const table = useReactTable({
     data,
