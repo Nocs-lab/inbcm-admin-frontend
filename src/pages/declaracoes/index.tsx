@@ -50,6 +50,7 @@ const columnHelper = createColumnHelper<{
       regiao: string;
     };
   };
+  analistasResponsaveisNome: string[];
 }>();
 
 const columns = [
@@ -108,6 +109,13 @@ const columns = [
     },
     header: "Situação",
     enableColumnFilter: false,
+  }),
+  columnHelper.accessor("analistasResponsaveisNome", {
+    cell: (info) => info.getValue(),
+    header: "Analistas",
+    meta: {
+      filterVariant: "select",
+    },
   }),
   columnHelper.display({
     id: "enviarParaAnalise",
