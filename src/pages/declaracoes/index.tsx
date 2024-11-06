@@ -1,4 +1,4 @@
-import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import {
   Column,
   ColumnFiltersState,
@@ -16,14 +16,16 @@ import {
   useReactTable
 } from "@tanstack/react-table";
 import clsx from "clsx";
-import { format } from "date-fns";
+import { format, set } from "date-fns";
 import React, { useEffect, useMemo, useState } from "react";
-import { Button, Modal } from "react-dsgov";
+import { Button, Modal, Row, Col } from "react-dsgov";
 import DefaultLayout from "../../layouts/default";
 import request from "../../utils/request";
 import { stateRegions } from ".././../utils/regioes";
 import { Link } from "react-router-dom";
-import { Tooltip } from 'react-tooltip'
+import { Tooltip } from 'react-tooltip';
+import { Select } from "react-dsgov";
+import toast from "react-hot-toast";
 
 
 declare module "@tanstack/react-table" {
@@ -112,8 +114,28 @@ const columns = [
     header: () => <div className="text-center w-full">Ações</div>,
     cell: ({ row }) => {
       const [modalAberta, setModalAberta] = useState(false);
+      const [analista, setAnalista] = useState("");
 
-      const { mutate, isPending } = useMutation({
+      const { data: analistas, isLoading: isLoadingAnalistas } = useQuery({
+        queryKey: ["analistas"],
+        queryFn: async () => {
+          const response = await request("/api/admin/declaracoes/analistas", {
+            method: "GET",
+          });
+          return response.json();
+        },
+      });
+
+      useEffect(() => {
+        if (analistas && analistas.length > 0) {
+          setAnalista(analistas[0]._id); // Define o primeiro analista como padrão
+        }
+      }, [analistas]);
+
+      const handleAnalistaChange = (value) => setAnalista(value);
+
+      // Mutation para atualizar o status
+      const { mutate: mutateAtualizarStatus, isPending: isUpdatingStatus } = useMutation({
         mutationFn: () => {
           return request(`/api/admin/declaracoes/atualizarStatus/${row.original._id}`, {
             method: "PUT",
@@ -125,7 +147,27 @@ const columns = [
         onSuccess: () => {
           window.location.reload();
         },
-      })
+      });
+
+      // Mutation para enviar a declaração para análise com o analista selecionado
+      const { mutate: mutateEnviarParaAnalise, isPending: isSendingAnalysis } = useMutation({
+        mutationFn: async () => {
+          await request(`/api/admin/declaracoes/${row.original._id}/analises`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              analistas: [analista], // Passa o ID do analista diretamente no JSON
+            }),
+          });
+        },
+        onSuccess: () => {
+          toast.success("Declaração enviada para análise com sucesso!");
+          mutateAtualizarStatus(); // Atualiza o status após enviar para análise
+        },
+      });
+
 
       return (
         <>
@@ -135,12 +177,38 @@ const columns = [
             title="Confirmar"
             modalOpened={modalAberta}
             onCloseButtonClick={() => setModalAberta(false)}
+            className="max-w-lg overflow-visible"
           >
-            <Modal.Body>
-              Tem certeza que deseja enviar esta declaração para análise?
+            <Modal.Body className="max-h-[600px] overflow-y-auto p-4">
+              <Row>
+                <Col my={2}>
+                  <Select
+                    id="select-simples"
+                    label="Analista"
+                    className="!w-full mt-4"
+                    style={{ zIndex: 1050 }}
+                    options={
+                      analistas?.map((analista) => ({
+                        label: analista.nome,
+                        value: analista._id,
+                      })) ?? []
+                    }
+                    value={analista}
+                    onChange={handleAnalistaChange}
+                    disabled={isLoadingAnalistas}
+                  />
+                </Col>
+              </Row>
             </Modal.Body>
             <Modal.Footer justify-content="end">
-              <Button primary small m={2} loading={isPending} onClick={mutate}>
+              <p>Tem certeza que deseja enviar esta declaração para análise?</p>
+              <Button
+                primary
+                small
+                m={2}
+                loading={isSendingAnalysis || isUpdatingStatus}
+                onClick={mutateEnviarParaAnalise}
+              >
                 Confirmar
               </Button>
               <Button
@@ -148,33 +216,35 @@ const columns = [
                 small
                 m={2}
                 onClick={() => setModalAberta(false)}
-                disabled={isPending}
+                disabled={isSendingAnalysis || isUpdatingStatus}
               >
                 Cancelar
               </Button>
             </Modal.Footer>
           </Modal>
-          <div className="flex space-x-2">
-          <Button small onClick={() => setModalAberta(true)} className="!font-thin analise">
-            <i className="fa-solid fa-magnifying-glass-arrow-right p-2"></i>
-          </Button>
-          <Tooltip anchorSelect=".analise" place="top">
-            Enviar para análise
-          </Tooltip>
 
-          <Link to={`/declaracoes/${row.original._id}`} className="!font-thin visualizar">
-          <Button>
-          <i className="fa-solid fa-timeline p-2"></i>
-          </Button>
-          <Tooltip anchorSelect=".visualizar" place="top">
-            Visualizar histórico
-          </Tooltip>
-          </Link>
+          <div className="flex space-x-2">
+            <Button small onClick={() => setModalAberta(true)} className="!font-thin analise">
+              <i className="fa-solid fa-magnifying-glass-arrow-right p-2"></i>
+            </Button>
+            <Tooltip anchorSelect=".analise" place="top">
+              Enviar para análise
+            </Tooltip>
+
+            <Link to={`/declaracoes/${row.original._id}`} className="!font-thin visualizar">
+              <Button>
+                <i className="fa-solid fa-timeline p-2"></i>
+              </Button>
+              <Tooltip anchorSelect=".visualizar" place="top">
+                Visualizar histórico
+              </Tooltip>
+            </Link>
           </div>
         </>
       );
     },
   }),
+
   columnHelper.display({
     id: "excluirDeclaracao",
     header: () => <div className="text-center w-full">Ações</div>,
@@ -192,6 +262,7 @@ const columns = [
         },
         onSuccess: () => {
           window.location.reload();
+          toast.success("Declaração excluída com sucesso!");
         },
       })
 
