@@ -22,8 +22,6 @@ import { Button, Modal, Row, Col } from "react-dsgov";
 import DefaultLayout from "../../layouts/default";
 import request from "../../utils/request";
 import { stateRegions } from ".././../utils/regioes";
-import { Link } from "react-router-dom";
-import { Tooltip } from 'react-tooltip';
 import { Select } from "react-dsgov";
 import toast from "react-hot-toast";
 
@@ -233,20 +231,12 @@ const columns = [
 
           <div className="flex space-x-2">
             <Button small onClick={() => setModalAberta(true)} className="!font-thin analise">
-              <i className="fa-solid fa-magnifying-glass-arrow-right p-2"></i>
+              <i className="fa-solid fa-magnifying-glass-arrow-right p-2"></i>Enviar para análise
             </Button>
-            <Tooltip anchorSelect=".analise" place="top">
-              Enviar para análise
-            </Tooltip>
 
-            <Link to={`/declaracoes/${row.original._id}`} className="!font-thin visualizar">
-              <Button>
-                <i className="fa-solid fa-timeline p-2"></i>
-              </Button>
-              <Tooltip anchorSelect=".visualizar" place="top">
-                Visualizar histórico
-              </Tooltip>
-            </Link>
+            <Button small onClick={() => navigate(`/declaracoes/${row.original._id}`)} className="!font-thin visualizar">
+              <i className="fa-solid fa-timeline p-2"></i>Visualizar histórico
+            </Button>
           </div>
         </>
       );
@@ -303,20 +293,12 @@ const columns = [
           </Modal>
           <div className="flex space-x-2">
           <Button small onClick={() => setModalAberta(true)} className="!font-thin recuperar">
-            <i className="fa-solid fa-recycle p-2"></i>
+            <i className="fa-solid fa-recycle p-2"></i>Recuperar declaração
           </Button>
-          <Tooltip anchorSelect=".recuperar" place="top">
-            Recuperar declaração
-          </Tooltip>
 
-          <Link to={`/declaracoes/${row.original._id}`} className="!font-thin visualizar">
-          <Button>
-          <i className="fa-solid fa-timeline p-2"></i>
+          <Button small onClick={`/declaracoes/${row.original._id}`} className="!font-thin visualizar">
+          <i className="fa-solid fa-timeline p-2"></i>Visualizar histórico
           </Button>
-          <Tooltip anchorSelect=".visualizar" place="top">
-            Visualizar histórico
-          </Tooltip>
-          </Link>
           </div>
         </>
       );
@@ -384,20 +366,13 @@ const columns = [
           </Modal>
           <div className="flex space-x-2">
           <Button small onClick={() => setModalAberta(true)} className="!font-thin concluir">
-            <i className="fa-solid fa-circle-check p-2"></i>
+            <i className="fa-solid fa-circle-check p-2"></i>Concluir análise
           </Button>
-          <Tooltip anchorSelect=".concluir" place="top">
-            Concluir análise
-          </Tooltip>
 
-          <Link to={`/declaracoes/${row.original._id}`} className="!font-thin visualizar">
-          <Button>
-          <i className="fa-solid fa-timeline p-2"></i>
+          <Button small onClick={`/declaracoes/${row.original._id}`} className="!font-thin visualizar">
+          <i className="fa-solid fa-timeline p-2"></i>Visualizar histórico
           </Button>
-          <Tooltip anchorSelect=".visualizar" place="top">
-            Visualizar histórico
-          </Tooltip>
-          </Link>
+
           </div>
         </>
       );
