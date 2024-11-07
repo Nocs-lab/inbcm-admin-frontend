@@ -180,54 +180,82 @@ const columns = [
           <Modal
             useScrim
             showCloseButton
-            title="Confirmar"
+            title="Enviar para análise"
             modalOpened={modalAberta}
             onCloseButtonClick={() => setModalAberta(false)}
-            className="max-w-lg overflow-visible"
+            className="max-w-2xl overflow-visible"
           >
-            <Modal.Body className="max-h-[600px] overflow-y-auto p-4">
-              <Row>
-                <Col my={2}>
-                  <Select
-                    id="select-simples"
-                    label="Analista"
-                    className="!w-full mt-4"
-                    style={{ zIndex: 1050 }}
-                    options={
-                      analistas?.map((analista) => ({
-                        label: analista.nome,
-                        value: analista._id,
-                      })) ?? []
-                    }
-                    value={analista}
-                    onChange={handleAnalistaChange}
-                    disabled={isLoadingAnalistas}
-                  />
-                </Col>
-              </Row>
-            </Modal.Body>
-            <Modal.Footer justify-content="end">
-              <p>Tem certeza que deseja enviar esta declaração para análise?</p>
-              <Button
-                primary
-                small
-                m={2}
-                loading={isSendingAnalysis || isUpdatingStatus}
-                onClick={mutateEnviarParaAnalise}
-              >
-                Confirmar
-              </Button>
-              <Button
-                secondary
-                small
-                m={2}
-                onClick={() => setModalAberta(false)}
-                disabled={isSendingAnalysis || isUpdatingStatus}
-              >
-                Cancelar
-              </Button>
-            </Modal.Footer>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                mutateEnviarParaAnalise(); // Chama a função de envio ao submeter o formulário
+              }}
+            >
+              <Modal.Body className="p-6" style={{ maxHeight: "none" }}>
+                <Row>
+                  <Col my={2}>
+                    <Select
+                      id="select-simples"
+                      label="Analista"
+                      className="!w-full mt-4"
+                      style={{
+                        zIndex: 1050,
+                        position: "relative",
+                        maxHeight: "150px", // Define uma altura para o menu de opções
+                      }}
+                      options={
+                        analistas?.map((analista) => ({
+                          label: analista.nome,
+                          value: analista._id,
+                        })) ?? []
+                      }
+                      value={analista}
+                      onChange={handleAnalistaChange}
+                      disabled={isLoadingAnalistas}
+                      menuPortalTarget={document.body}
+                      menuPosition="fixed"
+                      styles={{
+                        menu: (provided) => ({
+                          ...provided,
+                          maxHeight: "150px",
+                        }),
+                      }}
+                    />
+                  </Col>
+                </Row>
+
+                {/* Outros campos do formulário */}
+                <Row>
+                  <Col my={4}>
+                    <label htmlFor="observacoes">Escolha o analista para avaliar esta declaração.</label>
+                  </Col>
+                </Row>
+              </Modal.Body>
+
+              <Modal.Footer justify-content="end" className="pt-4">
+                <p className="mb-4">Tem certeza que deseja enviar esta declaração para análise?</p>
+                <Button
+                  primary
+                  small
+                  m={2}
+                  type="submit"
+                  loading={isSendingAnalysis || isUpdatingStatus}
+                >
+                  Confirmar
+                </Button>
+                <Button
+                  secondary
+                  small
+                  m={2}
+                  onClick={() => setModalAberta(false)}
+                  disabled={isSendingAnalysis || isUpdatingStatus}
+                >
+                  Cancelar
+                </Button>
+              </Modal.Footer>
+            </form>
           </Modal>
+
 
           <div className="flex space-x-2">
             <Button small onClick={() => setModalAberta(true)} className="!font-thin analise">
