@@ -24,6 +24,7 @@ import request from "../../utils/request";
 import { stateRegions } from ".././../utils/regioes";
 import { Select } from "react-dsgov";
 import toast from "react-hot-toast";
+import { Link } from "react-router-dom";
 
 
 declare module "@tanstack/react-table" {
@@ -174,6 +175,10 @@ const columns = [
         },
       });
 
+      const handleVisualizarHistorico = () => {
+        window.location.href = `/declaracoes/${row.original._id}`;
+      }
+
 
       return (
         <>
@@ -262,9 +267,10 @@ const columns = [
               <i className="fa-solid fa-magnifying-glass-arrow-right p-2"></i>Enviar para análise
             </Button>
 
-            <Button small onClick={() => navigate(`/declaracoes/${row.original._id}`)} className="!font-thin visualizar">
+            <Button small onClick={() => handleVisualizarHistorico(true)} className="!font-thin analise">
               <i className="fa-solid fa-timeline p-2"></i>Visualizar histórico
             </Button>
+
           </div>
         </>
       );
@@ -291,6 +297,10 @@ const columns = [
           toast.success("Declaração excluída com sucesso!");
         },
       })
+
+      const handleVisualizarHistorico = () => {
+        window.location.href = `/declaracoes/${row.original._id}`;
+      }
 
       return (
         <>
@@ -324,8 +334,8 @@ const columns = [
             <i className="fa-solid fa-recycle p-2"></i>Recuperar declaração
           </Button>
 
-          <Button small onClick={`/declaracoes/${row.original._id}`} className="!font-thin visualizar">
-          <i className="fa-solid fa-timeline p-2"></i>Visualizar histórico
+          <Button small onClick={() => handleVisualizarHistorico(true)} className="!font-thin analise">
+              <i className="fa-solid fa-timeline p-2"></i>Visualizar histórico
           </Button>
           </div>
         </>
@@ -351,6 +361,10 @@ const columns = [
           window.location.reload();
         },
       });
+
+      const handleVisualizarHistorico = () => {
+        window.location.href = `/declaracoes/${row.original._id}`;
+      }
 
       return (
         <>
@@ -397,8 +411,8 @@ const columns = [
             <i className="fa-solid fa-circle-check p-2"></i>Concluir análise
           </Button>
 
-          <Button small onClick={`/declaracoes/${row.original._id}`} className="!font-thin visualizar">
-          <i className="fa-solid fa-timeline p-2"></i>Visualizar histórico
+          <Button small onClick={() => handleVisualizarHistorico(true)} className="!font-thin analise">
+            <i className="fa-solid fa-timeline p-2"></i>Visualizar histórico
           </Button>
 
           </div>
