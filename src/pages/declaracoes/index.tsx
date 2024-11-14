@@ -155,8 +155,6 @@ const columns = [
           window.location.reload();
         },
       });
-
-      // Mutation para enviar a declaração para análise com o analista selecionado
       const { mutate: mutateEnviarParaAnalise, isPending: isSendingAnalysis } = useMutation({
         mutationFn: async () => {
           await request(`/api/admin/declaracoes/${row.original._id}/analises`, {
@@ -165,13 +163,13 @@ const columns = [
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              analistas: [analista], // Passa o ID do analista diretamente no JSON
+              analistas: [analista],
             }),
           });
         },
         onSuccess: () => {
           toast.success("Declaração enviada para análise com sucesso!");
-          mutateAtualizarStatus(); // Atualiza o status após enviar para análise
+          mutateAtualizarStatus();
         },
       });
 
@@ -193,7 +191,7 @@ const columns = [
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                mutateEnviarParaAnalise(); // Chama a função de envio ao submeter o formulário
+                mutateEnviarParaAnalise();
               }}
             >
               <Modal.Body className="p-6" style={{ maxHeight: "none" }}>
@@ -206,7 +204,7 @@ const columns = [
                       style={{
                         zIndex: 1050,
                         position: "relative",
-                        maxHeight: "150px", // Define uma altura para o menu de opções
+                        maxHeight: "150px",
                       }}
                       options={
                         analistas?.map((analista) => ({
@@ -229,7 +227,6 @@ const columns = [
                   </Col>
                 </Row>
 
-                {/* Outros campos do formulário */}
                 <Row>
                   <Col my={4}>
                     <label htmlFor="observacoes">Escolha o analista para avaliar esta declaração.</label>
@@ -252,6 +249,7 @@ const columns = [
                   secondary
                   small
                   m={2}
+                  type="button"
                   onClick={() => setModalAberta(false)}
                   disabled={isSendingAnalysis || isUpdatingStatus}
                 >

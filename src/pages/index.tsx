@@ -172,7 +172,7 @@ const IndexPage = () => {
         <Select label="Fim" value={fim} options={[{ label: "2021", value: "2021" }, { label: "2022", value: "2022" }, { label: "2023", value: "2023" }, { label: "2024", value: "2024" }].filter((ano) => Number(ano.value) >= Number(inicio))} onChange={(ano: string) => setFim(ano)} />
         <Select label="Região" value={regiao ?? undefined} options={Object.keys(regionsMap).map((regiao) => ({ label: regiao, value: regiao }))} onChange={(regiao: string) => setRegiao(regiao)} placeholder="Selecione uma região" />
         <Select label="Estado" disabled={!regiao} value={estado ?? undefined} options={states.map((uf) => ({ label: statesNameMap[uf as keyof typeof statesNameMap], value: uf })).filter((uf) => regiao ? regionsMap[regiao as keyof typeof regionsMap].includes(uf.value) : true)} onChange={(uf: string) => setEstado(uf)} placeholder="Selecione um estado" />
-        <Select label="Municipio" disabled value={museu ?? undefined} options={museus?.map((museu: { nome: string, _id: string }) => ({ label: museu.nome, value: museu._id })) ?? []} onChange={(museu: string) => setMuseu(museu)} placeholder="Selecione uma cidade" />
+        <Select label="Município" disabled value={museu ?? undefined} options={museus?.map((museu: { nome: string, _id: string }) => ({ label: museu.nome, value: museu._id })) ?? []} onChange={(museu: string) => setMuseu(museu)} placeholder="Selecione uma cidade" />
         <Select label="Museu" disabled value={museu ?? undefined} options={museus?.map((museu: { nome: string, _id: string }) => ({ label: museu.nome, value: museu._id })) ?? []} onChange={(museu: string) => setMuseu(museu)} placeholder="Selecione um museu" />
       </fieldset>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 mb-50 gap-10 auto-rows-fr">
@@ -197,7 +197,7 @@ const IndexPage = () => {
             <span className="text-6xl font-extrabold">10%</span>
           </div>
           <div className="card-content mt-1">
-            <span className="text-3xl font-bold">{fim !== inicio ? `% das metas de ${inicio} a ${fim} concluida` : `% da meta de ${inicio} concluida`}</span>
+            <span className="text-3xl font-bold">{fim !== inicio ? `das metas de ${inicio} a ${fim} concluida` : `da meta de ${inicio} concluida`}</span>
           </div>
         </div>
         <div className="br-card p-3">
