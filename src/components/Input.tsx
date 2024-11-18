@@ -1,31 +1,31 @@
-import clsx from "clsx";
-import type { FieldError } from "react-hook-form";
+import clsx from "clsx"
+import type { FieldError } from "react-hook-form"
 import {
   forwardRef,
   useImperativeHandle,
   useRef,
   useState,
-  ComponentProps,
-} from "react";
+  ComponentProps
+} from "react"
 
 type Props = ComponentProps<"input"> & {
-  label: string;
-  error?: FieldError;
-  file?: File | null;
-  setFile?: (file: File | null) => void;
-};
+  label: string
+  error?: FieldError
+  file?: File | null
+  setFile?: (file: File | null) => void
+}
 
 // TODO: Criar um componente exclusivo para upload de arquivos
 const Input = forwardRef<HTMLInputElement, Props>(
   ({ label, name, type, error, file, setFile, ...rest }, outerRef) => {
-    const innerRef = useRef<HTMLInputElement>(null);
-    useImperativeHandle(outerRef, () => innerRef.current!, []);
+    const innerRef = useRef<HTMLInputElement>(null)
+    useImperativeHandle(outerRef, () => innerRef.current!, [])
 
-    const [seePassword, setSeePassword] = useState(false);
+    const [seePassword, setSeePassword] = useState(false)
 
-    const isPassword = type === "password";
-    const isFile = type === "file";
-    const inputType = isPassword && seePassword ? "text" : type;
+    const isPassword = type === "password"
+    const isFile = type === "file"
+    const inputType = isPassword && seePassword ? "text" : type
 
     return (
       <div
@@ -33,7 +33,7 @@ const Input = forwardRef<HTMLInputElement, Props>(
           "w-full",
           isFile ? "br-upload" : "br-input",
           error && !isFile && "danger",
-          isPassword && "input-button",
+          isPassword && "input-button"
         )}
         data-danger={isFile && error ? "data-danger" : undefined}
       >
@@ -89,7 +89,7 @@ const Input = forwardRef<HTMLInputElement, Props>(
                       position: "absolute",
                       inset: "auto auto 0px 0px",
                       margin: "0px",
-                      transform: "translate(130px, -46px)",
+                      transform: "translate(130px, -46px)"
                     }}
                   >
                     <span className="text" role="tooltip">
@@ -101,7 +101,7 @@ const Input = forwardRef<HTMLInputElement, Props>(
                       style={{
                         position: "absolute",
                         left: "0px",
-                        transform: "translate(68px, 0px)",
+                        transform: "translate(68px, 0px)"
                       }}
                     ></div>
                   </div>
@@ -114,7 +114,7 @@ const Input = forwardRef<HTMLInputElement, Props>(
                       type="button"
                       aria-label={`Remover ${file.name}`}
                       onClick={() => {
-                        setFile?.(null);
+                        setFile?.(null)
                       }}
                     >
                       <i className="fa fa-trash"></i>
@@ -132,8 +132,8 @@ const Input = forwardRef<HTMLInputElement, Props>(
           </span>
         )}
       </div>
-    );
-  },
-);
+    )
+  }
+)
 
-export default Input;
+export default Input

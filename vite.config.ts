@@ -1,6 +1,5 @@
 import { defineConfig } from "vite"
-// import million from "million/compiler"
-// import MillionLint from "@million/lint"
+import MillionLint from "@million/lint"
 import react from "@vitejs/plugin-react-swc"
 import UnoCSS from "unocss/vite"
 import Pages from "vite-plugin-pages"
@@ -8,11 +7,10 @@ import basicSsl from "@vitejs/plugin-basic-ssl"
 
 export default defineConfig({
   plugins: [
-    // MillionLint.vite(),
-    // million.vite({ auto: true }),
+    MillionLint.vite(),
     react(),
     UnoCSS(),
-    Pages({ extensions: ["tsx"] }),
+    Pages({ extensions: ["tsx"], importMode: "async" }),
     basicSsl()
   ],
   build: {

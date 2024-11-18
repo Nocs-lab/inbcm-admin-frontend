@@ -10,4 +10,6 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 RUN pnpm build
 
 FROM devforth/spa-to-http
+ENV BROTLI=true
+ENV THRESHOLD=512
 COPY --from=build /usr/src/app/dist .
