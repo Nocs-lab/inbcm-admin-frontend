@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import DefaultLayout from "../../layouts/default";
 import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
 import Input from '../../components/Input';
-import { Select } from 'react-dsgov';
+//import { Select } from 'react-dsgov';
 import { z } from "zod"
 import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -14,32 +14,32 @@ import request from '../../utils/request';
 const schema = z.object({
   email: z.string().min(1, "Este campo é obrigatório"),
   nome: z.string().min(1, "Este campo é obrigatório"),
-  profile: z.string().min(1, "Este campo é obrigatório"),
+  //profile: z.string().min(1, "Este campo é obrigatório"),
   password: z.string().min(1, "Este campo é obrigatório")
 })
 type FormData = z.infer<typeof schema>
 
-interface Profile {
-  _id: string;
-  name: string;
-  description: string;
-}
+// interface Profile {
+//   _id: string;
+//   name: string;
+//   description: string;
+// }
 
 const CreateUser: React.FC = () => {
-  const { data: profiles } = useSuspenseQuery<Profile[]>({
-    queryKey: ['profiles'],
-    queryFn: async () => {
-      const response = await fetch('/api/admin/profile');
-      if (!response.ok) {
-        throw new Error('Failed to fetch profiles');
-      }
-      return response.json();
-    },
-  });
+  // const { data: profiles } = useSuspenseQuery<Profile[]>({
+  //   queryKey: ['profiles'],
+  //   queryFn: async () => {
+  //     const response = await fetch('/api/admin/profile');
+  //     if (!response.ok) {
+  //       throw new Error('Failed to fetch profiles');
+  //     }
+  //     return response.json();
+  //   },
+  // });
   const {
     register,
     handleSubmit,
-    control,
+    //control,
     formState: { errors, isSubmitting }
   } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -70,16 +70,16 @@ const CreateUser: React.FC = () => {
     }
   })
 
-  const onSubmit = ({ email, nome, profile, password }: FormData) => {
+  const onSubmit = ({ email, nome, password }: FormData) => { //add profile
 
-    mutate({ email, nome, profile, password })
+    mutate({ email, nome, password }) //add profile
   }
 
     // Transformar perfis em opções para o componente Select
-    const profileOptions = profiles.map(profile => ({
-      label: profile.name,
-      value: profile._id
-    }));
+    // const profileOptions = profiles.map(profile => ({
+    //   label: profile.name,
+    //   value: profile._id
+    // }));
 
 
   return (
@@ -109,7 +109,7 @@ const CreateUser: React.FC = () => {
                   {...register("password")}
                 />
 
-                <Controller
+                {/* <Controller
                   name="profile"
                   control={control}
                   render={({ field }) => (
@@ -121,7 +121,7 @@ const CreateUser: React.FC = () => {
                       {...field}
                     />
                   )}
-                />
+                /> */}
 
 
               <div className="flex justify-end space-x-4 mt-6">
