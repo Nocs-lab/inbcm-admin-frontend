@@ -107,9 +107,9 @@ function Filter({ column }: { column: Column<unknown, unknown> }) {
 }
 
 const Table: React.FC<{
-  title?: string,
-  actions?: JSX.Element,
-  data: unknown[],
+  title?: string
+  actions?: JSX.Element
+  data: unknown[]
   columns: ColumnDef<unknown>[]
 }> = ({ title, data, columns, actions }) => {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
@@ -152,9 +152,7 @@ const Table: React.FC<{
           <div className="top-bar">
             <div className="table-title">{title}</div>
             {actions && (
-              <div className="actions-trigger text-nowrap">
-                {actions}
-              </div>
+              <div className="actions-trigger text-nowrap">{actions}</div>
             )}
           </div>
         </div>
@@ -221,9 +219,7 @@ const Table: React.FC<{
           <div className="pagination-per-page">
             <div className="br-select">
               <div className="br-input">
-                <label htmlFor="per-page-selection-random-90012">
-                  Exibir
-                </label>
+                <label htmlFor="per-page-selection-random-90012">Exibir</label>
                 <input
                   id="per-page-selection-random-90012"
                   type="text"

@@ -1,5 +1,5 @@
-import { create } from 'zustand'
-import { persist, createJSONStorage } from 'zustand/middleware'
+import { create } from "zustand"
+import { persist, createJSONStorage } from "zustand/middleware"
 
 interface User {
   email: string
@@ -12,16 +12,17 @@ interface State {
 }
 
 export const useStore = create(
+  // @ts-expect-error bug
   persist<State>(
     (set) => ({
       user: null,
-      setUser: (user) => set({ user }),
+      setUser: (user) => set({ user })
     }),
     {
-      name: 'storage',
-      storage: createJSONStorage(() => localStorage),
-    },
-  ),
+      name: "storage",
+      storage: createJSONStorage(() => localStorage)
+    }
+  )
 )
 
 export default useStore

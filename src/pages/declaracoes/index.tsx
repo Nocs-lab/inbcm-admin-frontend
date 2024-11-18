@@ -1,7 +1,8 @@
-import { useMutation, useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useSuspenseQuery } from "@tanstack/react-query"
 import {
   Column,
   ColumnFiltersState,
+  Row as TableRow,
   RowData,
   VisibilityState,
   createColumnHelper,
@@ -14,411 +15,504 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable
-} from "@tanstack/react-table";
-import clsx from "clsx";
-import { format, set } from "date-fns";
-import React, { useEffect, useMemo, useState } from "react";
-import { Button, Modal, Row, Col } from "react-dsgov";
-import DefaultLayout from "../../layouts/default";
-import request from "../../utils/request";
-import { stateRegions } from ".././../utils/regioes";
-import { Select } from "react-dsgov";
-import toast from "react-hot-toast";
-import { Link } from "react-router-dom";
-
+} from "@tanstack/react-table"
+import clsx from "clsx"
+import { format } from "date-fns"
+import React, { useEffect, useMemo, useState } from "react"
+import { Button, Modal, Row, Col } from "react-dsgov"
+import DefaultLayout from "../../layouts/default"
+import request from "../../utils/request"
+import { stateRegions } from ".././../utils/regioes"
+import { Select } from "react-dsgov"
+import toast from "react-hot-toast"
 
 declare module "@tanstack/react-table" {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface ColumnMeta<TData extends RowData, TValue> {
-    filterVariant?: "text" | "select";
+    filterVariant?: "text" | "select"
   }
 }
 
+const AcoesEnviarParaAnalise: React.FC<{
+  row: TableRow<{
+    _id: string
+    anoDeclaracao: string
+    retificacao: boolean
+    status: string
+    dataCriacao: Date
+    regiao: string
+    museu_id: {
+      _id: string
+      nome: string
+      endereco: {
+        municipio: string
+        uf: string
+        regiao: string
+      }
+    }
+    analistasResponsaveisNome: string[]
+  }>
+}> = ({ row }) => {
+  const [modalAberta, setModalAberta] = useState(false)
+  const [analista, setAnalista] = useState("")
+
+  const { data: analistas, isLoading: isLoadingAnalistas } = useQuery({
+    queryKey: ["analistas"],
+    queryFn: async () => {
+      const response = await request("/api/admin/declaracoes/analistas", {
+        method: "GET"
+      })
+      return response.json()
+    }
+  })
+
+  useEffect(() => {
+    if (analistas && analistas.length > 0) {
+      setAnalista(analistas[0]._id) // Define o primeiro analista como padrão
+    }
+  }, [analistas])
+
+  const handleAnalistaChange = (value: React.SetStateAction<string>) =>
+    setAnalista(value)
+
+  // Mutation para atualizar o status
+  const { mutate: mutateAtualizarStatus, isPending: isUpdatingStatus } =
+    useMutation({
+      mutationFn: () => {
+        return request(
+          `/api/admin/declaracoes/atualizarStatus/${row.original._id}`,
+          {
+            method: "PUT",
+            data: {
+              status: "Em análise"
+            }
+          }
+        )
+      },
+      onSuccess: () => {
+        window.location.reload()
+      }
+    })
+  const { mutate: mutateEnviarParaAnalise, isPending: isSendingAnalysis } =
+    useMutation({
+      mutationFn: async () => {
+        await request(`/api/admin/declaracoes/${row.original._id}/analises`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            analistas: [analista]
+          })
+        })
+      },
+      onSuccess: () => {
+        toast.success("Declaração enviada para análise com sucesso!")
+        mutateAtualizarStatus()
+      }
+    })
+
+  const handleVisualizarHistorico = () => {
+    window.location.href = `/declaracoes/${row.original._id}`
+  }
+
+  return (
+    <>
+      <Modal
+        useScrim
+        showCloseButton
+        title="Enviar para análise"
+        modalOpened={modalAberta}
+        onCloseButtonClick={() => setModalAberta(false)}
+        className="max-w-2xl overflow-visible"
+      >
+        <form
+          onSubmit={(e) => {
+            e.preventDefault()
+            mutateEnviarParaAnalise()
+          }}
+        >
+          <Modal.Body className="p-6" style={{ maxHeight: "none" }}>
+            <Row>
+              <Col my={2}>
+                <Select
+                  id="select-simples"
+                  label="Analista"
+                  className="!w-full mt-4"
+                  style={{
+                    zIndex: 1050,
+                    position: "relative",
+                    maxHeight: "150px"
+                  }}
+                  options={
+                    analistas?.map(
+                      (analista: { nome: string; _id: string }) => ({
+                        label: analista.nome,
+                        value: analista._id
+                      })
+                    ) ?? []
+                  }
+                  value={analista}
+                  onChange={handleAnalistaChange}
+                  disabled={isLoadingAnalistas}
+                />
+              </Col>
+            </Row>
+
+            <Row>
+              <Col my={4}>
+                <label htmlFor="observacoes">
+                  Escolha o analista para avaliar esta declaração.
+                </label>
+              </Col>
+            </Row>
+          </Modal.Body>
+
+          <Modal.Footer justify-content="end" className="pt-4">
+            <p className="mb-4">
+              Tem certeza que deseja enviar esta declaração para análise?
+            </p>
+            <Button
+              primary
+              small
+              m={2}
+              type="submit"
+              loading={isSendingAnalysis || isUpdatingStatus}
+            >
+              Confirmar
+            </Button>
+            <Button
+              secondary
+              small
+              m={2}
+              type="button"
+              onClick={() => setModalAberta(false)}
+              disabled={isSendingAnalysis || isUpdatingStatus}
+            >
+              Cancelar
+            </Button>
+          </Modal.Footer>
+        </form>
+      </Modal>
+
+      <div className="flex space-x-2">
+        <Button
+          small
+          onClick={() => setModalAberta(true)}
+          className="!font-thin analise"
+        >
+          <i className="fa-solid fa-magnifying-glass-arrow-right p-2"></i>
+          Enviar para análise
+        </Button>
+
+        <Button
+          small
+          onClick={() => handleVisualizarHistorico()}
+          className="!font-thin analise"
+        >
+          <i className="fa-solid fa-timeline p-2"></i>Visualizar histórico
+        </Button>
+      </div>
+    </>
+  )
+}
+
+const AcoesExcluirDeclaracao: React.FC<{
+  row: TableRow<{
+    _id: string
+    anoDeclaracao: string
+    retificacao: boolean
+    status: string
+    dataCriacao: Date
+    regiao: string
+    museu_id: {
+      _id: string
+      nome: string
+      endereco: {
+        municipio: string
+        uf: string
+        regiao: string
+      }
+    }
+    analistasResponsaveisNome: string[]
+  }>
+}> = ({ row }) => {
+  const [modalAberta, setModalAberta] = useState(false)
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: () => {
+      return request(
+        `/api/admin/declaracoes/atualizarStatus/${row.original._id}`,
+        {
+          method: "PUT",
+          data: {
+            status: "Recebida"
+          }
+        }
+      )
+    },
+    onSuccess: () => {
+      window.location.reload()
+      toast.success("Declaração excluída com sucesso!")
+    }
+  })
+
+  const handleVisualizarHistorico = () => {
+    window.location.href = `/declaracoes/${row.original._id}`
+  }
+
+  return (
+    <>
+      <Modal
+        useScrim
+        showCloseButton
+        title="Confirmar"
+        modalOpened={modalAberta}
+        onCloseButtonClick={() => setModalAberta(false)}
+      >
+        <Modal.Body>
+          Tem certeza que deseja alterar esta declaração para recebida?
+        </Modal.Body>
+        <Modal.Footer justify-content="end">
+          <Button
+            primary
+            small
+            m={2}
+            loading={isPending}
+            onClick={() => mutate()}
+          >
+            Confirmar
+          </Button>
+          <Button
+            secondary
+            small
+            m={2}
+            onClick={() => setModalAberta(false)}
+            disabled={isPending}
+          >
+            Cancelar
+          </Button>
+        </Modal.Footer>
+      </Modal>
+      <div className="flex space-x-2">
+        <Button
+          small
+          onClick={() => setModalAberta(true)}
+          className="!font-thin recuperar"
+        >
+          <i className="fa-solid fa-recycle p-2"></i>Recuperar declaração
+        </Button>
+
+        <Button
+          small
+          onClick={() => handleVisualizarHistorico()}
+          className="!font-thin analise"
+        >
+          <i className="fa-solid fa-timeline p-2"></i>Visualizar histórico
+        </Button>
+      </div>
+    </>
+  )
+}
+
+const AcoesDefinirStatus: React.FC<{
+  row: TableRow<{
+    _id: string
+    anoDeclaracao: string
+    retificacao: boolean
+    status: string
+    dataCriacao: Date
+    regiao: string
+    museu_id: {
+      _id: string
+      nome: string
+      endereco: {
+        municipio: string
+        uf: string
+        regiao: string
+      }
+    }
+    analistasResponsaveisNome: string[]
+  }>
+}> = ({ row }) => {
+  const [modalAberta, setModalAberta] = useState(false)
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: (status: "Em conformidade" | "Não conformidade") => {
+      return request(
+        `/api/admin/declaracoes/atualizarStatus/${row.original._id}`,
+        {
+          method: "PUT",
+          data: {
+            status
+          }
+        }
+      )
+    },
+    onSuccess: () => {
+      window.location.reload()
+    }
+  })
+
+  const handleVisualizarHistorico = () => {
+    window.location.href = `/declaracoes/${row.original._id}`
+  }
+
+  return (
+    <>
+      <Modal
+        useScrim
+        showCloseButton
+        title="Alterar status"
+        modalOpened={modalAberta}
+        onCloseButtonClick={() => setModalAberta(false)}
+      >
+        <Modal.Body>Informe o novo status da declaração:</Modal.Body>
+        <Modal.Footer justify-content="end">
+          <Button
+            primary
+            small
+            m={2}
+            loading={isPending}
+            onClick={() => mutate("Em conformidade")}
+          >
+            Alterar para "Em conformidade"
+          </Button>
+          <Button
+            primary
+            small
+            m={2}
+            loading={isPending}
+            onClick={() => mutate("Não conformidade")}
+          >
+            Alterar para "Não conformidade"
+          </Button>
+          <Button
+            secondary
+            small
+            m={2}
+            onClick={() => setModalAberta(false)}
+            disabled={isPending}
+          >
+            Cancelar
+          </Button>
+        </Modal.Footer>
+      </Modal>
+      <div className="flex space-x-2">
+        <Button
+          small
+          onClick={() => setModalAberta(true)}
+          className="!font-thin concluir"
+        >
+          <i className="fa-solid fa-circle-check p-2"></i>Concluir análise
+        </Button>
+
+        <Button
+          small
+          onClick={() => handleVisualizarHistorico()}
+          className="!font-thin analise"
+        >
+          <i className="fa-solid fa-timeline p-2"></i>Visualizar histórico
+        </Button>
+      </div>
+    </>
+  )
+}
+
 const columnHelper = createColumnHelper<{
-  _id: string;
-  anoDeclaracao: string;
-  retificacao: boolean;
-  status: string;
-  dataCriacao: Date;
-  regiao: string;
+  _id: string
+  anoDeclaracao: string
+  retificacao: boolean
+  status: string
+  dataCriacao: Date
+  regiao: string
   museu_id: {
-    _id: string;
-    nome: string;
+    _id: string
+    nome: string
     endereco: {
-      municipio: string;
-      uf: string;
-      regiao: string;
-    };
-  };
-  analistasResponsaveisNome: string[];
-}>();
+      municipio: string
+      uf: string
+      regiao: string
+    }
+  }
+  analistasResponsaveisNome: string[]
+}>()
 
 const columns = [
   columnHelper.accessor("anoDeclaracao", {
     cell: (info) => info.getValue(),
     header: "Ano",
     meta: {
-      filterVariant: "select",
-    },
+      filterVariant: "select"
+    }
   }),
   columnHelper.accessor("retificacao", {
     cell: (info) => (info.getValue() ? "Retificada" : "Original"),
     header: "Tipo",
     meta: {
-      filterVariant: "select",
-    },
-
+      filterVariant: "select"
+    }
   }),
   columnHelper.accessor("dataCriacao", {
     cell: (info) => format(info.getValue(), "dd/MM/yyyy HH:mm"),
     header: "Recebido em",
-    enableColumnFilter: false,
+    enableColumnFilter: false
   }),
   columnHelper.accessor("museu_id.endereco.regiao", {
     cell: (info) => info.getValue(),
     header: "Região",
     enableColumnFilter: true,
     meta: {
-      filterVariant: "select",
-    },
+      filterVariant: "select"
+    }
   }),
   columnHelper.accessor("museu_id.nome", {
     cell: (info) => info.getValue(),
-    header: "Museu",
+    header: "Museu"
   }),
   columnHelper.accessor("museu_id.endereco.municipio", {
     cell: (info) => info.getValue(),
-    header: "Cidade",
+    header: "Cidade"
   }),
   columnHelper.accessor("museu_id.endereco.uf", {
     cell: (info) => info.getValue(),
     header: "UF",
     meta: {
-      filterVariant: "select",
-    },
+      filterVariant: "select"
+    }
   }),
   columnHelper.accessor("status", {
     cell: (info) => {
-      const status = info.getValue();
+      const status = info.getValue()
 
-      return (
-        <span className="whitespace-nowrap font-bold">
-          {status}
-        </span>
-      )
+      return <span className="whitespace-nowrap font-bold">{status}</span>
     },
     header: "Situação",
-    enableColumnFilter: false,
+    enableColumnFilter: false
   }),
   columnHelper.accessor("analistasResponsaveisNome", {
     cell: (info) => info.getValue(),
     header: "Analistas",
     meta: {
-      filterVariant: "select",
-    },
+      filterVariant: "select"
+    }
   }),
   columnHelper.display({
     id: "enviarParaAnalise",
     header: () => <div className="text-center w-full">Ações</div>,
-    cell: ({ row }) => {
-      const [modalAberta, setModalAberta] = useState(false);
-      const [analista, setAnalista] = useState("");
-
-      const { data: analistas, isLoading: isLoadingAnalistas } = useQuery({
-        queryKey: ["analistas"],
-        queryFn: async () => {
-          const response = await request("/api/admin/declaracoes/analistas", {
-            method: "GET",
-          });
-          return response.json();
-        },
-      });
-
-      useEffect(() => {
-        if (analistas && analistas.length > 0) {
-          setAnalista(analistas[0]._id); // Define o primeiro analista como padrão
-        }
-      }, [analistas]);
-
-      const handleAnalistaChange = (value) => setAnalista(value);
-
-      // Mutation para atualizar o status
-      const { mutate: mutateAtualizarStatus, isPending: isUpdatingStatus } = useMutation({
-        mutationFn: () => {
-          return request(`/api/admin/declaracoes/atualizarStatus/${row.original._id}`, {
-            method: "PUT",
-            data: {
-              status: "Em análise",
-            },
-          });
-        },
-        onSuccess: () => {
-          window.location.reload();
-        },
-      });
-      const { mutate: mutateEnviarParaAnalise, isPending: isSendingAnalysis } = useMutation({
-        mutationFn: async () => {
-          await request(`/api/admin/declaracoes/${row.original._id}/analises`, {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              analistas: [analista],
-            }),
-          });
-        },
-        onSuccess: () => {
-          toast.success("Declaração enviada para análise com sucesso!");
-          mutateAtualizarStatus();
-        },
-      });
-
-      const handleVisualizarHistorico = () => {
-        window.location.href = `/declaracoes/${row.original._id}`;
-      }
-
-
-      return (
-        <>
-          <Modal
-            useScrim
-            showCloseButton
-            title="Enviar para análise"
-            modalOpened={modalAberta}
-            onCloseButtonClick={() => setModalAberta(false)}
-            className="max-w-2xl overflow-visible"
-          >
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                mutateEnviarParaAnalise();
-              }}
-            >
-              <Modal.Body className="p-6" style={{ maxHeight: "none" }}>
-                <Row>
-                  <Col my={2}>
-                    <Select
-                      id="select-simples"
-                      label="Analista"
-                      className="!w-full mt-4"
-                      style={{
-                        zIndex: 1050,
-                        position: "relative",
-                        maxHeight: "150px",
-                      }}
-                      options={
-                        analistas?.map((analista) => ({
-                          label: analista.nome,
-                          value: analista._id,
-                        })) ?? []
-                      }
-                      value={analista}
-                      onChange={handleAnalistaChange}
-                      disabled={isLoadingAnalistas}
-                      menuPortalTarget={document.body}
-                      menuPosition="fixed"
-                      styles={{
-                        menu: (provided) => ({
-                          ...provided,
-                          maxHeight: "150px",
-                        }),
-                      }}
-                    />
-                  </Col>
-                </Row>
-
-                <Row>
-                  <Col my={4}>
-                    <label htmlFor="observacoes">Escolha o analista para avaliar esta declaração.</label>
-                  </Col>
-                </Row>
-              </Modal.Body>
-
-              <Modal.Footer justify-content="end" className="pt-4">
-                <p className="mb-4">Tem certeza que deseja enviar esta declaração para análise?</p>
-                <Button
-                  primary
-                  small
-                  m={2}
-                  type="submit"
-                  loading={isSendingAnalysis || isUpdatingStatus}
-                >
-                  Confirmar
-                </Button>
-                <Button
-                  secondary
-                  small
-                  m={2}
-                  type="button"
-                  onClick={() => setModalAberta(false)}
-                  disabled={isSendingAnalysis || isUpdatingStatus}
-                >
-                  Cancelar
-                </Button>
-              </Modal.Footer>
-            </form>
-          </Modal>
-
-
-          <div className="flex space-x-2">
-            <Button small onClick={() => setModalAberta(true)} className="!font-thin analise">
-              <i className="fa-solid fa-magnifying-glass-arrow-right p-2"></i>Enviar para análise
-            </Button>
-
-            <Button small onClick={() => handleVisualizarHistorico(true)} className="!font-thin analise">
-              <i className="fa-solid fa-timeline p-2"></i>Visualizar histórico
-            </Button>
-
-          </div>
-        </>
-      );
-    },
+    cell: ({ row }) => <AcoesEnviarParaAnalise row={row} />
   }),
-
   columnHelper.display({
     id: "excluirDeclaracao",
     header: () => <div className="text-center w-full">Ações</div>,
-    cell: ({ row }) => {
-      const [modalAberta, setModalAberta] = useState(false);
-
-      const { mutate, isPending } = useMutation({
-        mutationFn: () => {
-          return request(`/api/admin/declaracoes/atualizarStatus/${row.original._id}`, {
-            method: "PUT",
-            data: {
-              status: "Recebida",
-            },
-          });
-        },
-        onSuccess: () => {
-          window.location.reload();
-          toast.success("Declaração excluída com sucesso!");
-        },
-      })
-
-      const handleVisualizarHistorico = () => {
-        window.location.href = `/declaracoes/${row.original._id}`;
-      }
-
-      return (
-        <>
-          <Modal
-            useScrim
-            showCloseButton
-            title="Confirmar"
-            modalOpened={modalAberta}
-            onCloseButtonClick={() => setModalAberta(false)}
-          >
-            <Modal.Body>
-              Tem certeza que deseja alterar esta declaração para recebida?
-            </Modal.Body>
-            <Modal.Footer justify-content="end">
-              <Button primary small m={2} loading={isPending} onClick={mutate}>
-                Confirmar
-              </Button>
-              <Button
-                secondary
-                small
-                m={2}
-                onClick={() => setModalAberta(false)}
-                disabled={isPending}
-              >
-                Cancelar
-              </Button>
-            </Modal.Footer>
-          </Modal>
-          <div className="flex space-x-2">
-          <Button small onClick={() => setModalAberta(true)} className="!font-thin recuperar">
-            <i className="fa-solid fa-recycle p-2"></i>Recuperar declaração
-          </Button>
-
-          <Button small onClick={() => handleVisualizarHistorico(true)} className="!font-thin analise">
-              <i className="fa-solid fa-timeline p-2"></i>Visualizar histórico
-          </Button>
-          </div>
-        </>
-      );
-    },
+    cell: ({ row }) => <AcoesExcluirDeclaracao row={row} />
   }),
   columnHelper.display({
     id: "definirStatus",
     header: () => <div className="text-center w-full">Ações</div>,
-    cell: ({ row }) => {
-      const [modalAberta, setModalAberta] = useState(false);
-
-      const { mutate, isPending } = useMutation({
-        mutationFn: (status: "Em conformidade" | "Não conformidade") => {
-          return request(`/api/admin/declaracoes/atualizarStatus/${row.original._id}`, {
-            method: "PUT",
-            data: {
-              status,
-            },
-          });
-        },
-        onSuccess: () => {
-          window.location.reload();
-        },
-      });
-
-      const handleVisualizarHistorico = () => {
-        window.location.href = `/declaracoes/${row.original._id}`;
-      }
-
-      return (
-        <>
-          <Modal
-            useScrim
-            showCloseButton
-            title="Alterar status"
-            modalOpened={modalAberta}
-            onCloseButtonClick={() => setModalAberta(false)}
-          >
-            <Modal.Body>Informe o novo status da declaração:</Modal.Body>
-            <Modal.Footer justify-content="end">
-              <Button
-                primary
-                small
-                m={2}
-                loading={isPending}
-                onClick={() => mutate("Em conformidade")}
-              >
-                Alterar para "Em conformidade"
-              </Button>
-              <Button
-                primary
-                small
-                m={2}
-                loading={isPending}
-                onClick={() => mutate("Não conformidade")}
-              >
-                Alterar para "Não conformidade"
-              </Button>
-              <Button
-                secondary
-                small
-                m={2}
-                onClick={() => setModalAberta(false)}
-                disabled={isPending}
-              >
-                Cancelar
-              </Button>
-            </Modal.Footer>
-          </Modal>
-          <div className="flex space-x-2">
-          <Button small onClick={() => setModalAberta(true)} className="!font-thin concluir">
-            <i className="fa-solid fa-circle-check p-2"></i>Concluir análise
-          </Button>
-
-          <Button small onClick={() => handleVisualizarHistorico(true)} className="!font-thin analise">
-            <i className="fa-solid fa-timeline p-2"></i>Visualizar histórico
-          </Button>
-
-          </div>
-        </>
-      );
-    },
-  }),
-];
+    cell: ({ row }) => <AcoesDefinirStatus row={row} />
+  })
+]
 
 function DebouncedInput({
   value: initialValue,
@@ -426,24 +520,27 @@ function DebouncedInput({
   debounce = 500,
   ...props
 }: {
-  value: string | number;
-  onChange: (value: string | number) => void;
-  debounce?: number;
+  value: string | number
+  onChange: (value: string | number) => void
+  type: string
+  debounce?: number
+  placeholder?: string
+  list?: string
 } & Omit<React.HTMLAttributes<HTMLInputElement>, "onChange">) {
-  const [value, setValue] = useState(initialValue);
+  const [value, setValue] = useState(initialValue)
 
   useEffect(() => {
-    setValue(initialValue);
-  }, [initialValue]);
+    setValue(initialValue)
+  }, [initialValue])
 
   useEffect(() => {
     const timeout = setTimeout(() => {
-      onChange(value);
-    }, debounce);
+      onChange(value)
+    }, debounce)
 
-    return () => clearTimeout(timeout);
+    return () => clearTimeout(timeout)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value]);
+  }, [value])
 
   return (
     <input
@@ -451,16 +548,20 @@ function DebouncedInput({
       value={value}
       onChange={(e) => setValue(e.currentTarget.value)}
     />
-  );
+  )
 }
 
-function Filter({ column }: { column: Column<any, unknown> }) {
-  const { filterVariant } = column.columnDef.meta ?? {};
-  const columnFilterValue = column.getFilterValue();
+function Filter<TData extends RowData>({
+  column
+}: {
+  column: Column<TData, unknown>
+}) {
+  const { filterVariant } = column.columnDef.meta ?? {}
+  const columnFilterValue = column.getFilterValue()
   const sortedUniqueValues = useMemo(
     () => Array.from(column.getFacetedUniqueValues().keys()).sort(),
-    [column.getFacetedUniqueValues(), filterVariant],
-  );
+    [column.getFacetedUniqueValues(), filterVariant]
+  )
 
   return filterVariant === "select" ? (
     <select
@@ -468,16 +569,18 @@ function Filter({ column }: { column: Column<any, unknown> }) {
       value={columnFilterValue?.toString()}
     >
       <option value="">Todas</option>
-      {sortedUniqueValues.sort((a, b) => b - a).map((value) => (
-        <option value={value} key={value}>
-          {value}
-        </option>
-      ))}
+      {sortedUniqueValues
+        .sort((a, b) => b - a)
+        .map((value) => (
+          <option value={value} key={value}>
+            {value}
+          </option>
+        ))}
     </select>
   ) : (
     <>
       <datalist id={column.id + "list"}>
-        {sortedUniqueValues.map((value: any) => (
+        {sortedUniqueValues.map((value: string) => (
           <option value={value} key={value} />
         ))}
       </datalist>
@@ -491,67 +594,77 @@ function Filter({ column }: { column: Column<any, unknown> }) {
       />
       <div className="h-1" />
     </>
-  );
+  )
 }
 
 const DeclaracoesPage = () => {
   const { data: result } = useSuspenseQuery({
     queryKey: ["declaracoes"],
     queryFn: async () => {
-      const response = await request("/api/admin/declaracoes/declaracoesFiltradas", {
-        method: "POST",
-      });
-      return response.json();
-    },
-  });
+      const response = await request(
+        "/api/admin/declaracoes/declaracoesFiltradas",
+        {
+          method: "POST"
+        }
+      )
+      return response.json()
+    }
+  })
 
   const data = useMemo(
     () =>
-      result.data.map((row) => ({
+      result.data.map((row: { [key: string]: unknown }) => ({
         ...row,
         museu_id: {
-          ...row.museu_id,
+          ...(typeof row.museu_id === "object" && row.museu_id !== null
+            ? row.museu_id
+            : {}),
           endereco: {
-            ...row.museu_id.endereco,
+            ...(row.museu_id && typeof row.museu_id === "object"
+              ? (row.museu_id as { endereco: { uf: string } }).endereco
+              : {}),
             regiao:
-              stateRegions[
-                row.museu_id.endereco.uf as keyof typeof stateRegions
-              ],
-          },
-        },
+              typeof row.museu_id === "object"
+                ? stateRegions[
+                    (row.museu_id as { endereco: { uf: string } }).endereco
+                      .uf as keyof typeof stateRegions
+                  ]
+                : ""
+          }
+        }
       })),
-    [result],
-  );
+    [result]
+  )
 
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([
-    { id: "status", value: "Recebida" },
-  ]);
+    { id: "status", value: "Recebida" }
+  ])
   const [visibility, setVisibility] = useState<VisibilityState>({
     status: false,
     definirStatus: false,
     _id: true,
-    excluirDeclaracao: false,
-  });
+    excluirDeclaracao: false
+  })
 
   useEffect(() => {
-    if (columnFilters.some((f) => f.id === "status" && f.value === "Recebida")) {
+    if (
+      columnFilters.some((f) => f.id === "status" && f.value === "Recebida")
+    ) {
       setVisibility({
         status: false,
         enviarParaAnalise: true,
         excluirDeclaracao: false,
-        definirStatus: false,
-      });
+        definirStatus: false
+      })
     }
-  }, [columnFilters]);
-
-
+  }, [columnFilters])
 
   const table = useReactTable({
     data,
     columns,
     state: {
       columnFilters,
-      columnVisibility: visibility,
+      columnVisibility: visibility
     },
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setVisibility,
@@ -561,8 +674,8 @@ const DeclaracoesPage = () => {
     getPaginationRowModel: getPaginationRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
-    getFacetedMinMaxValues: getFacetedMinMaxValues(),
-  });
+    getFacetedMinMaxValues: getFacetedMinMaxValues()
+  })
 
   return (
     <DefaultLayout>
@@ -574,8 +687,8 @@ const DeclaracoesPage = () => {
               className={clsx(
                 "tab-item",
                 columnFilters.some(
-                  (f) => f.id === "status" && f.value === "Recebida",
-                ) && "active",
+                  (f) => f.id === "status" && f.value === "Recebida"
+                ) && "active"
               )}
               title="Recebidas"
             >
@@ -585,26 +698,28 @@ const DeclaracoesPage = () => {
                 onClick={() => {
                   table.setColumnFilters((old) => [
                     ...old.filter((f) => f.id !== "status"),
-                    { id: "status", value: "Recebida" },
-                  ]);
+                    { id: "status", value: "Recebida" }
+                  ])
                   table.setColumnVisibility((old) => ({
                     ...old,
                     status: false,
                     enviarParaAnalise: true,
                     excluirDeclaracao: false,
-                    definirStatus: false,
-                  }));
+                    definirStatus: false
+                  }))
                 }}
               >
-                <span className="name">Recebidas ({result.statusCount.Recebida})</span>
+                <span className="name">
+                  Recebidas ({result.statusCount.Recebida})
+                </span>
               </button>
             </li>
             <li
               className={clsx(
                 "tab-item",
                 columnFilters.some(
-                  (f) => f.id === "status" && f.value === "Em análise",
-                ) && "active",
+                  (f) => f.id === "status" && f.value === "Em análise"
+                ) && "active"
               )}
               title="Em análise"
             >
@@ -614,26 +729,28 @@ const DeclaracoesPage = () => {
                 onClick={() => {
                   table.setColumnFilters((old) => [
                     ...old.filter((f) => f.id !== "status"),
-                    { id: "status", value: "Em análise" },
-                  ]);
+                    { id: "status", value: "Em análise" }
+                  ])
                   table.setColumnVisibility((old) => ({
                     ...old,
                     status: false,
                     enviarParaAnalise: false,
                     excluirDeclaracao: false,
-                    definirStatus: true,
-                  }));
+                    definirStatus: true
+                  }))
                 }}
               >
-                <span className="name">Em análise ({result.statusCount["Em análise"]})</span>
+                <span className="name">
+                  Em análise ({result.statusCount["Em análise"]})
+                </span>
               </button>
             </li>
             <li
               className={clsx(
                 "tab-item",
                 columnFilters.some(
-                  (f) => f.id === "status" && f.value === "Em conformidade",
-                ) && "active",
+                  (f) => f.id === "status" && f.value === "Em conformidade"
+                ) && "active"
               )}
               title="Em conformidade"
             >
@@ -643,26 +760,28 @@ const DeclaracoesPage = () => {
                 onClick={() => {
                   table.setColumnFilters((old) => [
                     ...old.filter((f) => f.id !== "status"),
-                    { id: "status", value: "Em conformidade" },
-                  ]);
+                    { id: "status", value: "Em conformidade" }
+                  ])
                   table.setColumnVisibility((old) => ({
                     ...old,
                     status: false,
                     enviarParaAnalise: false,
                     excluirDeclaracao: false,
-                    definirStatus: false,
-                  }));
+                    definirStatus: false
+                  }))
                 }}
               >
-                <span className="name">Em conformidade ({result.statusCount["Em conformidade"]})</span>
+                <span className="name">
+                  Em conformidade ({result.statusCount["Em conformidade"]})
+                </span>
               </button>
             </li>
             <li
               className={clsx(
                 "tab-item",
                 columnFilters.some(
-                  (f) => f.id === "status" && f.value === "Não conformidade",
-                ) && "active",
+                  (f) => f.id === "status" && f.value === "Não conformidade"
+                ) && "active"
               )}
               title="Em conformidade"
             >
@@ -672,26 +791,28 @@ const DeclaracoesPage = () => {
                 onClick={() => {
                   table.setColumnFilters((old) => [
                     ...old.filter((f) => f.id !== "status"),
-                    { id: "status", value: "Não conformidade" },
-                  ]);
+                    { id: "status", value: "Não conformidade" }
+                  ])
                   table.setColumnVisibility((old) => ({
                     ...old,
                     status: false,
                     enviarParaAnalise: false,
                     excluirDeclaracao: false,
-                    definirStatus: false,
-                  }));
+                    definirStatus: false
+                  }))
                 }}
               >
-                <span className="name">Não conformidade ({result.statusCount["Não conformidade"]})</span>
+                <span className="name">
+                  Não conformidade ({result.statusCount["Não conformidade"]})
+                </span>
               </button>
             </li>
             <li
               className={clsx(
                 "tab-item",
                 columnFilters.some(
-                  (f) => f.id === "status" && f.value === "Excluída",
-                ) && "active",
+                  (f) => f.id === "status" && f.value === "Excluída"
+                ) && "active"
               )}
               title="Excluídas"
             >
@@ -701,24 +822,26 @@ const DeclaracoesPage = () => {
                 onClick={() => {
                   table.setColumnFilters((old) => [
                     ...old.filter((f) => f.id !== "status"),
-                    { id: "status", value: "Excluída" },
-                  ]);
+                    { id: "status", value: "Excluída" }
+                  ])
                   table.setColumnVisibility((old) => ({
                     ...old,
                     status: false,
                     enviarParaAnalise: false,
                     excluirDeclaracao: true,
-                    definirStatus: false,
-                  }));
+                    definirStatus: false
+                  }))
                 }}
               >
-                <span className="name">Excluídas ({result.statusCount.Excluída})</span>
+                <span className="name">
+                  Excluídas ({result.statusCount.Excluída})
+                </span>
               </button>
             </li>
             <li
               className={clsx(
                 "tab-item",
-                !columnFilters.some((f) => f.id === "status") && "active",
+                !columnFilters.some((f) => f.id === "status") && "active"
               )}
               title="Todas"
             >
@@ -727,18 +850,26 @@ const DeclaracoesPage = () => {
                 data-panel="panel-1-small"
                 onClick={() => {
                   table.setColumnFilters((old) =>
-                    old.filter((f) => f.id !== "status"),
-                  );
+                    old.filter((f) => f.id !== "status")
+                  )
                   table.setColumnVisibility((old) => ({
                     ...old,
                     status: true,
                     enviarParaAnalise: false,
                     excluirDeclaracao: false,
-                    definirStatus: false,
-                  }));
+                    definirStatus: false
+                  }))
                 }}
               >
-                <span className="name">Todas ({result.statusCount.Recebida + result.statusCount["Em análise"] + result.statusCount["Em conformidade"] + result.statusCount["Não conformidade"] + result.statusCount["Excluída"]})</span>
+                <span className="name">
+                  Todas (
+                  {result.statusCount.Recebida +
+                    result.statusCount["Em análise"] +
+                    result.statusCount["Em conformidade"] +
+                    result.statusCount["Não conformidade"] +
+                    result.statusCount["Excluída"]}
+                  )
+                </span>
               </button>
             </li>
           </ul>
@@ -767,17 +898,16 @@ const DeclaracoesPage = () => {
                                 className: header.column.getCanSort()
                                   ? "cursor-pointer select-none"
                                   : "",
-                                onClick:
-                                  header.column.getToggleSortingHandler(),
+                                onClick: header.column.getToggleSortingHandler()
                               }}
                             >
                               {flexRender(
                                 header.column.columnDef.header,
-                                header.getContext(),
+                                header.getContext()
                               )}
                               {{
                                 asc: " 🔼",
-                                desc: " 🔽",
+                                desc: " 🔽"
                               }[header.column.getIsSorted() as string] ?? null}
                             </div>
                             {header.column.getCanFilter() && (
@@ -788,7 +918,7 @@ const DeclaracoesPage = () => {
                           </>
                         )}
                       </th>
-                    );
+                    )
                   })}
                 </tr>
               ))}
@@ -800,7 +930,7 @@ const DeclaracoesPage = () => {
                     <td key={cell.id} data-th={cell.column.columnDef.header}>
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext(),
+                        cell.getContext()
                       )}
                     </td>
                   ))}
@@ -887,7 +1017,7 @@ const DeclaracoesPage = () => {
                   {Math.min(
                     (table.getState().pagination.pageIndex + 1) *
                       table.getState().pagination.pageSize,
-                    data.length,
+                    data.length
                   )}
                 </span>
                 &nbsp;de&nbsp;
@@ -990,7 +1120,7 @@ const DeclaracoesPage = () => {
         </div>
       )}
     </DefaultLayout>
-  );
-};
+  )
+}
 
-export default DeclaracoesPage;
+export default DeclaracoesPage
