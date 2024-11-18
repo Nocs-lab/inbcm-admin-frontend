@@ -10,7 +10,8 @@ const Header: React.FC = () => {
 
   const pathnameMap = {
     "/": "Painel analítico",
-    "/declaracoes": "Declarações"
+    "/declaracoes": "Declarações",
+    "/usuarios": "Usuários",
   }
 
   const logout = () => {
