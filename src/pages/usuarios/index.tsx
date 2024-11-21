@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import DefaultLayout from "../../layouts/default";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import request from '../../utils/request';
-import { Modal, Button, Select } from 'react-dsgov';
+import { Modal, Button, Select, Row, Col } from 'react-dsgov';
 import { useForm,Controller } from "react-hook-form"
-// Definir tipos de dados para as respostas da API
+import toast from "react-hot-toast"
+
 
 interface User {
   _id: string;
@@ -44,21 +45,20 @@ const fetchUsers = async (): Promise<User[]> => {
 };
 
 const fetchMuseus = async (): Promise<Museu[]> => {
-  const response = await request('/api/admin/museus?&semVinculoUsuario=true');
+  const response = await request('/api/admin/museus?semVinculoUsuario=true&page=1&limit=10');
   if (!response.ok) throw new Error('Erro ao carregar museus');
   const data = await response.json();
 
-  // Log dos dados convertidos em JSON
-  console.log('Data:', data);
+  //console.log('Data:', data);
 
-  return data;
+  return data.museus || [];
 
 };
 
 const Index: React.FC = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const { control } = useForm<{ museus: string[] }>(); // `museus` é um array de strings
+  const { control } = useForm<{ museus: string[] }>();
 
   const { data: users } = useQuery<User[]>({
     queryKey: ['users'],
@@ -85,32 +85,51 @@ const Index: React.FC = () => {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['users']);
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast.success("Usuário desativado com sucesso!")
     },
+    onError: () => {
+      toast.error("Erro ao desativar usuário")
+    }
   });
-
   const associateMutation = useMutation({
     mutationFn: async () => {
-      const body = selectedMuseus.map((museuId) => ({
-        museuId,
-        usuarioId: userIdToAssociate,
-      }));
+        const payload = {
+            museuId: selectedMuseus, // Agora representa um array de IDs
+            usuarioId: userIdToAssociate,
+        };
 
-      const response = await request('/api/admin/museus/vincular-usuario', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
+        const response = await request('/api/admin/museus/vincular-usuario', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
 
-      if (!response.ok) throw new Error('Erro ao associar museus');
-      return response.json();
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Erro ao associar museus');
+        }
+
+        return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['users']);
-      queryClient.invalidateQueries(['museus']);
-      setShowAssociationModal(false);
+        queryClient.invalidateQueries({ queryKey: ['users'] });
+        queryClient.invalidateQueries({ queryKey: ['museus'] });
+        toast.success("Museu(s) associado(s) com sucesso!")
+        setShowAssociationModal(false); // Fecha o modal após sucesso
     },
+    onError: (error) => {
+        console.error('Erro ao associar museus:', error);
+        toast.error("Erro ao associar museus")
+    },
+});
+
+
+  console.log('Payload enviado:', {
+    museuId: selectedMuseus,
+    usuarioId: userIdToAssociate,
   });
+
 
   const handleOpenAssociationModal = (userId: string) => {
     setUserIdToAssociate(userId);
@@ -119,12 +138,18 @@ const Index: React.FC = () => {
   };
 
   const handleSubmitAssociation = async () => {
-    try {
-      await associateMutation.mutateAsync();
-    } catch (error) {
-      console.error('Erro ao associar museus:', error);
+    if (!selectedMuseus.length) {
+        alert("Selecione pelo menos um museu para associar.");
+        return;
     }
-  };
+
+    try {
+        await associateMutation.mutateAsync();
+    } catch (error) {
+        console.error('Erro ao associar museus:', error);
+    }
+};
+
 
 
   const [showModal, setShowModal] = useState(false);
@@ -184,11 +209,8 @@ const Index: React.FC = () => {
                 </td>
                 {/*<td>{user.profile?.name || 'Não especificado'}</td>*/}
                 <td>
-                  <button className="btn text-blue-950" onClick={() => navigate(`/usuarios/${user._id}/editar`)} aria-label="Editar usuário" title="Editar usuário">
+                  <button className="btn text-blue-950" onClick={() => navigate(`/usuarios/${user._id}`)} aria-label="Editar usuário" title="Editar usuário">
                     <i className="fa-solid fa-pen-to-square pr-2"></i>
-                  </button>
-                  <button className="btn text-blue-950" onClick={() => navigate(`/usuarios/${user._id}`)} aria-label="Visualizar usuário" title="Visualizar usuário">
-                    <i className="fa-solid fa-eye fa-fw"></i>
                   </button>
                   <button className="btn text-red" onClick={() => handleOpenModal(user._id)} aria-label="Excluir usuário" title="Excluir usuário">
                     <i className="fa-solid fa-trash fa-fw pl-2"></i>
@@ -219,15 +241,15 @@ const Index: React.FC = () => {
         </div>
       )}
 
-      {/* Modal de associar usuario a um museu */}
-      {showAssociationModal && (
-        <Modal
+
+    {showAssociationModal && (
+      <Modal
         useScrim
         showCloseButton
         title="Associar Museus"
         modalOpened={showAssociationModal}
         onCloseButtonClick={() => setShowAssociationModal(false)}
-        className="max-w-2xl overflow-visible"
+        className="max-w-2xl overflow-visible" // Configura o modal com altura fixa e estrutura flexível
       >
         <form
           onSubmit={(e) => {
@@ -235,44 +257,63 @@ const Index: React.FC = () => {
             handleSubmitAssociation();
           }}
         >
+          {/* Corpo do modal com rolagem */}
           <Modal.Body className="p-6" style={{ maxHeight: "none" }}>
-            <div className="mb-4">
-              <label htmlFor="multi-select" className="block text-sm font-medium text-gray-700">
-                Selecione os museus disponíveis:
-              </label>
+            <Row>
+              <Col my={2}>
               <Controller
                 control={control}
                 name="museus"
                 render={({ field }) => (
-                  <Select
-                    type="multiple"
-                    selectAllText={""}
-                    placeholder="Selecione os museus"
-                    options={
-                      museus?.map((m) => ({
-                        label: m.nome,
-                        value: m._id,
-                      })) ?? []
-                    }
-                    className="!w-full mt-2"
-                    {...field}
-                  />
+                    <Select
+                        type="multiple" // Configura o Select para múltiplos valores
+                        selectAllText={""}
+                        placeholder="Selecione os museus"
+                        options={
+                            museus?.map((m) => ({
+                                label: m.nome, // Nome do museu
+                                value: m._id,  // ID único do museu
+                            })) ?? []
+                        }
+                        className="!w-full mt-2"
+                        {...field}
+                        value={selectedMuseus} // Passa o estado como valor inicial
+                        onChange={(selected: string[]) => {
+                            console.log("Selecionados (onChange):", selected);
+                            field.onChange(selected); // Atualiza o valor no form
+                            setSelectedMuseus(selected); // Atualiza o estado diretamente com os valores retornados
+                        }}
+                    />
                 )}
-              />
-            </div>
+            />
+              </Col>
+            </Row>
+            <Row>
+              <Col my={4}>
+                <label htmlFor="observacoes">Escolha o museu para associar este usuario.</label>
+              </Col>
+            </Row>
           </Modal.Body>
-          <Modal.Footer justify-content="end" className="pt-4">
-            <Button secondary small m={2} type="button" onClick={() => setShowAssociationModal(false)}>
+
+          {/* Footer fixado ao final do modal */}
+          <Modal.Footer justify-content="center" className="pt-4">
+            <p className="mb-4">Tem certeza que deseja associar para este museu?</p>
+            <Button
+              secondary
+              small
+              m={2}
+              type="button"
+              onClick={() => setShowAssociationModal(false)}
+            >
               Cancelar
             </Button>
-            <Button primary small m={2} type="submit">
+            <Button primary small type="submit" m={2}>
               Confirmar
             </Button>
           </Modal.Footer>
         </form>
       </Modal>
-
-      )}
+    )}
     </DefaultLayout>
   );
 };

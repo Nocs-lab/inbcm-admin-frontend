@@ -1,15 +1,17 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import DefaultLayout from "../../layouts/default";
-import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query'; //add useSuspenseQuery
 import Input from '../../components/Input';
 //import { Select } from 'react-dsgov';
 import { z } from "zod"
-import { useForm, Controller } from "react-hook-form"
+import { useForm } from "react-hook-form" //add Controller
 import { zodResolver } from "@hookform/resolvers/zod"
 import clsx from "clsx"
 import { Link } from 'react-router-dom';
 import request from '../../utils/request';
+import toast from "react-hot-toast"
+
 
 const schema = z.object({
   email: z.string().min(1, "Este campo é obrigatório"),
@@ -49,16 +51,16 @@ const CreateUser: React.FC = () => {
   const navigate = useNavigate()
 
   const { mutate } = useMutation({
-    mutationFn: async ({ email, nome, profile, password }: FormData) => {
+    mutationFn: async ({ email, nome, password }: FormData) => { //add profile
 
       const res = await request('/api/admin/users', {
         method: 'POST',
         data: {
           email,
           nome,
-          profile,
+          //profile,
           senha: password,
-          museus: []
+          //museus: []
         }
       })
 
@@ -67,6 +69,10 @@ const CreateUser: React.FC = () => {
     onSuccess: () => {
 
       navigate("/usuarios")
+      toast.success("Usuário criado com sucesso");
+    },
+    onError: () => {
+      toast.error("Erro ao criar usuário");
     }
   })
 

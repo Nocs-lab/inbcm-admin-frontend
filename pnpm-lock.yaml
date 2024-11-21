@@ -1486,8 +1486,8 @@ packages:
   '@leichtgewicht/ip-codec@2.0.5':
     resolution: {integrity: sha512-Vo+PSpZG2/fmgmiNzYK9qWRh8h/CHrwD0mo1h1DzL4yzHNSfWYujGTYsWGreD000gcgmZ7K4Ys6Tx9TxtsKdDw==}
 
-  '@million/install@1.0.11':
-    resolution: {integrity: sha512-koRlY6tCYa6isBUTheP0pL7PC31pBY1QlL8F/Yaorcx6gIyZSJNVqTGBDqLvDeeV8QcmD/S9mswSazI/FsyGKQ==}
+  '@million/install@1.0.12':
+    resolution: {integrity: sha512-1TeXcdGCjrcCG/VcKayZ6NC646cf/gKTkscn2YbfwYbE4gLJbJHCrXxQ3zsWHznqiw61t1oTjFgIafM1JBcLzA==}
     hasBin: true
 
   '@million/lint@1.0.0-rc.24':
@@ -8492,7 +8492,7 @@ snapshots:
 
   '@leichtgewicht/ip-codec@2.0.5': {}
 
-  '@million/install@1.0.11':
+  '@million/install@1.0.12':
     dependencies:
       '@antfu/ni': 0.21.12
       '@axiomhq/js': 1.0.0-rc.3
@@ -8513,7 +8513,7 @@ snapshots:
       '@babel/core': 7.24.6
       '@babel/types': 7.24.6
       '@hono/node-server': 1.11.4
-      '@million/install': 1.0.11
+      '@million/install': 1.0.12
       '@rollup/pluginutils': 5.1.0(rollup@2.79.1)
       babel-plugin-syntax-hermes-parser: 0.21.1
       esbuild: 0.20.2
