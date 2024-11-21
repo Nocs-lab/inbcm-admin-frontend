@@ -53,15 +53,8 @@ const IndexPage = () => {
   const [estado, setEstado] = useState<string | null>(null)
   const [municipio, setMunicipio] = useState<string | null>(null)
 
-  // Fetch anos válidos
-  const { data: anos } = useSuspenseQuery({
-    queryKey: ["anos-validos"],
-    queryFn: async () => {
-      const res = await request("/api/admin/declaracoes/anos-validos/10")
-      const data = await res.json()
-      return data.anos.sort((a: number, b: number) => b - a) // Ordena do mais recente ao mais antigo
-    }
-  })
+  const currentYear = new Date().getFullYear() // Obtém o ano atual
+  const anos = Array.from({ length: 10 }, (_, i) => currentYear - i) // Últimos 10 anos
 
   console.log(anos)
 
@@ -106,7 +99,7 @@ const IndexPage = () => {
         <Select
           label="Início"
           value={inicio ?? undefined}
-          options={anos.map((ano: number) => ({
+          options={anos.map((ano) => ({
             label: String(ano),
             value: String(ano)
           }))}
@@ -117,8 +110,8 @@ const IndexPage = () => {
           label="Fim"
           value={fim ?? undefined}
           options={anos
-            .filter((ano: number) => !inicio || ano >= Number(inicio))
-            .map((ano: number) => ({ label: String(ano), value: String(ano) }))}
+            .filter((ano) => !inicio || ano >= Number(inicio))
+            .map((ano) => ({ label: String(ano), value: String(ano) }))}
           onChange={(ano: string) => setFim(ano)}
           className="w-full"
         />
