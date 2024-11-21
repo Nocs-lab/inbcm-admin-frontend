@@ -1,10 +1,10 @@
-import { useState } from "react"
-import DefaultLayout from "../layouts/default"
-import { Select } from "react-dsgov"
-import Charts from "./_components/Charts"
+import { useSuspenseQueries } from "@tanstack/react-query"
+import DefaultLayout from "../../layouts/default"
+import request from "../../utils/request"
 import { Suspense } from "react"
-import { useSuspenseQuery } from "@tanstack/react-query"
-import request from "../utils/request"
+import Charts from "./_components/Charts"
+import { Select } from "react-dsgov"
+import { useState } from "react"
 
 const statesNameMap = {
   AC: "Acre",
@@ -36,61 +36,72 @@ const statesNameMap = {
   TO: "Tocantins"
 }
 
-const regionsMap = {
-  Norte: ["AM", "RR", "AP", "PA", "TO", "RO", "AC"],
-  Nordeste: ["MA", "PI", "CE", "RN", "PE", "PB", "SE", "AL", "BA"],
-  "Centro-Oeste": ["MT", "MS", "GO", "DF"],
-  Sudeste: ["SP", "RJ", "MG", "ES"],
-  Sul: ["PR", "SC", "RS"]
-}
-
 const states = Object.keys(statesNameMap)
 
-const IndexPage = () => {
-  const [inicio, setInicio] = useState("2024")
-  const [fim, setFim] = useState("2024")
-  const [regiao, setRegiao] = useState<string | null>(null)
-  const [estado, setEstado] = useState<string | null>(null)
-  const [municipio, setMunicipio] = useState<string | null>(null)
+const Museus: React.FC = () => {
+  const [{ data: museus }, { data: cidades }] = useSuspenseQueries({
+    queries: [
+      {
+        queryKey: ["museus"],
+        queryFn: async () => {
+          const res = await request("/api/admin/museus")
 
-  const { data: cidades } = useSuspenseQuery({
-    queryKey: ["cidades"],
-    queryFn: async () => {
-      const res = await request("/api/admin/museus/listarCidades")
+          return await res.json()
+        }
+      },
+      {
+        queryKey: ["cidades"],
+        queryFn: async () => {
+          const res = await request("/api/admin/museus/listarCidades")
 
-      return await res.json()
-    }
+          return await res.json()
+        }
+      }
+    ]
   })
 
+  const [inicio, setInicio] = useState("2024")
+  const [fim, setFim] = useState("2024")
+  const [estado, setEstado] = useState<string | null>(null)
+  const [municipio, setMunicipio] = useState<string | null>(null)
+  const [museu, setMuseu] = useState<string | null>(null)
+
   const params = new URLSearchParams()
+
   for (const ano of Array.from(
     { length: Number(fim) - Number(inicio) + 1 },
     (_, i) => String(Number(inicio) + i)
   )) {
     params.append("anos", ano)
   }
-  const estados = estado
-    ? [estado]
-    : regiao
-      ? regionsMap[regiao as keyof typeof regionsMap]
-      : []
 
-  for (const uf of estados) {
-    params.append("estados", uf)
-  }
-
-  if (municipio) {
-    params.append("cidades", municipio)
+  if (museu) {
+    params.append("museu", museu)
   }
 
   return (
     <DefaultLayout>
-      <h1>Painel analítico</h1>
+      <h1>Museus</h1>
       <fieldset
-        className="rounded-lg p-3 grid grid-cols-1 lg:grid-cols-4 xl:grid-cols-5 gap-4"
+        className="rounded-lg p-3 grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-4"
         style={{ border: "2px solid #e0e0e0" }}
       >
         <legend className="text-lg font-extrabold px-3 m-0">Filtros</legend>
+        <Select
+          placeholder="Selecione um museu"
+          label="Museu"
+          options={museus
+            .filter((museu: { endereco: { municipio: string } }) =>
+              municipio !== null ? museu.endereco.municipio === municipio : true
+            )
+            .map((museu: { nome: string; _id: string }) => ({
+              label: museu.nome,
+              value: museu._id
+            }))}
+          value={museu ?? undefined}
+          onChange={(museu: string) => setMuseu(museu)}
+          className="w-full lg:col-span-3 xl:col-span-4"
+        />
         <Select
           label="Inicio"
           value={inicio}
@@ -116,39 +127,19 @@ const IndexPage = () => {
           className="w-full"
         />
         <Select
-          label="Região"
-          value={regiao ?? undefined}
-          options={Object.keys(regionsMap).map((regiao) => ({
-            label: regiao,
-            value: regiao
-          }))}
-          onChange={(regiao: string) => setRegiao(regiao)}
-          placeholder="Selecione uma região"
-          className="w-full"
-        />
-        <Select
           label="Estado"
-          disabled={!regiao}
           value={estado ?? undefined}
-          options={states
-            .map((uf) => ({
-              label: statesNameMap[uf as keyof typeof statesNameMap],
-              value: uf
-            }))
-            .filter((uf) =>
-              regiao
-                ? regionsMap[regiao as keyof typeof regionsMap].includes(
-                    uf.value
-                  )
-                : true
-            )}
+          options={states.map((uf) => ({
+            label: statesNameMap[uf as keyof typeof statesNameMap],
+            value: uf
+          }))}
           onChange={(uf: string) => setEstado(uf)}
+          disabled={museu !== null}
           placeholder="Selecione um estado"
           className="w-full"
         />
         <Select
           label="Município"
-          disabled={!estado}
           value={municipio ?? undefined}
           options={
             cidades
@@ -159,6 +150,7 @@ const IndexPage = () => {
               })) ?? []
           }
           onChange={(municipio: string) => setMunicipio(municipio)}
+          disabled={!estado || museu !== null}
           placeholder="Selecione uma cidade"
           className="w-full"
         />
@@ -174,16 +166,10 @@ const IndexPage = () => {
           </div>
         }
       >
-        <Charts
-          params={params}
-          estado={estado}
-          regiao={regiao}
-          inicio={inicio}
-          fim={fim}
-        />
+        <Charts params={params} inicio={inicio} fim={fim} museu={museu} />
       </Suspense>
     </DefaultLayout>
   )
 }
 
-export default IndexPage
+export default Museus
