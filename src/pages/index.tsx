@@ -53,6 +53,9 @@ const IndexPage = () => {
   const [estado, setEstado] = useState<string | null>(null)
   const [municipio, setMunicipio] = useState<string | null>(null)
 
+  const currentYear = new Date().getFullYear() // Obtém o ano atual
+  const anos = Array.from({ length: 10 }, (_, i) => currentYear - i) // Últimos 10 anos
+
   const { data: cidades } = useSuspenseQuery({
     queryKey: ["cidades"],
     queryFn: async () => {
@@ -92,26 +95,21 @@ const IndexPage = () => {
       >
         <legend className="text-lg font-extrabold px-3 m-0">Filtros</legend>
         <Select
-          label="Inicio"
-          value={inicio}
-          options={[
-            { label: "2021", value: "2021" },
-            { label: "2022", value: "2022" },
-            { label: "2023", value: "2023" },
-            { label: "2024", value: "2024" }
-          ]}
+          label="Início"
+          value={inicio ?? undefined}
+          options={anos.map((ano) => ({
+            label: String(ano),
+            value: String(ano)
+          }))}
           onChange={(ano: string) => setInicio(ano)}
           className="w-full"
         />
         <Select
           label="Fim"
-          value={fim}
-          options={[
-            { label: "2021", value: "2021" },
-            { label: "2022", value: "2022" },
-            { label: "2023", value: "2023" },
-            { label: "2024", value: "2024" }
-          ].filter((ano) => Number(ano.value) >= Number(inicio))}
+          value={fim ?? undefined}
+          options={anos
+            .filter((ano) => !inicio || ano >= Number(inicio))
+            .map((ano) => ({ label: String(ano), value: String(ano) }))}
           onChange={(ano: string) => setFim(ano)}
           className="w-full"
         />
