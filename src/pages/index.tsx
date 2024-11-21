@@ -56,8 +56,6 @@ const IndexPage = () => {
   const currentYear = new Date().getFullYear() // Obtém o ano atual
   const anos = Array.from({ length: 10 }, (_, i) => currentYear - i) // Últimos 10 anos
 
-  console.log(anos)
-
   const { data: cidades } = useSuspenseQuery({
     queryKey: ["cidades"],
     queryFn: async () => {
