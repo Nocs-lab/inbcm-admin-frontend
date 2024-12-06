@@ -2,6 +2,8 @@ import { useParams } from "react-router"
 import DefaultLayout from "../../../layouts/default"
 import { useSuspenseQuery } from "@tanstack/react-query"
 import request from "../../../utils/request"
+import { format } from "date-fns"
+import { Link } from "react-router-dom"
 
 const DeclaracaoPage: React.FC = () => {
   const params = useParams()
@@ -10,16 +12,17 @@ const DeclaracaoPage: React.FC = () => {
   const { data } = useSuspenseQuery({
     queryKey: ["declaracoes", id],
     queryFn: async () => {
-      const response = await request(`/api/admin/declaracoes/${id}`)
+      const response = await request(`/api/admin/declaracoes/${id}/timeline`)
       return response.json()
     }
   })
 
-  console.log(data)
-
   return (
     <DefaultLayout>
-      <h1>Declaração #{id}</h1>
+      <Link to={`/declaracoes/${id}`} className="text-lg">
+        <i className="fas fa-arrow-left" aria-hidden="true"></i>
+        Voltar
+      </Link>
       <div className="col-auto mx-5">
         <nav
           className="br-step vertical"
@@ -33,69 +36,28 @@ const DeclaracaoPage: React.FC = () => {
             aria-orientation="vertical"
             aria-label="Lista de Opções"
           >
-            <button
-              className="step-progress-btn"
-              role="option"
-              aria-posinset={3}
-              aria-setsize={3}
-              type="button"
-              disabled
-            >
-              <span className="step-info text-left opacity-50">
-                Aguardando finalização da análise
-              </span>
-            </button>
-            <button
-              className="step-progress-btn"
-              role="option"
-              aria-posinset={1}
-              aria-setsize={3}
-              type="button"
-            >
-              <span className="step-info text-left">
-                Declaração em análise
-                <br />
-                Por Vitor Daniel
-              </span>
-            </button>
-            <button
-              className="step-progress-btn"
-              role="option"
-              aria-posinset={2}
-              aria-setsize={3}
-              type="button"
-            >
-              <span className="step-info text-left">
-                Declarção enviada para análise <br />
-                Por Vitor Daniel
-              </span>
-            </button>
-            <button
-              className="step-progress-btn"
-              role="option"
-              aria-posinset={3}
-              aria-setsize={3}
-              type="button"
-            >
-              <span className="step-info text-left">
-                Declaração recebida
-                <br />
-                Por Vitor Daniel
-              </span>
-            </button>
-            <button
-              className="step-progress-btn"
-              role="option"
-              aria-posinset={3}
-              aria-setsize={3}
-              type="button"
-            >
-              <span className="step-info text-left">
-                Declaração enviada
-                <br />
-                Por Vitor Daniel
-              </span>
-            </button>
+            {data.map(
+              (item: {
+                dataEvento: Date
+                nomeEvento: string
+                autorEvento: string
+              }) => (
+                <button
+                  key={item.dataEvento.toISOString() + item.nomeEvento}
+                  className="step-progress-btn"
+                  role="option"
+                  aria-posinset={3}
+                  aria-setsize={3}
+                  type="button"
+                >
+                  <span className="step-info text-left">
+                    {item.nomeEvento}
+                    <br /> Por {item.autorEvento} em{" "}
+                    {format(data.dataCriacao, "dd/MM/yyyy 'às' HH:mm")}
+                  </span>
+                </button>
+              )
+            )}
           </div>
         </nav>
       </div>
