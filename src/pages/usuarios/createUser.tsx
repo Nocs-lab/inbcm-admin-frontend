@@ -91,52 +91,51 @@ const CreateUser: React.FC = () => {
     <DefaultLayout>
       <div className="container mx-auto p-4">
         <h1>Criar Usuário</h1>
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="bg-white p-4 rounded-lg shadow-md max-w-md mx-auto"
-        >
-          <Input
-            type="text"
-            label="Nome"
-            placeholder="Digite seu nome"
-            error={errors.nome}
-            {...register("nome")}
-          />
-          <Input
-            type="email"
-            label="Email"
-            placeholder="Digite seu email"
-            error={errors.email}
-            {...register("email")}
-          />
-          <Input
-            type="password"
-            label="Senha"
-            placeholder="Digite sua senha"
-            error={errors.password}
-            {...register("password")}
-          />
+        <form onSubmit={handleSubmit(onSubmit)} className="mt-5">
+          <div className="flex gap-2 w-full">
+            <Input
+              type="text"
+              label="Nome"
+              placeholder="Digite seu nome"
+              error={errors.nome}
+              {...register("nome")}
+            />
+            <Input
+              type="email"
+              label="Email"
+              placeholder="Digite seu email"
+              error={errors.email}
+              {...register("email")}
+            />
+            <Input
+              type="password"
+              label="Senha"
+              placeholder="Digite sua senha"
+              error={errors.password}
+              {...register("password")}
+            />
 
-          {/* <Controller
-                  name="profile"
-                  control={control}
-                  render={({ field }) => (
-                    <Select
-                      id="select-simples"
-                      placeholder="Selecione um perfil"
-                      label="Perfil"
-                      options={profileOptions}
-                      {...field}
-                    />
-                  )}
-                /> */}
-          <div className="flex justify-end space-x-4 mt-6">
-            <Link to={"/usuarios"} className="br-button block secondary mt-3">
+            {/* <Controller
+                    name="profile"
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        id="select-simples"
+                        placeholder="Selecione um perfil"
+                        label="Perfil"
+                        options={profileOptions}
+                        {...field}
+                      />
+                    )}
+                  /> */}
+          </div>
+          <div className="flex space-x-4 justify-end">
+            <Link to={"/usuarios"} className="br-button secondary mt-5">
               Voltar
             </Link>
             <button
               className={clsx(
-                "br-button block primary mt-3",
+                "br-button primary mt-5",
                 isSubmitting && "loading"
               )}
               type="submit"
