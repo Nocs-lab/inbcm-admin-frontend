@@ -255,7 +255,7 @@ const AcoesExcluirDeclaracao: React.FC<{
       <Modal
         useScrim
         showCloseButton
-        title="Confirmar"
+        title="Recuperar declaração"
         modalOpened={modalAberta}
         onCloseButtonClick={() => setModalAberta(false)}
       >
@@ -264,15 +264,6 @@ const AcoesExcluirDeclaracao: React.FC<{
         </Modal.Body>
         <Modal.Footer justify-content="end">
           <Button
-            primary
-            small
-            m={2}
-            loading={isPending}
-            onClick={() => mutate()}
-          >
-            Confirmar
-          </Button>
-          <Button
             secondary
             small
             m={2}
@@ -280,6 +271,15 @@ const AcoesExcluirDeclaracao: React.FC<{
             disabled={isPending}
           >
             Cancelar
+          </Button>
+          <Button
+            primary
+            small
+            m={2}
+            loading={isPending}
+            onClick={() => mutate()}
+          >
+            Confirmar
           </Button>
         </Modal.Footer>
       </Modal>
