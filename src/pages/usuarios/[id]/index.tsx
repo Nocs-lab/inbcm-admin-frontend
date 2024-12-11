@@ -91,56 +91,61 @@ const EditUser: React.FC = () => {
 
   return (
     <DefaultLayout>
-      <div className="container mx-auto p-4">
-        <h1>Editar Usuário</h1>
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="bg-white p-4 rounded-lg shadow-md max-w-md mx-auto"
-        >
-          <Input
-            type="text"
-            label="Nome"
-            error={errors.nome}
-            {...register("nome")}
-          />
-
-          <Input
-            type="email"
-            label="Email"
-            error={errors.email}
-            {...register("email")}
-          />
-
-          <Textarea
-            label={"Perfil"}
-            value={
-              user.profile?.name
-                ? profileTranslations[user.profile.name] || user.profile.name
-                : "Perfil não encontrado"
-            }
-            className="w-full"
-          />
-
-          <Textarea
-            label={"Museus"}
-            value={
-              user.museus && user.museus.length > 0
-                ? user.museus
-                    .map((museu: { nome: string }) => `- ${museu.nome}`)
-                    .join("\n")
-                : "Nenhum museu associado"
-            }
-            className="w-full"
-            rows={5}
-          />
-
-          <div className="flex justify-end space-x-4 mt-6">
-            <Link to={"/usuarios"} className="br-button block secondary mt-3">
+      <h1>Editar Usuário</h1>
+      <div className="container mx-auto p-6 bg-white rounded-lg">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <div>
+            <div className="grid grid-cols-3 gap-2 w-full">
+              <Input
+                type="text"
+                label="Nome"
+                placeholder="Digite o nome"
+                error={errors.nome}
+                {...register("nome")}
+                className="w-full"
+              />
+              <Input
+                type="email"
+                label="Email"
+                placeholder="Digite o email"
+                error={errors.email}
+                {...register("email")}
+                className="w-full"
+              />
+              <Input
+                label="Perfil"
+                className=""
+                value={
+                  user.profile?.name
+                    ? profileTranslations[user.profile.name] ||
+                      user.profile.name
+                    : "Perfil não encontrado"
+                }
+                rows={1}
+                readOnly
+              />
+              <Textarea
+                label="Museus"
+                className="col-span-4"
+                value={
+                  user.museus && user.museus.length > 0
+                    ? user.museus
+                        .map((museu: { nome: string }) => `- ${museu.nome}`)
+                        .join("\n")
+                    : "Nenhum museu associado"
+                }
+                rows={5}
+                readOnly
+              />
+            </div>
+          </div>
+          <div className="flex space-x-4 justify-end">
+            <Link to="/usuarios" className="br-button secondary mt-5">
               Voltar
             </Link>
             <button
               className={clsx(
-                "br-button block primary mt-3",
+                "br-button primary mt-5",
                 isSubmitting && "loading"
               )}
               type="submit"
