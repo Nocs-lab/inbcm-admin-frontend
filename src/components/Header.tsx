@@ -54,64 +54,48 @@ const Header: React.FC = () => {
               </div>
             </div>
             <span className="br-divider vertical mx-half mx-sm-1"></span>
-            <div className="header-functions dropdown">
-              <button
-                className="br-button circle small"
-                type="button"
-                data-toggle="dropdown"
-                aria-label="Abrir Funcionalidades do Sistema"
-              >
-                <i className="fas fa-th" aria-hidden="true"></i>
-              </button>
-              <div className="br-list">
-                <div className="header">
-                  <div className="title">Funcionalidades do Sistema</div>
-                </div>
-                {/*<div className="br-item">
-                  <button className="br-button circle small" type="button" aria-label="Funcionalidade 2"><i className="fas fa-headset" aria-hidden="true"></i><span className="text">Funcionalidade 2</span>
-                  </button>
-                </div>
-                <div className="br-item">
-                  <button className="br-button circle small" type="button" aria-label="Funcionalidade 4"><i className="fas fa-adjust" aria-hidden="true"></i><span className="text">Funcionalidade 4</span>
-                  </button>
-                </div>*/}
-              </div>
-            </div>
-            <div className="header-search-trigger"></div>
-            <div>
-              <button
-                className="br-sign-in"
-                type="button"
-                id="avatar-dropdown-trigger"
-                onClick={() => setUserMenuOpen((old) => !old)}
-                data-toggle="dropdown"
-                data-target="avatar-menu"
-                aria-label={`${user.name.split(" ")[0]}`}
-              >
-                <span className="br-avatar" title={user.name}>
-                  <span className="content bg-orange-vivid-30 text-pure-0">
-                    {user.name.charAt(0).toUpperCase()}
+            <div className="header-login">
+              <div>
+                <button
+                  className="br-sign-in p-0"
+                  type="button"
+                  id="avatar-dropdown-trigger"
+                  data-testid="avatar-dropdown-trigger"
+                  onClick={() => setUserMenuOpen((old) => !old)}
+                  data-toggle="dropdown"
+                  data-target="avatar-menu"
+                >
+                  <span className="br-avatar" title={user.name}>
+                    <span className="content bg-orange-vivid-30 text-pure-0">
+                      {user.name.charAt(0).toUpperCase()}
+                    </span>
                   </span>
-                </span>
-                <span className="ml-2 text-gray-80 text-weight-regular">
-                  <span className="text-weight-semi-bold">
-                    {user.name.split(" ")[0]}
+                  <span
+                    className="ml-2 mr-1 text-gray-80 text-weight-regular"
+                    data-testid="username"
+                  >
+                    <span className="text-weight-semi-bold">
+                      {user.name.split(" ")[0]}
+                    </span>
                   </span>
-                </span>
-                <i className="fas fa-caret-down" aria-hidden="true"></i>
-              </button>
-              <div
-                className="br-list z-50"
-                id="avatar-menu"
-                hidden={!userMenuOpen}
-                role="menu"
-                aria-labelledby="avatar-dropdown-trigger"
-              >
-                {/*<a className="br-item" href="javascript:void(0)" role="menuitem">Dados pessoais</a>*/}
-                <button className="br-item" onClick={logout} role="menuitem">
-                  Sair
+                  <i className="fas fa-caret-down" aria-hidden="true"></i>
                 </button>
-                {/*<a className="br-item" href="javascript:void(0)" role="menuitem">Notificações</a>*/}
+                <div
+                  className="br-list z-50 w-1/5 min-w-[8rem] p-2"
+                  id="avatar-menu"
+                  hidden={!userMenuOpen}
+                  role="menu"
+                  aria-labelledby="avatar-dropdown-trigger"
+                >
+                  <button
+                    className="br-item flex items-center space-x-2"
+                    onClick={logout}
+                    role="menuitem"
+                  >
+                    <i className="fa-solid fa-arrow-right-from-bracket"></i>
+                    <span>Sair</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -125,19 +109,8 @@ const Header: React.FC = () => {
               <div className="header-title">
                 Inventário Nacional de Bens Culturais Musealizados
               </div>
-              {/*<div className="header-subtitle">{name}</div>*/}
             </div>
           </div>
-          {/*<div className="header-search">
-            <div className="br-input has-icon">
-              <label htmlFor="searchbox-14841">Texto da pesquisa</label>
-              <input id="searchbox-14841" type="text" placeholder="O que você procura?"/>
-              <button className="br-button circle small" type="button" aria-label="Pesquisar"><i className="fas fa-search" aria-hidden="true"></i>
-              </button>
-            </div>
-            <button className="br-button circle search-close ml-1" type="button" aria-label="Fechar Busca" data-dismiss="search"><i className="fas fa-times" aria-hidden="true"></i>
-            </button>
-          </div>*/}
         </div>
       </div>
     </header>

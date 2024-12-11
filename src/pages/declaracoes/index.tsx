@@ -124,7 +124,6 @@ const AcoesEnviarParaAnalise: React.FC<{
         title="Enviar para análise"
         modalOpened={modalAberta}
         onCloseButtonClick={() => setModalAberta(false)}
-        className="max-w-2xl overflow-visible"
       >
         <form
           onSubmit={(e) => {
@@ -132,18 +131,12 @@ const AcoesEnviarParaAnalise: React.FC<{
             mutateEnviarParaAnalise()
           }}
         >
-          <Modal.Body className="p-6" style={{ maxHeight: "none" }}>
+          <Modal.Body className="p-4">
             <Row>
-              <Col my={2}>
+              <Col>
                 <Select
                   id="select-simples"
                   label="Analista"
-                  className="!w-full mt-4"
-                  style={{
-                    zIndex: 1050,
-                    position: "relative",
-                    maxHeight: "150px"
-                  }}
                   options={
                     analistas?.map(
                       (analista: { nome: string; _id: string }) => ({
@@ -160,11 +153,7 @@ const AcoesEnviarParaAnalise: React.FC<{
             </Row>
 
             <Row>
-              <Col my={4}>
-                <label htmlFor="observacoes">
-                  Escolha o analista para avaliar esta declaração.
-                </label>
-              </Col>
+              <Col my={6}></Col>
             </Row>
           </Modal.Body>
 
@@ -172,15 +161,6 @@ const AcoesEnviarParaAnalise: React.FC<{
             <p className="mb-4">
               Tem certeza que deseja enviar esta declaração para análise?
             </p>
-            <Button
-              primary
-              small
-              m={2}
-              type="submit"
-              loading={isSendingAnalysis || isUpdatingStatus}
-            >
-              Confirmar
-            </Button>
             <Button
               secondary
               small
@@ -190,6 +170,15 @@ const AcoesEnviarParaAnalise: React.FC<{
               disabled={isSendingAnalysis || isUpdatingStatus}
             >
               Cancelar
+            </Button>
+            <Button
+              primary
+              small
+              m={2}
+              type="submit"
+              loading={isSendingAnalysis || isUpdatingStatus}
+            >
+              Confirmar
             </Button>
           </Modal.Footer>
         </form>
