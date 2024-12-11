@@ -1,17 +1,16 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import DefaultLayout from "../../layouts/default";
-import { useMutation } from '@tanstack/react-query'; //add useSuspenseQuery
-import Input from '../../components/Input';
+import React from "react"
+import { useNavigate } from "react-router-dom"
+import DefaultLayout from "../../layouts/default"
+import { useMutation } from "@tanstack/react-query" //add useSuspenseQuery
+import Input from "../../components/Input"
 //import { Select } from 'react-dsgov';
 import { z } from "zod"
 import { useForm } from "react-hook-form" //add Controller
 import { zodResolver } from "@hookform/resolvers/zod"
 import clsx from "clsx"
-import { Link } from 'react-router-dom';
-import request from '../../utils/request';
+import { Link } from "react-router-dom"
+import request from "../../utils/request"
 import toast from "react-hot-toast"
-
 
 const schema = z.object({
   email: z.string().min(1, "Este campo é obrigatório"),
@@ -51,15 +50,16 @@ const CreateUser: React.FC = () => {
   const navigate = useNavigate()
 
   const { mutate } = useMutation({
-    mutationFn: async ({ email, nome, password }: FormData) => { //add profile
+    mutationFn: async ({ email, nome, password }: FormData) => {
+      //add profile
 
-      const res = await request('/api/admin/users', {
-        method: 'POST',
+      const res = await request("/api/admin/users", {
+        method: "POST",
         data: {
           email,
           nome,
           //profile,
-          senha: password,
+          senha: password
           //museus: []
         }
       })
@@ -67,55 +67,57 @@ const CreateUser: React.FC = () => {
       return await res.json()
     },
     onSuccess: () => {
-
       navigate("/usuarios")
-      toast.success("Usuário criado com sucesso");
+      toast.success("Usuário criado com sucesso")
     },
     onError: () => {
-      toast.error("Erro ao criar usuário");
+      toast.error("Erro ao criar usuário")
     }
   })
 
-  const onSubmit = ({ email, nome, password }: FormData) => { //add profile
+  const onSubmit = ({ email, nome, password }: FormData) => {
+    //add profile
 
     mutate({ email, nome, password }) //add profile
   }
 
-    // Transformar perfis em opções para o componente Select
-    // const profileOptions = profiles.map(profile => ({
-    //   label: profile.name,
-    //   value: profile._id
-    // }));
-
+  // Transformar perfis em opções para o componente Select
+  // const profileOptions = profiles.map(profile => ({
+  //   label: profile.name,
+  //   value: profile._id
+  // }));
 
   return (
     <DefaultLayout>
       <div className="container mx-auto p-4">
         <h1>Criar Usuário</h1>
-          <form onSubmit={handleSubmit(onSubmit)} className="bg-white p-4 rounded-lg shadow-md max-w-md mx-auto">
-                <Input
-                  type="text"
-                  label="Nome"
-                  placeholder="Digite seu nome"
-                  error={errors.nome}
-                  {...register("nome")}
-                />
-                <Input
-                  type="email"
-                  label="Email"
-                  placeholder="Digite seu email"
-                  error={errors.email}
-                  {...register("email")}
-                />
-                <Input
-                  type="password"
-                  label="Senha"
-                  placeholder="Digite sua senha"
-                  error={errors.password}
-                  {...register("password")}
-                />
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="bg-white p-4 rounded-lg shadow-md max-w-md mx-auto"
+        >
+          <Input
+            type="text"
+            label="Nome"
+            placeholder="Digite seu nome"
+            error={errors.nome}
+            {...register("nome")}
+          />
+          <Input
+            type="email"
+            label="Email"
+            placeholder="Digite seu email"
+            error={errors.email}
+            {...register("email")}
+          />
+          <Input
+            type="password"
+            label="Senha"
+            placeholder="Digite sua senha"
+            error={errors.password}
+            {...register("password")}
+          />
 
-                {/* <Controller
+          {/* <Controller
                   name="profile"
                   control={control}
                   render={({ field }) => (
@@ -128,28 +130,24 @@ const CreateUser: React.FC = () => {
                     />
                   )}
                 /> */}
-
-
-              <div className="flex justify-end space-x-4 mt-6">
-              <button
-                className={clsx(
-                  "br-button block primary mt-3",
-                  isSubmitting && "loading"
-                )}
-                type="submit"
-              >
-                Criar
-              </button>
-                <Link
-                to={"/usuarios"}
-                className= "br-button block secondary mt-3">
-                  Voltar
-                </Link>
-              </div>
-          </form>
+          <div className="flex justify-end space-x-4 mt-6">
+            <Link to={"/usuarios"} className="br-button block secondary mt-3">
+              Voltar
+            </Link>
+            <button
+              className={clsx(
+                "br-button block primary mt-3",
+                isSubmitting && "loading"
+              )}
+              type="submit"
+            >
+              Criar
+            </button>
+          </div>
+        </form>
       </div>
     </DefaultLayout>
-  );
-};
+  )
+}
 
-export default CreateUser;
+export default CreateUser
