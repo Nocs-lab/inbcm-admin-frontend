@@ -191,7 +191,7 @@ const AcoesEnviarParaAnalise: React.FC<{
           className="!font-thin analise"
         >
           <i className="fa-solid fa-magnifying-glass-arrow-right p-2"></i>
-          Enviar para análise
+          Analisar
         </Button>
 
         <Button
@@ -199,7 +199,7 @@ const AcoesEnviarParaAnalise: React.FC<{
           onClick={() => handleVisualizarHistorico()}
           className="!font-thin analise"
         >
-          <i className="fa-solid fa-timeline p-2"></i>Visualizar histórico
+          <i className="fa-solid fa-timeline p-2"></i>Histórico
         </Button>
       </div>
     </>
@@ -289,7 +289,7 @@ const AcoesExcluirDeclaracao: React.FC<{
           onClick={() => setModalAberta(true)}
           className="!font-thin recuperar"
         >
-          <i className="fa-solid fa-recycle p-2"></i>Recuperar declaração
+          <i className="fa-solid fa-recycle p-2"></i>Recuperar
         </Button>
 
         <Button
@@ -297,7 +297,7 @@ const AcoesExcluirDeclaracao: React.FC<{
           onClick={() => handleVisualizarHistorico()}
           className="!font-thin analise"
         >
-          <i className="fa-solid fa-timeline p-2"></i>Visualizar histórico
+          <i className="fa-solid fa-timeline p-2"></i>Histórico
         </Button>
       </div>
     </>
@@ -393,7 +393,7 @@ const AcoesDefinirStatus: React.FC<{
           onClick={() => setModalAberta(true)}
           className="!font-thin concluir"
         >
-          <i className="fa-solid fa-circle-check p-2"></i>Concluir análise
+          <i className="fa-solid fa-circle-check p-2"></i>Finalizar
         </Button>
 
         <Button
@@ -401,7 +401,7 @@ const AcoesDefinirStatus: React.FC<{
           onClick={() => handleVisualizarHistorico()}
           className="!font-thin analise"
         >
-          <i className="fa-solid fa-timeline p-2"></i>Visualizar histórico
+          <i className="fa-solid fa-timeline p-2"></i>Histórico
         </Button>
       </div>
     </>
@@ -643,8 +643,14 @@ const DeclaracoesPage = () => {
         status: false,
         enviarParaAnalise: true,
         excluirDeclaracao: false,
+        analistasResponsaveisNome: false,
         definirStatus: false
       })
+    } else {
+      setVisibility((prev) => ({
+        ...prev,
+        analistasResponsaveisNome: true // Exiba a coluna Analistas para outros status
+      }))
     }
   }, [columnFilters])
 
@@ -694,7 +700,8 @@ const DeclaracoesPage = () => {
                     status: false,
                     enviarParaAnalise: true,
                     excluirDeclaracao: false,
-                    definirStatus: false
+                    definirStatus: false,
+                    analistasResponsaveisNome: false
                   }))
                 }}
               >
