@@ -263,7 +263,6 @@ const Index: React.FC = () => {
           title="Associar Museus"
           modalOpened={showAssociationModal}
           onCloseButtonClick={() => setShowAssociationModal(false)}
-          className="max-w-2xl overflow-visible" // Configura o modal com altura fixa e estrutura flexível
         >
           <form
             onSubmit={(e) => {
@@ -272,9 +271,9 @@ const Index: React.FC = () => {
             }}
           >
             {/* Corpo do modal com rolagem */}
-            <Modal.Body className="p-6" style={{ maxHeight: "none" }}>
+            <Modal.Body className="p-4">
               <Row>
-                <Col my={2}>
+                <Col>
                   <Controller
                     control={control}
                     name="museus"
@@ -282,6 +281,7 @@ const Index: React.FC = () => {
                       <Select
                         type="multiple" // Configura o Select para múltiplos valores
                         selectAllText={""}
+                        label="Museus"
                         placeholder="Selecione os museus"
                         options={
                           museus?.map((m) => ({
@@ -303,16 +303,12 @@ const Index: React.FC = () => {
                 </Col>
               </Row>
               <Row>
-                <Col my={4}>
-                  <label htmlFor="observacoes">
-                    Escolha o museu para associar este usuario.
-                  </label>
-                </Col>
+                <Col my={6}></Col>
               </Row>
             </Modal.Body>
 
             {/* Footer fixado ao final do modal */}
-            <Modal.Footer justify-content="center" className="pt-4">
+            <Modal.Footer justify-content="end" className="pt-4">
               <p className="mb-4">
                 Tem certeza que deseja associar para este museu?
               </p>
