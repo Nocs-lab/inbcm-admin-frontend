@@ -183,7 +183,7 @@ const Index: React.FC = () => {
             onClick={() => navigate("/usuarios/createuser")}
             aria-label="Criar novo usuário"
           >
-            <i className="fa-solid fa-user-plus"></i> Novo Usuário
+            <i className="fa-solid fa-user-plus"></i> Novo usuário
           </button>
         </div>
       </div>

@@ -91,7 +91,7 @@ const EditUser: React.FC = () => {
 
   return (
     <DefaultLayout>
-      <h1>Editar Usuário</h1>
+      <h1>Editar usuário</h1>
       <div className="container mx-auto p-6 bg-white rounded-lg">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div>

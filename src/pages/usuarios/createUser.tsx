@@ -90,7 +90,7 @@ const CreateUser: React.FC = () => {
   return (
     <DefaultLayout>
       <div className="container mx-auto p-4">
-        <h1>Criar Usuário</h1>
+        <h1>Criar usuário</h1>
         <form onSubmit={handleSubmit(onSubmit)} className="mt-5">
           <div className="flex gap-2 w-full">
             <Input
