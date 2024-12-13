@@ -12,12 +12,18 @@ import { Link } from "react-router-dom"
 import request from "../../utils/request"
 import toast from "react-hot-toast"
 
-const schema = z.object({
-  email: z.string().min(1, "Este campo é obrigatório"),
-  nome: z.string().min(1, "Este campo é obrigatório"),
-  //profile: z.string().min(1, "Este campo é obrigatório"),
-  password: z.string().min(1, "Este campo é obrigatório")
-})
+const schema = z
+  .object({
+    email: z.string().min(1, "Este campo é obrigatório"),
+    nome: z.string().min(1, "Este campo é obrigatório"),
+    //profile: z.string().min(1, "Este campo é obrigatório"),
+    password: z.string().min(1, "Este campo é obrigatório"),
+    confirmPassword: z.string().min(1, "Este campo é obrigatório")
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "As senhas não são iguais",
+    path: ["confirmPassword"]
+  })
 type FormData = z.infer<typeof schema>
 
 // interface Profile {
@@ -92,42 +98,54 @@ const CreateUser: React.FC = () => {
       <div className="container mx-auto p-4">
         <h1>Criar usuário</h1>
         <form onSubmit={handleSubmit(onSubmit)} className="mt-5">
-          <div className="flex gap-2 w-full">
-            <Input
-              type="text"
-              label="Nome"
-              placeholder="Digite seu nome"
-              error={errors.nome}
-              {...register("nome")}
-            />
-            <Input
-              type="email"
-              label="Email"
-              placeholder="Digite seu email"
-              error={errors.email}
-              {...register("email")}
-            />
-            <Input
-              type="password"
-              label="Senha"
-              placeholder="Digite sua senha"
-              error={errors.password}
-              {...register("password")}
-            />
-
-            {/* <Controller
-                    name="profile"
-                    control={control}
-                    render={({ field }) => (
-                      <Select
-                        id="select-simples"
-                        placeholder="Selecione um perfil"
-                        label="Perfil"
-                        options={profileOptions}
-                        {...field}
-                      />
-                    )}
-                  /> */}
+          <div className="flex items-center justify-center">
+            <div className="grid gap-2 w-1/2">
+              <div className="grid gap-2 w-full">
+                <Input
+                  type="text"
+                  label="Nome"
+                  placeholder="Digite seu nome"
+                  error={errors.nome}
+                  {...register("nome")}
+                />
+                <Input
+                  type="email"
+                  label="Email"
+                  placeholder="Digite seu email"
+                  error={errors.email}
+                  {...register("email")}
+                />
+              </div>
+              <div className="flex gap-2 w-full">
+                <Input
+                  type="password"
+                  label="Senha"
+                  placeholder="Digite sua senha"
+                  error={errors.password}
+                  {...register("password")}
+                />
+                <Input
+                  type="password"
+                  label="Confirmar senha"
+                  placeholder="Digite sua senha novamente"
+                  error={errors.confirmPassword}
+                  {...register("confirmPassword")}
+                />
+              </div>
+              {/* <Controller
+                      name="profile"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          id="select-simples"
+                          placeholder="Selecione um perfil"
+                          label="Perfil"
+                          options={profileOptions}
+                          {...field}
+                        />
+                      )}
+                    /> */}
+            </div>
           </div>
           <div className="flex space-x-4 justify-end">
             <Link to={"/usuarios"} className="br-button secondary mt-5">
