@@ -193,9 +193,10 @@ const Index: React.FC = () => {
             <tr>
               <th className="text-center">Nome</th>
               <th className="text-center">Email</th>
-              <th className="text-center">Museu</th>
+              <th className="text-center">Museus</th>
+              <th className="text-center">Associar</th>
               {/*<th>Perfil</th>*/}
-              <th>Ações</th>
+              <th className="text-center">Ações</th>
             </tr>
           </thead>
           <tbody>
@@ -204,12 +205,19 @@ const Index: React.FC = () => {
                 <td className="text-center">{user.nome}</td>
                 <td className="text-center">{user.email}</td>
                 <td className="text-center">
+                  {user.museus
+                    .slice(0, 2)
+                    .map((museu: Museu) => museu.nome)
+                    .join(", ")}
+                  {user.museus.length > 3 && " ..."}
+                </td>
+                <td className="text-center">
                   <Button onClick={() => handleOpenAssociationModal(user._id)}>
                     Associar Museu
                   </Button>
                 </td>
                 {/*<td>{user.profile?.name || 'Não especificado'}</td>*/}
-                <td>
+                <td className="text-center">
                   <button
                     className="btn text-blue-950"
                     onClick={() => navigate(`/usuarios/${user._id}`)}
