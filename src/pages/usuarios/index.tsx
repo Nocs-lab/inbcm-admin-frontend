@@ -268,6 +268,7 @@ const Index: React.FC = () => {
         <Modal
           useScrim
           showCloseButton
+          className="w-full max-w-[90%] sm:max-w-[600px] md:max-w-[800px] p-3"
           title="Associar Museus"
           modalOpened={showAssociationModal}
           onCloseButtonClick={() => setShowAssociationModal(false)}
@@ -290,7 +291,7 @@ const Index: React.FC = () => {
                         type="multiple" // Configura o Select para múltiplos valores
                         selectAllText={""}
                         label="Museus"
-                        placeholder="Selecione os museus"
+                        placeholder="Selecione..."
                         options={
                           museus?.map((m) => ({
                             label: m.nome, // Nome do museu

@@ -121,6 +121,7 @@ const AcoesEnviarParaAnalise: React.FC<{
       <Modal
         useScrim
         showCloseButton
+        className="w-full max-w-[90%] sm:max-w-[600px] md:max-w-[800px] p-3"
         title="Enviar para análise"
         modalOpened={modalAberta}
         onCloseButtonClick={() => setModalAberta(false)}
@@ -136,6 +137,7 @@ const AcoesEnviarParaAnalise: React.FC<{
               <Col>
                 <Select
                   id="select-simples"
+                  placeholder="Selecione..."
                   label="Analista"
                   options={
                     analistas?.map(
@@ -256,6 +258,7 @@ const AcoesExcluirDeclaracao: React.FC<{
         useScrim
         showCloseButton
         title="Recuperar declaração"
+        className="w-full max-w-[90%] sm:max-w-[600px] md:max-w-[800px] p-3"
         modalOpened={modalAberta}
         onCloseButtonClick={() => setModalAberta(false)}
       >
@@ -325,6 +328,9 @@ const AcoesDefinirStatus: React.FC<{
   }>
 }> = ({ row }) => {
   const [modalAberta, setModalAberta] = useState(false)
+  const [statusSelecionado, setStatusSelecionado] = useState<
+    "Em conformidade" | "Não conformidade" | ""
+  >("")
 
   const { mutate, isPending } = useMutation({
     mutationFn: (status: "Em conformidade" | "Não conformidade") => {
@@ -352,30 +358,71 @@ const AcoesDefinirStatus: React.FC<{
       <Modal
         useScrim
         showCloseButton
-        title="Alterar status"
+        className="large w-full max-w-[90%] sm:max-w-[600px] md:max-w-[800px] p-3"
+        title="Finalizar análise de declaração"
         modalOpened={modalAberta}
         onCloseButtonClick={() => setModalAberta(false)}
       >
-        <Modal.Body>Informe o novo status da declaração:</Modal.Body>
+        <Modal.Body>
+          <div className="space-y-4">
+            <div>
+              <p>
+                <strong>Envio:</strong>
+                {row.original?.dataCriacao
+                  ? new Date(row.original.dataCriacao).toLocaleString()
+                  : "Carregando..."}
+              </p>
+              <p>
+                <strong>Ano:</strong>
+                {row.original?.anoDeclaracao || "Carregando..."}
+              </p>
+              <p>
+                <strong>Museu:</strong>
+                {row.original?.museu_id?.nome || "Carregando..."}
+              </p>
+              <p>
+                <strong>Analista:</strong>
+                {row.original?.analistasResponsaveisNome?.join(", ") ||
+                  "Carregando..."}
+              </p>
+            </div>
+            {/* <div className="border rounded-md p-4">
+              <p className="font-bold">Resumo do acervo</p>
+              <table className="w-full border-collapse border border-gray-300 mt-2 text-sm">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="border border-gray-300 p-2 text-left">Tipo</th>
+                    <th className="border border-gray-300 p-2 text-right">Itens</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="border border-gray-300 p-2">Museológico</td>
+                    <td className="border border-gray-300 p-2 text-right">500</td>
+                  </tr>
+                  <tr>
+                    <td className="border border-gray-300 p-2">Bibliográfico</td>
+                    <td className="border border-gray-300 p-2 text-right">3</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div> */}
+            <div>
+              <Select
+                id="select-conclusao"
+                placeholder="Selecione..."
+                label="Conclusão"
+                options={[
+                  { label: "Em conformidade", value: "Em conformidade" },
+                  { label: "Não conformidade", value: "Não conformidade" }
+                ]}
+                value={statusSelecionado}
+                onChange={(value) => setStatusSelecionado(value)}
+              />
+            </div>
+          </div>
+        </Modal.Body>
         <Modal.Footer justify-content="end">
-          <Button
-            primary
-            small
-            m={2}
-            loading={isPending}
-            onClick={() => mutate("Em conformidade")}
-          >
-            Alterar para "Em conformidade"
-          </Button>
-          <Button
-            primary
-            small
-            m={2}
-            loading={isPending}
-            onClick={() => mutate("Não conformidade")}
-          >
-            Alterar para "Não conformidade"
-          </Button>
           <Button
             secondary
             small
@@ -385,8 +432,18 @@ const AcoesDefinirStatus: React.FC<{
           >
             Cancelar
           </Button>
+          <Button
+            primary
+            small
+            m={2}
+            loading={isPending}
+            onClick={() => mutate(statusSelecionado)}
+          >
+            Confirmar
+          </Button>
         </Modal.Footer>
       </Modal>
+
       <div className="flex space-x-2">
         <Button
           small
