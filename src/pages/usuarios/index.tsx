@@ -187,7 +187,7 @@ const Index: React.FC = () => {
           </button>
         </div>
       </div>
-      <div className="flex">
+      <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr>

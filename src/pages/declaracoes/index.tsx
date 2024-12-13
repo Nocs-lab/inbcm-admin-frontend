@@ -386,27 +386,6 @@ const AcoesDefinirStatus: React.FC<{
                   "Carregando..."}
               </p>
             </div>
-            {/* <div className="border rounded-md p-4">
-              <p className="font-bold">Resumo do acervo</p>
-              <table className="w-full border-collapse border border-gray-300 mt-2 text-sm">
-                <thead className="bg-gray-100">
-                  <tr>
-                    <th className="border border-gray-300 p-2 text-left">Tipo</th>
-                    <th className="border border-gray-300 p-2 text-right">Itens</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td className="border border-gray-300 p-2">Museológico</td>
-                    <td className="border border-gray-300 p-2 text-right">500</td>
-                  </tr>
-                  <tr>
-                    <td className="border border-gray-300 p-2">Bibliográfico</td>
-                    <td className="border border-gray-300 p-2 text-right">3</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div> */}
             <div>
               <Select
                 id="select-conclusao"
