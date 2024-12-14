@@ -4,7 +4,7 @@ import logoNocs from "../images/logo-nocs.png"
 
 const Footer: React.FC = () => {
   return (
-    <footer className="br-footer">
+    <footer className="br-footer mt-auto">
       <div className="container-lg">
         <div className="logo">
           <img src={logoIbramBranco} alt="Imagem" />
