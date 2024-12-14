@@ -97,30 +97,39 @@ const IndexPage = () => {
         <Select
           label="Início"
           value={inicio ?? undefined}
-          options={anos.map((ano) => ({
-            label: String(ano),
-            value: String(ano)
-          }))}
-          onChange={(ano: string) => setInicio(ano)}
+          options={[
+            { label: "Selecione um ano", value: "" }, // Opção padrão
+            ...anos.map((ano) => ({
+              label: String(ano),
+              value: String(ano)
+            }))
+          ]}
+          onChange={(ano: string) => setInicio(ano || "")}
           className="w-full"
         />
         <Select
           label="Fim"
           value={fim ?? undefined}
-          options={anos
-            .filter((ano) => !inicio || ano >= Number(inicio))
-            .map((ano) => ({ label: String(ano), value: String(ano) }))}
-          onChange={(ano: string) => setFim(ano)}
+          options={[
+            { label: "Selecione um ano", value: "" }, // Opção padrão
+            ...anos
+              .filter((ano) => !inicio || ano >= Number(inicio))
+              .map((ano) => ({ label: String(ano), value: String(ano) }))
+          ]}
+          onChange={(ano: string) => setFim(ano || "")}
           className="w-full"
         />
         <Select
           label="Região"
-          value={regiao ?? undefined}
-          options={Object.keys(regionsMap).map((regiao) => ({
-            label: regiao,
-            value: regiao
-          }))}
-          onChange={(regiao: string) => setRegiao(regiao)}
+          value={regiao ?? ""}
+          options={[
+            { label: "Selecione uma região", value: "" }, // Opção padrão
+            ...Object.keys(regionsMap).map((regiao) => ({
+              label: regiao,
+              value: regiao
+            }))
+          ]}
+          onChange={(regiao: string) => setRegiao(regiao || "")}
           placeholder="Selecione uma região"
           className="w-full"
         />
@@ -128,19 +137,22 @@ const IndexPage = () => {
           label="Estado"
           disabled={!regiao}
           value={estado ?? undefined}
-          options={states
-            .map((uf) => ({
-              label: statesNameMap[uf as keyof typeof statesNameMap],
-              value: uf
-            }))
-            .filter((uf) =>
-              regiao
-                ? regionsMap[regiao as keyof typeof regionsMap].includes(
-                    uf.value
-                  )
-                : true
-            )}
-          onChange={(uf: string) => setEstado(uf)}
+          options={[
+            { label: "Selecione um estado", value: "" }, // Opção padrão
+            ...states
+              .map((uf) => ({
+                label: statesNameMap[uf as keyof typeof statesNameMap],
+                value: uf
+              }))
+              .filter((uf) =>
+                regiao
+                  ? regionsMap[regiao as keyof typeof regionsMap].includes(
+                      uf.value
+                    )
+                  : true
+              )
+          ]}
+          onChange={(uf: string) => setEstado(uf || "")}
           placeholder="Selecione um estado"
           className="w-full"
         />
@@ -148,15 +160,16 @@ const IndexPage = () => {
           label="Município"
           disabled={!estado}
           value={municipio ?? undefined}
-          options={
-            cidades
+          options={[
+            { label: "Selecione uma cidade", value: "" }, // Opção padrão
+            ...(cidades
               .filter((cidade: { estado: string }) => cidade.estado === estado)
               .map((cidade: { municipio: string }) => ({
                 label: cidade.municipio,
                 value: cidade.municipio
-              })) ?? []
-          }
-          onChange={(municipio: string) => setMunicipio(municipio)}
+              })) ?? [])
+          ]}
+          onChange={(municipio: string) => setMunicipio(municipio || null)}
           placeholder="Selecione uma cidade"
           className="w-full"
         />

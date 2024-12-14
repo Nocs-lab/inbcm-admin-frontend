@@ -213,7 +213,8 @@ const Index: React.FC = () => {
                 </td>
                 <td className="text-center">
                   <Button onClick={() => handleOpenAssociationModal(user._id)}>
-                    Associar Museu
+                    <i className="fa-solid fa-share p-1"></i>
+                    Associar
                   </Button>
                 </td>
                 {/*<td>{user.profile?.name || 'Não especificado'}</td>*/}
