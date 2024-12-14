@@ -386,18 +386,46 @@ const AcoesDefinirStatus: React.FC<{
                   "Carregando..."}
               </p>
             </div>
-            <div>
-              <Select
-                id="select-conclusao"
-                placeholder="Selecione..."
-                label="Conclusão"
-                options={[
-                  { label: "Em conformidade", value: "Em conformidade" },
-                  { label: "Não conformidade", value: "Não conformidade" }
-                ]}
-                value={statusSelecionado}
-                onChange={(value) => setStatusSelecionado(value)}
-              />
+            <div className="text-lg space-y-2">
+              <p>
+                <strong>Concluisão:</strong>
+              </p>
+              <div id="radio-conclusao" className="flex items-center space-x-6">
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="radio"
+                    id="conformidade"
+                    name="conclusao"
+                    value="Em conformidade"
+                    checked={statusSelecionado === "Em conformidade"}
+                    onChange={() => setStatusSelecionado("Em conformidade")}
+                    className="h-5 w-5 text-blue-600 border-gray-300 focus:ring-blue-500"
+                  />
+                  <label
+                    htmlFor="conformidade"
+                    className="text-gray-600 cursor-pointer"
+                  >
+                    Em conformidade
+                  </label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="radio"
+                    id="nao-conformidade"
+                    name="conclusao"
+                    value="Não conformidade"
+                    checked={statusSelecionado === "Não conformidade"}
+                    onChange={() => setStatusSelecionado("Não conformidade")}
+                    className="h-5 w-5 text-blue-600 border-gray-300 focus:ring-blue-500"
+                  />
+                  <label
+                    htmlFor="nao-conformidade"
+                    className="text-gray-600 cursor-pointer"
+                  >
+                    Não conformidade
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
         </Modal.Body>
