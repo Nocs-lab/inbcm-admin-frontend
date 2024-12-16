@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useSuspenseQuery } from "@tanstack/react-query"
+import { useNavigate } from "react-router-dom"
 import {
   Column,
   ColumnFiltersState,
@@ -112,9 +113,7 @@ const AcoesEnviarParaAnalise: React.FC<{
       }
     })
 
-  const handleVisualizarHistorico = () => {
-    window.location.href = `/declaracoes/${row.original._id}`
-  }
+  const navigate = useNavigate()
 
   return (
     <>
@@ -193,10 +192,9 @@ const AcoesEnviarParaAnalise: React.FC<{
           <i className="fa-solid fa-magnifying-glass-arrow-right p-2"></i>
           Enviar para análise
         </Button>
-
         <Button
           small
-          onClick={() => handleVisualizarHistorico()}
+          onClick={() => navigate(`/declaracoes/${row.original._id}/timeline`)}
           className="!font-thin analise"
         >
           <i className="fa-solid fa-timeline p-2"></i>Visualizar histórico
@@ -246,9 +244,7 @@ const AcoesExcluirDeclaracao: React.FC<{
     }
   })
 
-  const handleVisualizarHistorico = () => {
-    window.location.href = `/declaracoes/${row.original._id}`
-  }
+  const navigate = useNavigate()
 
   return (
     <>
@@ -294,7 +290,7 @@ const AcoesExcluirDeclaracao: React.FC<{
 
         <Button
           small
-          onClick={() => handleVisualizarHistorico()}
+          onClick={() => navigate(`/declaracoes/${row.original._id}/timeline`)}
           className="!font-thin analise"
         >
           <i className="fa-solid fa-timeline p-2"></i>Visualizar histórico
@@ -343,9 +339,7 @@ const AcoesDefinirStatus: React.FC<{
     }
   })
 
-  const handleVisualizarHistorico = () => {
-    window.location.href = `/declaracoes/${row.original._id}`
-  }
+  const navigate = useNavigate()
 
   return (
     <>
@@ -398,7 +392,7 @@ const AcoesDefinirStatus: React.FC<{
 
         <Button
           small
-          onClick={() => handleVisualizarHistorico()}
+          onClick={() => navigate(`/declaracoes/${row.original._id}/timeline`)}
           className="!font-thin analise"
         >
           <i className="fa-solid fa-timeline p-2"></i>Visualizar histórico
