@@ -194,7 +194,7 @@ const AcoesEnviarParaAnalise: React.FC<{
         </Button>
         <Button
           small
-          onClick={() => navigate(`/declaracoes/${row.original._id}/timeline`)}
+          onClick={() => navigate(`/declaracoes/${row.original._id}`)}
           className="!font-thin analise"
         >
           <i className="fa-solid fa-timeline p-2"></i>Visualizar histórico
@@ -290,7 +290,7 @@ const AcoesExcluirDeclaracao: React.FC<{
 
         <Button
           small
-          onClick={() => navigate(`/declaracoes/${row.original._id}/timeline`)}
+          onClick={() => navigate(`/declaracoes/${row.original._id}`)}
           className="!font-thin analise"
         >
           <i className="fa-solid fa-timeline p-2"></i>Visualizar histórico
@@ -392,7 +392,7 @@ const AcoesDefinirStatus: React.FC<{
 
         <Button
           small
-          onClick={() => navigate(`/declaracoes/${row.original._id}/timeline`)}
+          onClick={() => navigate(`/declaracoes/${row.original._id}`)}
           className="!font-thin analise"
         >
           <i className="fa-solid fa-timeline p-2"></i>Visualizar histórico

@@ -9,20 +9,49 @@ const DeclaracaoPage: React.FC = () => {
   const params = useParams()
   const id = params.id!
 
-  const { data } = useSuspenseQuery({
+  const { data: timeline } = useSuspenseQuery({
+    queryKey: ["timeline", id],
+    queryFn: async () => {
+      const response = await request(`/api/admin/timeline/${id}`)
+      return response.json()
+    }
+  })
+
+  const { data: declaracao } = useSuspenseQuery({
     queryKey: ["declaracoes", id],
     queryFn: async () => {
-      const response = await request(`/api/admin/declaracoes/${id}/timeline`)
+      const response = await request(`/api/admin/declaracoes/${id}`)
       return response.json()
     }
   })
 
   return (
     <DefaultLayout>
-      <Link to={`/declaracoes/${id}`} className="text-lg">
+      <Link to={`/declaracoes`} className="text-lg">
         <i className="fas fa-arrow-left" aria-hidden="true"></i>
         Voltar
       </Link>
+      <h2 className="mt-3 mb-0">
+        Declaração{" "}
+        {declaracao.retificacao
+          ? `retificadora 0${declaracao.versao - 1}`
+          : "original"}
+      </h2>
+      <span className="br-tag mb-5">{declaracao.status}</span>
+      <div className="flex gap-10 text-lg">
+        <span>
+          <span className="font-bold">Envio: </span>
+          {format(declaracao.dataCriacao, "dd/MM/yyyy HH:mm")}
+        </span>
+        <span>
+          <span className="font-bold">Ano: </span>
+          {declaracao.anoDeclaracao}
+        </span>
+        <span>
+          <span className="font-bold">Museu: </span>
+          {declaracao.museu_id.nome}
+        </span>
+      </div>
       <div className="col-auto mx-5">
         <nav
           className="br-step vertical"
@@ -36,28 +65,33 @@ const DeclaracaoPage: React.FC = () => {
             aria-orientation="vertical"
             aria-label="Lista de Opções"
           >
-            {data.map(
-              (item: {
-                dataEvento: Date
-                nomeEvento: string
-                autorEvento: string
-              }) => (
-                <button
-                  key={item.dataEvento.toISOString() + item.nomeEvento}
-                  className="step-progress-btn"
-                  role="option"
-                  aria-posinset={3}
-                  aria-setsize={3}
-                  type="button"
-                >
-                  <span className="step-info text-left">
-                    {item.nomeEvento}
-                    <br /> Por {item.autorEvento} em{" "}
-                    {format(data.dataCriacao, "dd/MM/yyyy 'às' HH:mm")}
-                  </span>
-                </button>
-              )
-            )}
+            {[...timeline]
+              .reverse()
+              .map(
+                (item: {
+                  dataEvento: Date
+                  nomeEvento: string
+                  autorEvento: string
+                }) => (
+                  <button
+                    key={item.dataEvento.toISOString() + item.nomeEvento}
+                    className="step-progress-btn"
+                    role="option"
+                    aria-posinset={3}
+                    aria-setsize={3}
+                    type="button"
+                  >
+                    <span className="step-info text-left">
+                      {item.nomeEvento}
+                      <br />
+                      Em {format(
+                        item.dataEvento,
+                        "dd/MM/yyyy 'às' HH:mm"
+                      )} por {item.autorEvento}
+                    </span>
+                  </button>
+                )
+              )}
           </div>
         </nav>
       </div>
