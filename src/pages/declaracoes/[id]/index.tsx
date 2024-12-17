@@ -32,17 +32,13 @@ const DeclaracaoPage: React.FC = () => {
         Voltar
       </Link>
       <h2 className="mt-3 mb-0">
-        Declaração{" "}
+        Histórico de declaração{" "}
         {declaracao.retificacao
           ? `retificadora 0${declaracao.versao - 1}`
           : "original"}
       </h2>
       <span className="br-tag mb-5">{declaracao.status}</span>
       <div className="flex gap-10 text-lg">
-        <span>
-          <span className="font-bold">Envio: </span>
-          {format(declaracao.dataCriacao, "dd/MM/yyyy HH:mm")}
-        </span>
         <span>
           <span className="font-bold">Ano: </span>
           {declaracao.anoDeclaracao}
