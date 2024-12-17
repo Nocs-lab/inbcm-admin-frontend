@@ -121,6 +121,7 @@ const AcoesEnviarParaAnalise: React.FC<{
       <Modal
         useScrim
         showCloseButton
+        className="w-full max-w-[90%] sm:max-w-[600px] md:max-w-[800px] p-3"
         title="Enviar para análise"
         modalOpened={modalAberta}
         onCloseButtonClick={() => setModalAberta(false)}
@@ -136,6 +137,7 @@ const AcoesEnviarParaAnalise: React.FC<{
               <Col>
                 <Select
                   id="select-simples"
+                  placeholder="Selecione..."
                   label="Analista"
                   options={
                     analistas?.map(
@@ -191,7 +193,7 @@ const AcoesEnviarParaAnalise: React.FC<{
           className="!font-thin analise"
         >
           <i className="fa-solid fa-magnifying-glass-arrow-right p-2"></i>
-          Enviar para análise
+          Analisar
         </Button>
 
         <Button
@@ -199,7 +201,7 @@ const AcoesEnviarParaAnalise: React.FC<{
           onClick={() => handleVisualizarHistorico()}
           className="!font-thin analise"
         >
-          <i className="fa-solid fa-timeline p-2"></i>Visualizar histórico
+          <i className="fa-solid fa-timeline p-2"></i>Histórico
         </Button>
       </div>
     </>
@@ -256,6 +258,7 @@ const AcoesExcluirDeclaracao: React.FC<{
         useScrim
         showCloseButton
         title="Recuperar declaração"
+        className="w-full max-w-[90%] sm:max-w-[600px] md:max-w-[800px] p-3"
         modalOpened={modalAberta}
         onCloseButtonClick={() => setModalAberta(false)}
       >
@@ -289,7 +292,7 @@ const AcoesExcluirDeclaracao: React.FC<{
           onClick={() => setModalAberta(true)}
           className="!font-thin recuperar"
         >
-          <i className="fa-solid fa-recycle p-2"></i>Recuperar declaração
+          <i className="fa-solid fa-recycle p-2"></i>Recuperar
         </Button>
 
         <Button
@@ -297,7 +300,7 @@ const AcoesExcluirDeclaracao: React.FC<{
           onClick={() => handleVisualizarHistorico()}
           className="!font-thin analise"
         >
-          <i className="fa-solid fa-timeline p-2"></i>Visualizar histórico
+          <i className="fa-solid fa-timeline p-2"></i>Histórico
         </Button>
       </div>
     </>
@@ -325,6 +328,9 @@ const AcoesDefinirStatus: React.FC<{
   }>
 }> = ({ row }) => {
   const [modalAberta, setModalAberta] = useState(false)
+  const [statusSelecionado, setStatusSelecionado] = useState<
+    "Em conformidade" | "Não conformidade" | ""
+  >("")
 
   const { mutate, isPending } = useMutation({
     mutationFn: (status: "Em conformidade" | "Não conformidade") => {
@@ -352,30 +358,78 @@ const AcoesDefinirStatus: React.FC<{
       <Modal
         useScrim
         showCloseButton
-        title="Alterar status"
+        className="large w-full max-w-[90%] sm:max-w-[600px] md:max-w-[800px] p-3"
+        title="Finalizar análise de declaração"
         modalOpened={modalAberta}
         onCloseButtonClick={() => setModalAberta(false)}
       >
-        <Modal.Body>Informe o novo status da declaração:</Modal.Body>
+        <Modal.Body>
+          <div className="space-y-4">
+            <div>
+              <p>
+                <strong>Envio:</strong>
+                {row.original?.dataCriacao
+                  ? new Date(row.original.dataCriacao).toLocaleString()
+                  : "Carregando..."}
+              </p>
+              <p>
+                <strong>Ano:</strong>
+                {row.original?.anoDeclaracao || "Carregando..."}
+              </p>
+              <p>
+                <strong>Museu:</strong>
+                {row.original?.museu_id?.nome || "Carregando..."}
+              </p>
+              <p>
+                <strong>Analista:</strong>
+                {row.original?.analistasResponsaveisNome?.join(", ") ||
+                  "Carregando..."}
+              </p>
+            </div>
+            <div className="text-lg space-y-2">
+              <p>
+                <strong>Concluisão:</strong>
+              </p>
+              <div id="radio-conclusao" className="flex items-center space-x-6">
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="radio"
+                    id="conformidade"
+                    name="conclusao"
+                    value="Em conformidade"
+                    checked={statusSelecionado === "Em conformidade"}
+                    onChange={() => setStatusSelecionado("Em conformidade")}
+                    className="h-5 w-5 text-blue-600 border-gray-300 focus:ring-blue-500"
+                  />
+                  <label
+                    htmlFor="conformidade"
+                    className="text-gray-600 cursor-pointer"
+                  >
+                    Em conformidade
+                  </label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="radio"
+                    id="nao-conformidade"
+                    name="conclusao"
+                    value="Não conformidade"
+                    checked={statusSelecionado === "Não conformidade"}
+                    onChange={() => setStatusSelecionado("Não conformidade")}
+                    className="h-5 w-5 text-blue-600 border-gray-300 focus:ring-blue-500"
+                  />
+                  <label
+                    htmlFor="nao-conformidade"
+                    className="text-gray-600 cursor-pointer"
+                  >
+                    Não conformidade
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Modal.Body>
         <Modal.Footer justify-content="end">
-          <Button
-            primary
-            small
-            m={2}
-            loading={isPending}
-            onClick={() => mutate("Em conformidade")}
-          >
-            Alterar para "Em conformidade"
-          </Button>
-          <Button
-            primary
-            small
-            m={2}
-            loading={isPending}
-            onClick={() => mutate("Não conformidade")}
-          >
-            Alterar para "Não conformidade"
-          </Button>
           <Button
             secondary
             small
@@ -385,15 +439,25 @@ const AcoesDefinirStatus: React.FC<{
           >
             Cancelar
           </Button>
+          <Button
+            primary
+            small
+            m={2}
+            loading={isPending}
+            onClick={() => mutate(statusSelecionado)}
+          >
+            Confirmar
+          </Button>
         </Modal.Footer>
       </Modal>
+
       <div className="flex space-x-2">
         <Button
           small
           onClick={() => setModalAberta(true)}
           className="!font-thin concluir"
         >
-          <i className="fa-solid fa-circle-check p-2"></i>Concluir análise
+          <i className="fa-solid fa-circle-check p-2"></i>Finalizar
         </Button>
 
         <Button
@@ -401,7 +465,7 @@ const AcoesDefinirStatus: React.FC<{
           onClick={() => handleVisualizarHistorico()}
           className="!font-thin analise"
         >
-          <i className="fa-solid fa-timeline p-2"></i>Visualizar histórico
+          <i className="fa-solid fa-timeline p-2"></i>Histórico
         </Button>
       </div>
     </>
@@ -643,8 +707,14 @@ const DeclaracoesPage = () => {
         status: false,
         enviarParaAnalise: true,
         excluirDeclaracao: false,
+        analistasResponsaveisNome: false,
         definirStatus: false
       })
+    } else {
+      setVisibility((prev) => ({
+        ...prev,
+        analistasResponsaveisNome: true // Exiba a coluna Analistas para outros status
+      }))
     }
   }, [columnFilters])
 
@@ -668,7 +738,7 @@ const DeclaracoesPage = () => {
 
   return (
     <DefaultLayout>
-      <h2>Listagem de Declarações</h2>
+      <h2>Listagem de declarações</h2>
       <div className="br-tab small">
         <nav className="tab-nav">
           <ul>
@@ -694,7 +764,8 @@ const DeclaracoesPage = () => {
                     status: false,
                     enviarParaAnalise: true,
                     excluirDeclaracao: false,
-                    definirStatus: false
+                    definirStatus: false,
+                    analistasResponsaveisNome: false
                   }))
                 }}
               >

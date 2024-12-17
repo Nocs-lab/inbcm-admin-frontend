@@ -183,19 +183,20 @@ const Index: React.FC = () => {
             onClick={() => navigate("/usuarios/createuser")}
             aria-label="Criar novo usuário"
           >
-            <i className="fa-solid fa-user-plus"></i> Novo Usuário
+            <i className="fa-solid fa-user-plus"></i> Novo usuário
           </button>
         </div>
       </div>
-      <div className="flex">
+      <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr>
               <th className="text-center">Nome</th>
               <th className="text-center">Email</th>
-              <th className="text-center">Museu</th>
+              <th className="text-center">Museus</th>
+              <th className="text-center">Associar</th>
               {/*<th>Perfil</th>*/}
-              <th>Ações</th>
+              <th className="text-center">Ações</th>
             </tr>
           </thead>
           <tbody>
@@ -204,12 +205,20 @@ const Index: React.FC = () => {
                 <td className="text-center">{user.nome}</td>
                 <td className="text-center">{user.email}</td>
                 <td className="text-center">
+                  {user.museus
+                    .slice(0, 2)
+                    .map((museu: Museu) => museu.nome)
+                    .join(", ")}
+                  {user.museus.length > 3 && " ..."}
+                </td>
+                <td className="text-center">
                   <Button onClick={() => handleOpenAssociationModal(user._id)}>
-                    Associar Museu
+                    <i className="fa-solid fa-share p-1"></i>
+                    Associar
                   </Button>
                 </td>
                 {/*<td>{user.profile?.name || 'Não especificado'}</td>*/}
-                <td>
+                <td className="text-center">
                   <button
                     className="btn text-blue-950"
                     onClick={() => navigate(`/usuarios/${user._id}`)}
@@ -260,6 +269,7 @@ const Index: React.FC = () => {
         <Modal
           useScrim
           showCloseButton
+          className="w-full max-w-[90%] sm:max-w-[600px] md:max-w-[800px] p-3"
           title="Associar Museus"
           modalOpened={showAssociationModal}
           onCloseButtonClick={() => setShowAssociationModal(false)}
@@ -282,7 +292,7 @@ const Index: React.FC = () => {
                         type="multiple" // Configura o Select para múltiplos valores
                         selectAllText={""}
                         label="Museus"
-                        placeholder="Selecione os museus"
+                        placeholder="Selecione..."
                         options={
                           museus?.map((m) => ({
                             label: m.nome, // Nome do museu
