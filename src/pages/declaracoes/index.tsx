@@ -24,7 +24,7 @@ import { Button, Modal, Row, Col } from "react-dsgov"
 import DefaultLayout from "../../layouts/default"
 import request from "../../utils/request"
 import { stateRegions } from ".././../utils/regioes"
-import { Select } from "react-dsgov"
+import { Select, Textarea } from "react-dsgov"
 import toast from "react-hot-toast"
 
 declare module "@tanstack/react-table" {
@@ -305,6 +305,9 @@ const AcoesExcluirDeclaracao: React.FC<{
 
 const AcoesDefinirStatus: React.FC<{
   row: TableRow<{
+    museologico: unknown
+    arquivistico: unknown
+    bibliografico: unknown
     _id: string
     anoDeclaracao: string
     retificacao: boolean
@@ -324,7 +327,18 @@ const AcoesDefinirStatus: React.FC<{
   }>
 }> = ({ row }) => {
   const [modalAberta, setModalAberta] = useState(false)
-  const [statusSelecionado, setStatusSelecionado] = useState<
+  const [statusSelecionado] = useState<
+    "Em conformidade" | "Não conformidade" | ""
+  >("")
+  const [statusMuseologico, setStatusMuseologico] = useState<
+    "Em conformidade" | "Não conformidade" | ""
+  >("")
+
+  const [statusArquivistico, setStatusArquivistico] = useState<
+    "Em conformidade" | "Não conformidade" | ""
+  >("")
+
+  const [statusBibliografico, setStatusBibliografico] = useState<
     "Em conformidade" | "Não conformidade" | ""
   >("")
 
@@ -347,6 +361,8 @@ const AcoesDefinirStatus: React.FC<{
 
   const navigate = useNavigate()
 
+  console.log("row.original.museologico: ", row.original)
+
   return (
     <>
       <Modal
@@ -367,60 +383,166 @@ const AcoesDefinirStatus: React.FC<{
                   : "Carregando..."}
               </p>
               <p>
-                <strong>Ano:</strong>
+                <strong>Ano: </strong>
                 {row.original?.anoDeclaracao || "Carregando..."}
               </p>
               <p>
-                <strong>Museu:</strong>
+                <strong>Museu: </strong>
                 {row.original?.museu_id?.nome || "Carregando..."}
               </p>
               <p>
-                <strong>Analista:</strong>
+                <strong>Analista: </strong>
                 {row.original?.analistasResponsaveisNome?.join(", ") ||
                   "Carregando..."}
               </p>
             </div>
-            <div className="text-lg space-y-2">
-              <p>
-                <strong>Concluisão:</strong>
-              </p>
-              <div id="radio-conclusao" className="flex items-center space-x-6">
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="radio"
-                    id="conformidade"
-                    name="conclusao"
-                    value="Em conformidade"
-                    checked={statusSelecionado === "Em conformidade"}
-                    onChange={() => setStatusSelecionado("Em conformidade")}
-                    className="h-5 w-5 text-blue-600 border-gray-300 focus:ring-blue-500"
-                  />
-                  <label
-                    htmlFor="conformidade"
-                    className="text-gray-600 cursor-pointer"
-                  >
-                    Em conformidade
-                  </label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="radio"
-                    id="nao-conformidade"
-                    name="conclusao"
-                    value="Não conformidade"
-                    checked={statusSelecionado === "Não conformidade"}
-                    onChange={() => setStatusSelecionado("Não conformidade")}
-                    className="h-5 w-5 text-blue-600 border-gray-300 focus:ring-blue-500"
-                  />
-                  <label
-                    htmlFor="nao-conformidade"
-                    className="text-gray-600 cursor-pointer"
-                  >
-                    Não conformidade
-                  </label>
+            <hr />
+            {row.original?.museologico && (
+              <div className="text-lg space-y-2">
+                <p>
+                  <strong>Museológico:</strong>
+                </p>
+                <div
+                  id="radio-conclusao"
+                  className="flex items-center space-x-6"
+                >
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      id="conformidadeMuseologico"
+                      name="conclusaoMuseologico"
+                      value="Em conformidade"
+                      checked={statusMuseologico === "Em conformidade"}
+                      onChange={() => setStatusMuseologico("Em conformidade")}
+                      className="h-5 w-5 text-blue-600 border-gray-300 focus:ring-blue-500"
+                    />
+                    <label
+                      htmlFor="conformidade"
+                      className="text-gray-600 cursor-pointer"
+                    >
+                      Em conformidade
+                    </label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      id="nao-conformidadeMuselogico"
+                      name="conclusaoMuseologico"
+                      value="Não conformidade"
+                      checked={statusMuseologico === "Não conformidade"}
+                      onChange={() => setStatusMuseologico("Não conformidade")}
+                      className="h-5 w-5 text-blue-600 border-gray-300 focus:ring-blue-500"
+                    />
+                    <label
+                      htmlFor="nao-conformidade"
+                      className="text-gray-600 cursor-pointer"
+                    >
+                      Não conformidade
+                    </label>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
+            {row.original?.arquivistico && (
+              <div className="text-lg space-y-2">
+                <p>
+                  <strong>Arquivístico:</strong>
+                </p>
+                <div
+                  id="radio-conclusao"
+                  className="flex items-center space-x-6"
+                >
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      id="conformidadeArquivistico"
+                      name="conclusaoArquivistico"
+                      value="Em conformidade"
+                      checked={statusArquivistico === "Em conformidade"}
+                      onChange={() => setStatusArquivistico("Em conformidade")}
+                      className="h-5 w-5 text-blue-600 border-gray-300 focus:ring-blue-500"
+                    />
+                    <label
+                      htmlFor="conformidade"
+                      className="text-gray-600 cursor-pointer"
+                    >
+                      Em conformidade
+                    </label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      id="nao-conformidadeArquivistico"
+                      name="conclusaoArquivistico"
+                      value="Não conformidade"
+                      checked={statusArquivistico === "Não conformidade"}
+                      onChange={() => setStatusArquivistico("Não conformidade")}
+                      className="h-5 w-5 text-blue-600 border-gray-300 focus:ring-blue-500"
+                    />
+                    <label
+                      htmlFor="nao-conformidade"
+                      className="text-gray-600 cursor-pointer"
+                    >
+                      Não conformidade
+                    </label>
+                  </div>
+                </div>
+              </div>
+            )}
+            {row.original?.bibliografico && (
+              <div className="text-lg space-y-2">
+                <p>
+                  <strong>Bibliográfico:</strong>
+                </p>
+                <div
+                  id="radio-conclusao"
+                  className="flex items-center space-x-6"
+                >
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      id="conformidadeBibliografico"
+                      name="conclusaoBibliografico"
+                      value="Em conformidade"
+                      checked={statusBibliografico === "Em conformidade"}
+                      onChange={() => setStatusBibliografico("Em conformidade")}
+                      className="h-5 w-5 text-blue-600 border-gray-300 focus:ring-blue-500"
+                    />
+                    <label
+                      htmlFor="conformidade"
+                      className="text-gray-600 cursor-pointer"
+                    >
+                      Em conformidade
+                    </label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      id="nao-conformidadeBibliografico"
+                      name="conclusaoBibliografico"
+                      value="Não conformidade"
+                      checked={statusBibliografico === "Não conformidade"}
+                      onChange={() =>
+                        setStatusBibliografico("Não conformidade")
+                      }
+                      className="h-5 w-5 text-blue-600 border-gray-300 focus:ring-blue-500"
+                    />
+                    <label
+                      htmlFor="nao-conformidade"
+                      className="text-gray-600 cursor-pointer"
+                    >
+                      Não conformidade
+                    </label>
+                  </div>
+                </div>
+              </div>
+            )}
+            <Textarea
+              label="Observações"
+              className="col-span-4"
+              value={""}
+              rows={5}
+            />
           </div>
         </Modal.Body>
         <Modal.Footer justify-content="end">
