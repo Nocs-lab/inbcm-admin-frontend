@@ -1,5 +1,5 @@
 import DefaultLayout from "../layouts/default"
-import { Select } from "react-dsgov"
+import Select from "../components/MultiSelect"
 import Charts from "./_components/Charts"
 import { Suspense, useEffect } from "react"
 import { useSuspenseQuery } from "@tanstack/react-query"
@@ -106,6 +106,14 @@ const IndexPage = () => {
     }
   }, [regioes])
 
+  const estadosByRegiao = states.filter((uf) =>
+    regioes
+      ? regioes.some((regiao) =>
+          regionsMap[regiao as keyof typeof regionsMap].includes(uf)
+        )
+      : true
+  )
+
   const params = new URLSearchParams()
   for (const ano of Array.from(
     { length: Number(fim) - Number(inicio) + 1 },
@@ -114,8 +122,14 @@ const IndexPage = () => {
     params.append("anos", ano)
   }
 
-  for (const uf of estados) {
-    params.append("estados", uf)
+  if (estados.length === 0) {
+    for (const uf of estadosByRegiao) {
+      params.append("estados", uf)
+    }
+  } else {
+    for (const uf of estados) {
+      params.append("estados", uf)
+    }
   }
 
   for (const municipio of municipios) {
@@ -187,22 +201,12 @@ const IndexPage = () => {
               render={({ field }) => (
                 <Select
                   label="Estado"
-                  disabled={!regioes}
+                  disabled={regioes.length === 0}
                   type="multiple"
-                  options={states
-                    .map((uf) => ({
-                      label: statesNameMap[uf as keyof typeof statesNameMap],
-                      value: uf
-                    }))
-                    .filter((uf) =>
-                      regioes
-                        ? regioes.some((regiao) =>
-                            regionsMap[
-                              regiao as keyof typeof regionsMap
-                            ].includes(uf.value)
-                          )
-                        : true
-                    )}
+                  options={estadosByRegiao.map((uf) => ({
+                    label: statesNameMap[uf as keyof typeof statesNameMap],
+                    value: uf
+                  }))}
                   placeholder="Selecione um estado"
                   className="w-full"
                   {...field}
@@ -215,7 +219,7 @@ const IndexPage = () => {
               render={({ field }) => (
                 <Select
                   label="Município"
-                  disabled={!estados}
+                  disabled={estados.length === 0}
                   type="multiple"
                   options={
                     cidades

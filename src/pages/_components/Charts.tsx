@@ -1,6 +1,5 @@
-import { useSuspenseQuery } from "@tanstack/react-query"
+import { useSuspenseQueries } from "@tanstack/react-query"
 import request from "../../utils/request"
-import { useMemo } from "react"
 import Chart from "react-google-charts"
 import NotFound from "../../components/NotFound"
 
@@ -37,11 +36,11 @@ const statesNameMap = {
 const states = Object.keys(statesNameMap)
 
 const regionsMap = {
-  Norte: ["AM", "RR", "AP", "PA", "TO", "RO", "AC"],
-  Nordeste: ["MA", "PI", "CE", "RN", "PE", "PB", "SE", "AL", "BA"],
-  "Centro-Oeste": ["MT", "MS", "GO", "DF"],
-  Sudeste: ["SP", "RJ", "MG", "ES"],
-  Sul: ["PR", "SC", "RS"]
+  norte: ["AM", "RR", "AP", "PA", "TO", "RO", "AC"],
+  nordeste: ["MA", "PI", "CE", "RN", "PE", "PB", "SE", "AL", "BA"],
+  "centro-oeste": ["MT", "MS", "GO", "DF"],
+  sudeste: ["SP", "RJ", "MG", "ES"],
+  sul: ["PR", "SC", "RS"]
 }
 
 const Charts: React.FC<{
@@ -51,28 +50,48 @@ const Charts: React.FC<{
   inicio: string
   fim: string
 }> = ({ params, estados, regioes, inicio, fim }) => {
-  const {
-    data: {
-      declaracoesPorAnoDashboard,
-      declaracoesPorUFs,
-      status,
-      declaracoesPorStatusPorAno,
-      declaracoesPorRegiao,
-      declaracoesAgrupadasPorAnalista,
-      declaracoesCount,
-      declaracoesEmConformidade,
-      bensCountPorTipo,
-      bensCountTotal
-    }
-  } = useSuspenseQuery({
-    queryKey: ["dashboard", params.toString()],
-    queryFn: async () => {
+  const [{ data }, { data: status }] = useSuspenseQueries({
+    queries: [
       {
-        const res = await request(`/api/admin/dashboard/?${params.toString()}`)
-        return await res.json()
+        queryKey: ["dashboard", params.toString()],
+        queryFn: async () => {
+          {
+            const res = await request(
+              `/api/admin/dashboard/filtroDashBoard?${params.toString()}`
+            )
+            return await res.json()
+          }
+        }
+      },
+      {
+        queryKey: ["status"],
+        queryFn: async () => {
+          {
+            const res = await request(`/api/admin/dashboard/getStatusEnum`)
+            return await res.json()
+          }
+        }
       }
-    }
+    ]
   })
+
+  const {
+    quantidadeDeclaracoesPorAno: {
+      quantidadePorAno: declaracoesPorAnoDashboard,
+      statusPorAno: declaracoesPorStatusPorAno
+    },
+    quantidadePorEstadoERegiao: {
+      quantidadePorEstado: declaracoesPorUFs,
+      quantidadePorRegiao: declaracoesPorRegiao,
+      statusPorRegiao: declaracoesPorStatusPorRegiao
+    },
+    cards: {
+      quantidadeDeBens: bensCountPorTipo,
+      totalDeclaracoes: declaracoesCount
+    },
+    declaracoesEmConformidade,
+    bensCountTotal
+  } = data
 
   let locationText = ""
 
@@ -81,48 +100,6 @@ const Charts: React.FC<{
   } else if (regioes) {
     locationText = ` na(s) região(oes) selecionada(s)`
   }
-
-  const analistasData = useMemo(() => {
-    // Definindo os anos que você quer mostrar, incluindo os novos anos (2025, 2026)
-    const anos = ["2021", "2022", "2023", "2024"]
-
-    // Função pura que organiza os dados dos analistas
-    const analistasMap = declaracoesAgrupadasPorAnalista.reduce(
-      (
-        acc: Record<string, number[]>,
-        {
-          analista,
-          anoDeclaracao,
-          quantidadeDeclaracoes
-        }: {
-          analista: { nome: string }
-          anoDeclaracao: string
-          quantidadeDeclaracoes: number
-        }
-      ) => {
-        // Se o analista ainda não está no mapa, inicializamos com um array de zeros
-        if (!acc[analista.nome]) {
-          acc[analista.nome] = Array(anos.length).fill(0) // Inicializa com zeros
-        }
-        // Encontrando o índice do ano
-        const anoIndex = anos.indexOf(anoDeclaracao)
-        if (anoIndex !== -1) {
-          acc[analista.nome][anoIndex] = quantidadeDeclaracoes // Atribui a quantidade correta
-        }
-        return acc // Retorna o acumulador imutável
-      },
-      {} as Record<string, number[]>
-    )
-
-    // Estrutura final para o gráfico: cabeçalho seguido pelos dados de cada analista
-    return [
-      ["Analista", ...anos],
-      ...Object.entries(analistasMap).map(([analista, quantidades]) => [
-        analista,
-        ...(quantidades as number[])
-      ])
-    ]
-  }, [declaracoesAgrupadasPorAnalista])
 
   return (
     <>
@@ -133,9 +110,17 @@ const Charts: React.FC<{
           </div>
           <div className="card-content mt-1">
             <span className="text-3xl font-bold">
-              {fim !== inicio
-                ? `Declarações de ${inicio} a ${fim} recebidas`
-                : `Declarações de ${inicio} recebidas`}
+              Declarações enviadas por museus
+            </span>
+          </div>
+        </div>
+        <div className="br-card p-3">
+          <div className="card-header">
+            <span className="text-6xl font-extrabold">10%</span>
+          </div>
+          <div className="card-content mt-1">
+            <span className="text-3xl font-bold">
+              Atingidos da meta esperada
             </span>
           </div>
         </div>
@@ -150,18 +135,6 @@ const Charts: React.FC<{
               {fim !== inicio
                 ? `Declarações de ${inicio} a ${fim} analisadas`
                 : `Declarações de ${inicio} analisadas`}
-            </span>
-          </div>
-        </div>
-        <div className="br-card p-3">
-          <div className="card-header">
-            <span className="text-6xl font-extrabold">10%</span>
-          </div>
-          <div className="card-content mt-1">
-            <span className="text-3xl font-bold">
-              {fim !== inicio
-                ? `das metas de ${inicio} a ${fim} concluida`
-                : `da meta de ${inicio} concluida`}
             </span>
           </div>
         </div>
@@ -351,26 +324,27 @@ const Charts: React.FC<{
               ? `Quantidade de declarações por região de ${inicio} a ${fim}`
               : `Quantidade de declarações por região em ${inicio}`}
           </span>
-          {declaracoesPorRegiao
-            .flat()
-            .some(
-              (quantidade: number) => !isNaN(quantidade) && quantidade > 0
-            ) ? (
+          {Object.values(declaracoesPorRegiao).some(
+            (quantidade) => (quantidade as number) > 0
+          ) ? (
             <Chart
               chartType="GeoChart"
               data={[
                 ["Região", "Quantidade de declarações"],
-                ...declaracoesPorRegiao.flatMap(
-                  ([regiao, quantidade]: [string, number]) =>
-                    regionsMap[regiao as keyof typeof regionsMap].map(
-                      (uf: string) => [
-                        {
-                          v: statesNameMap[uf as keyof typeof statesNameMap],
-                          f: regiao
-                        },
-                        quantidade
-                      ]
-                    )
+                ...Object.entries(
+                  declaracoesPorRegiao as {
+                    [key: string]: number
+                  }
+                ).flatMap(([regiao, quantidade]: [string, number]) =>
+                  regionsMap[regiao as keyof typeof regionsMap].map(
+                    (uf: string) => [
+                      {
+                        v: statesNameMap[uf as keyof typeof statesNameMap],
+                        f: regiao
+                      },
+                      quantidade
+                    ]
+                  )
                 )
               ]}
               width="100%"
@@ -443,22 +417,22 @@ const Charts: React.FC<{
               ? `Situação das declarações por região de ${inicio} a ${fim}`
               : `Situação das declarações por região em ${inicio}`}
           </span>
-          {declaracoesPorRegiao
+          {Object.values(
+            declaracoesPorStatusPorRegiao as {
+              [key: string]: { [key: string]: number }
+            }
+          )
             .flat()
-            .some(
-              (quantidade: number) => !isNaN(quantidade) && quantidade > 0
-            ) ? (
+            .some((quantidade) => (quantidade as unknown as number) > 0) ? (
             <Chart
               chartType="ColumnChart"
               data={[
                 ["Região", ...status],
-                ...declaracoesPorRegiao.map(
-                  ([regiao, ...quantidades]: [string, ...number[]]) => {
-                    const quantidadesArray = quantidades as number[]
-                    quantidadesArray.splice(1, 1)
-                    return [regiao, ...quantidadesArray]
+                ...Object.entries(
+                  declaracoesPorStatusPorRegiao as {
+                    [key: string]: { [key: string]: number }
                   }
-                )
+                ).map(([regiao, status]) => [regiao, ...Object.values(status)])
               ]}
               width="100%"
               height="400px"
@@ -525,17 +499,25 @@ const Charts: React.FC<{
           <span className="text-lg font-gray-600 font-bold">
             Situação das declarações por ano{locationText}
           </span>
-          {declaracoesPorStatusPorAno
-            .flat()
-            .some(
-              (quantidade: number) => !isNaN(quantidade) && quantidade > 0
-            ) ? (
+          {Object.values(declaracoesPorStatusPorAno).some((status) =>
+            Object.values(status as object).some((quantidade) => quantidade > 0)
+          ) ? (
             <Chart
               chartType="ColumnChart"
               data={[
                 ["Ano", "Total", ...status],
-                ...declaracoesPorStatusPorAno.sort(
-                  (a: number[], b: number[]) => a[0] - b[0]
+                ...Object.entries(declaracoesPorStatusPorAno).map(
+                  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'status' implicitly has an 'any' type.
+                  ([ano, status]: [string, { [key: string]: number }]) => [
+                    ano,
+                    Object.values(status as { [key: string]: number }).reduce(
+                      (acc, quantidade) => acc + quantidade,
+                      0
+                    ),
+                    ...Array.from({ length: 5 }, (_, i) =>
+                      status[i] ? status[i] : 0
+                    )
+                  ]
                 )
               ]}
               width="100%"
@@ -585,74 +567,6 @@ const Charts: React.FC<{
                 },
                 gridlines: {
                   color: "none"
-                },
-                pieSliceBorderColor: "#eceff1",
-                pieSliceTextStyle: { color: "#607d8b" },
-                pieHole: 0.9,
-                bar: { groupWidth: "100" },
-                colorAxis: {
-                  colors: ["#3f51b5", "#2196f3", "#03a9f4", "#00bcd4"]
-                },
-                backgroundColor: "transparent",
-                datalessRegionColor: "#f00",
-                displayMode: "regions"
-              }}
-            />
-          ) : (
-            <NotFound />
-          )}
-        </div>
-        <div>
-          <span className="text-lg font-gray-600 font-bold">
-            Quantidade de declarações por analista{locationText}
-          </span>
-          {analistasData.length > 1 ? (
-            <Chart
-              chartType="ColumnChart"
-              data={analistasData}
-              width="100%"
-              height="400px"
-              options={{
-                hAxis: {
-                  titleTextStyle: { color: "#607d8b" },
-                  gridlines: { count: 0 },
-                  textStyle: {
-                    color: "#78909c",
-                    fontName: "Roboto",
-                    fontSize: "15",
-                    bold: true
-                  }
-                },
-                vAxis: {
-                  minValue: 0,
-                  gridlines: { color: "#cfd8dc", count: 4 },
-                  baselineColor: "transparent"
-                },
-                legend: {
-                  position: "top",
-                  alignment: "center",
-                  textStyle: {
-                    color: "#607d8b",
-                    fontName: "Roboto",
-                    fontSize: "15"
-                  }
-                },
-                colors: [
-                  "#3f51b5",
-                  "#2196f3",
-                  "#03a9f4",
-                  "#00bcd4",
-                  "#009688",
-                  "#4caf50",
-                  "#8bc34a",
-                  "#cddc39"
-                ],
-                areaOpacity: 0.24,
-                lineWidth: 1,
-                chartArea: {
-                  backgroundColor: "transparent",
-                  width: "100%",
-                  height: "80%"
                 },
                 pieSliceBorderColor: "#eceff1",
                 pieSliceTextStyle: { color: "#607d8b" },
