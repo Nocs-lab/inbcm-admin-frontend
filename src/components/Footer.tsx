@@ -16,6 +16,7 @@ const Footer: React.FC = () => {
                 <div className="social-network-title">Redes Sociais</div>
                 <div className="d-flex">
                   <a
+                    target="_blank"
                     className="br-button circle"
                     href="https://www.facebook.com/MuseusBR/"
                     aria-label="Compartilhar por Facebook"
@@ -23,6 +24,7 @@ const Footer: React.FC = () => {
                     <i className="fab fa-facebook-f" aria-hidden="true"></i>
                   </a>
                   <a
+                    target="_blank"
                     className="br-button circle"
                     href="https://www.youtube.com/channel/UCAUcQbl5S0_PPKYK2E-78Yw"
                     aria-label="Compartilhar por Youtube"
@@ -30,6 +32,7 @@ const Footer: React.FC = () => {
                     <i className="fab fa-youtube" aria-hidden="true"></i>
                   </a>
                   <a
+                    target="_blank"
                     className="br-button circle"
                     href="https://www.instagram.com/museusbr/"
                     aria-label="Compartilhar por Instagram"
