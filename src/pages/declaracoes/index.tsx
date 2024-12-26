@@ -537,12 +537,7 @@ const AcoesDefinirStatus: React.FC<{
                 </div>
               </div>
             )}
-            <Textarea
-              label="Observações"
-              className="col-span-4"
-              value={""}
-              rows={5}
-            />
+            <Textarea label="Observações" className="col-span-4" rows={2} />
           </div>
         </Modal.Body>
         <Modal.Footer justify-content="end">
