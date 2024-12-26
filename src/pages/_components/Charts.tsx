@@ -36,36 +36,6 @@ const statesNameMap = {
 
 const states = Object.keys(statesNameMap)
 
-const statePreposicaoMap = {
-  AC: "do",
-  AL: "de",
-  AP: "do",
-  AM: "do",
-  BA: "da",
-  CE: "do",
-  DF: "do",
-  ES: "do",
-  GO: "de",
-  MA: "do",
-  MT: "do",
-  MS: "do",
-  MG: "de",
-  PA: "do",
-  PB: "da",
-  PR: "do",
-  PE: "de",
-  PI: "do",
-  RJ: "do",
-  RN: "do",
-  RS: "do",
-  RO: "de",
-  RR: "de",
-  SC: "de",
-  SP: "de",
-  SE: "de",
-  TO: "de"
-}
-
 const regionsMap = {
   Norte: ["AM", "RR", "AP", "PA", "TO", "RO", "AC"],
   Nordeste: ["MA", "PI", "CE", "RN", "PE", "PB", "SE", "AL", "BA"],
@@ -76,11 +46,11 @@ const regionsMap = {
 
 const Charts: React.FC<{
   params: URLSearchParams
-  estado: string | null
-  regiao: string | null
+  estados: string[]
+  regioes: string[]
   inicio: string
   fim: string
-}> = ({ params, estado, regiao, inicio, fim }) => {
+}> = ({ params, estados, regioes, inicio, fim }) => {
   const {
     data: {
       declaracoesPorAnoDashboard,
@@ -106,10 +76,10 @@ const Charts: React.FC<{
 
   let locationText = ""
 
-  if (estado) {
-    locationText = ` no estado ${statePreposicaoMap[estado as keyof typeof statePreposicaoMap]} ${statesNameMap[estado as keyof typeof statesNameMap]}`
-  } else if (regiao) {
-    locationText = ` na região ${regiao}`
+  if (estados) {
+    locationText = ` no(s) estado(s) selecionado(s)`
+  } else if (regioes) {
+    locationText = ` na(s) região(oes) selecionada(s)`
   }
 
   const analistasData = useMemo(() => {

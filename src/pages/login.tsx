@@ -29,7 +29,7 @@ const LoginPage: React.FC = () => {
   const [showError, setShowError] = useState(true)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  const { mutate, error, isError } = useMutation({
+  const { mutate, isError } = useMutation({
     mutationFn: async ({ email, password }: FormData) => {
       const res = await request("/api/admin/auth/login?admin=true", {
         method: "POST",
@@ -39,10 +39,15 @@ const LoginPage: React.FC = () => {
         }
       })
 
-      return await res.json()
+      const message = await res.json()
+
+      if (!res.ok) {
+        throw new Error(message.message)
+      }
+
+      return message
     },
     onSuccess: (data) => {
-      console.log(data)
       setUser({
         email: data.email,
         name: data.name
@@ -50,7 +55,7 @@ const LoginPage: React.FC = () => {
 
       navigate("/")
     },
-    onError: () => {
+    onError: (error) => {
       if (error instanceof Error) {
         setErrorMessage(error.message)
       } else if (typeof error === "string") {
