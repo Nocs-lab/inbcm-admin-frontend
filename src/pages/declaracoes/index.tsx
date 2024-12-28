@@ -97,19 +97,32 @@ const AcoesEnviarParaAnalise: React.FC<{
   const { mutate: mutateEnviarParaAnalise, isPending: isSendingAnalysis } =
     useMutation({
       mutationFn: async () => {
-        await request(`/api/admin/declaracoes/${row.original._id}/analises`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            analistas: [analista]
-          })
-        })
+        const response = await request(
+          `/api/admin/declaracoes/${row.original._id}/analises`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              analistas: [analista]
+            })
+          }
+        )
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw new Error(errorData.message)
+        }
       },
       onSuccess: () => {
         toast.success("Declaração enviada para análise com sucesso!")
         mutateAtualizarStatus()
+      },
+      onError: (error) => {
+        toast.error(
+          error.message ||
+            "Este analista não está disponível para essa especialidade"
+        )
       }
     })
 
@@ -605,11 +618,10 @@ function Filter<TData extends RowData>({
 }) {
   const { filterVariant } = column.columnDef.meta ?? {}
   const columnFilterValue = column.getFilterValue()
-  const sortedUniqueValues = useMemo(
-    () => Array.from(column.getFacetedUniqueValues().keys()).sort(),
-    [column.getFacetedUniqueValues(), filterVariant]
-  )
-
+  const sortedUniqueValues = useMemo(() => {
+    const uniqueValues = Array.from(column.getFacetedUniqueValues().keys())
+    return uniqueValues.sort()
+  }, [column])
   return filterVariant === "select" ? (
     <select
       onChange={(e) => column.setFilterValue(e.target.value ?? "")}
@@ -732,7 +744,7 @@ const DeclaracoesPage = () => {
 
   return (
     <DefaultLayout>
-      <h1>Listagem de declarações</h1>
+      <h2>Listagem de declarações</h2>
       <div className="br-tab small">
         <nav className="tab-nav">
           <ul>

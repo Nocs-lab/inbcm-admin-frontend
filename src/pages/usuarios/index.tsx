@@ -6,6 +6,9 @@ import request from "../../utils/request"
 import { Modal, Button, Select, Row, Col } from "react-dsgov"
 import { useForm, Controller } from "react-hook-form"
 import toast from "react-hot-toast"
+import Table from "../../components/Table"
+import { type ColumnDef, createColumnHelper } from "@tanstack/react-table"
+import { Link } from "react-router-dom"
 
 interface User {
   _id: string
@@ -15,6 +18,7 @@ interface User {
     name: string
   }
   ativo: boolean
+  museus: Museu[]
 }
 
 interface Museu {
@@ -22,32 +26,24 @@ interface Museu {
   nome: string
 }
 
-const fetchUsers = async (): Promise<User[]> => {
-  const response = await request("/api/admin/users")
+const fetchUsers = async (
+  page = 1,
+  limit = 10
+): Promise<{ docs: User[]; totalPages: number }> => {
+  const response = await request(`/api/admin/users?page=${page}&limit=${limit}`)
   if (!response.ok) {
     let errorMessage = "Perfil não encontrado"
     try {
       const errorData = await response.json()
       errorMessage = errorData.message || errorMessage
     } catch (e) {
-      // Se a resposta não for JSON, mantenha a mensagem de erro padrão
+      console.error("Failed to parse error response", e)
     }
     throw new Error(errorMessage)
   }
 
-  try {
-    const responseData = await response.json()
-    if (responseData.docs) {
-      return responseData.docs
-    } else {
-      throw new Error("Formato inesperado na resposta da API")
-    }
-  } catch (error) {
-    throw new Error("Falha ao analisar a resposta JSON")
-  }
+  return response.json()
 }
-
-console.log("Users:", fetchUsers())
 
 const fetchMuseus = async (): Promise<Museu[]> => {
   const response = await request(
@@ -55,10 +51,15 @@ const fetchMuseus = async (): Promise<Museu[]> => {
   )
   if (!response.ok) throw new Error("Erro ao carregar museus")
   const data = await response.json()
-
-  //console.log('Data:', data);
-
   return data.museus || []
+}
+
+const columnHelper = createColumnHelper<User>()
+
+const profileMapping: { [key: string]: string } = {
+  admin: "Administrador",
+  declarant: "Declarante",
+  analyst: "Analista"
 }
 
 const Index: React.FC = () => {
@@ -66,9 +67,13 @@ const Index: React.FC = () => {
   const navigate = useNavigate()
   const { control } = useForm<{ museus: string[] }>()
 
-  const { data: users } = useQuery<User[]>({
-    queryKey: ["users"],
-    queryFn: fetchUsers
+  const [page] = useState(1)
+  const [pageSize] = useState(10)
+
+  const { data: userData } = useQuery({
+    queryKey: ["users", page],
+    queryFn: () => fetchUsers(page, pageSize),
+    keepPreviousData: true
   })
 
   const { data: museus } = useQuery<Museu[]>({
@@ -79,6 +84,8 @@ const Index: React.FC = () => {
   const [showAssociationModal, setShowAssociationModal] = useState(false)
   const [selectedMuseus, setSelectedMuseus] = useState<string[]>([])
   const [userIdToAssociate, setUserIdToAssociate] = useState<string>("")
+  const [showModal, setShowModal] = useState(false)
+  const [userIdToDelete, setUserIdToDelete] = useState<string>("")
 
   const mutation = useMutation({
     mutationFn: async (userId: string) => {
@@ -101,10 +108,11 @@ const Index: React.FC = () => {
       toast.error("Erro ao desativar usuário")
     }
   })
+
   const associateMutation = useMutation({
     mutationFn: async () => {
       const payload = {
-        museuId: selectedMuseus, // Agora representa um array de IDs
+        museuId: selectedMuseus,
         usuarioId: userIdToAssociate
       }
 
@@ -125,17 +133,12 @@ const Index: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ["users"] })
       queryClient.invalidateQueries({ queryKey: ["museus"] })
       toast.success("Museu(s) associado(s) com sucesso!")
-      setShowAssociationModal(false) // Fecha o modal após sucesso
+      setShowAssociationModal(false)
     },
     onError: (error) => {
       console.error("Erro ao associar museus:", error)
       toast.error("Erro ao associar museus")
     }
-  })
-
-  console.log("Payload enviado:", {
-    museuId: selectedMuseus,
-    usuarioId: userIdToAssociate
   })
 
   const handleOpenAssociationModal = (userId: string) => {
@@ -157,9 +160,6 @@ const Index: React.FC = () => {
     }
   }
 
-  const [showModal, setShowModal] = useState(false)
-  const [userIdToDelete, setUserIdToDelete] = useState<string>("")
-
   const handleOpenModal = (userId: string) => {
     setUserIdToDelete(userId)
     setShowModal(true)
@@ -173,10 +173,9 @@ const Index: React.FC = () => {
   const handleDeleteUser = async () => {
     try {
       await mutation.mutateAsync(userIdToDelete)
-      setShowModal(false) // Fechar o modal após a exclusão
+      setShowModal(false)
     } catch (error) {
       console.error("Erro ao desativar usuário:", error)
-      // Tratar erro aqui, se necessário
     }
   }
 
@@ -184,69 +183,79 @@ const Index: React.FC = () => {
     <DefaultLayout>
       <div className="flex justify-between items-center mb-4">
         <h1>Usuários</h1>
-        <div className="flex justify-end">
-          <button
-            className="btn flex gap-2"
-            onClick={() => navigate("/usuarios/createuser")}
-            aria-label="Criar novo usuário"
-          >
-            <i className="fa-solid fa-user-plus"></i> Novo usuário
-          </button>
-        </div>
+        <Link to="/usuarios/createuser" className="btn text-xl p-3">
+          <i className="fa-solid fa-user-plus"></i> Novo usuário
+        </Link>
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr>
-              <th className="text-center">Nome</th>
-              <th className="text-center">Email</th>
-              <th className="text-center">Museus</th>
-              <th className="text-center">Perfil</th>
-              <th className="text-center">Associar</th>
-              <th className="text-center">Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users?.map((user) => (
-              <tr key={user._id}>
-                <td className="text-center">{user.nome}</td>
-                <td className="text-center">{user.email}</td>
-                <td className="text-center">
-                  {user.museus
+        <Table
+          columns={
+            [
+              columnHelper.accessor("nome", {
+                header: "Nome",
+                cell: (info) => info.getValue()
+              }),
+              columnHelper.accessor("email", {
+                header: "Email",
+                cell: (info) => info.getValue()
+              }),
+              columnHelper.accessor("museus", {
+                header: "Museus",
+                cell: (info) =>
+                  info
+                    .getValue()
                     .slice(0, 2)
                     .map((museu: Museu) => museu.nome)
-                    .join(", ")}
-                  {user.museus.length > 3 && " ..."}
-                </td>
-                <td>{user.profile?.name}</td>
-                <td className="text-center">
-                  <Button onClick={() => handleOpenAssociationModal(user._id)}>
-                    <i className="fa-solid fa-share p-1"></i>
+                    .join(", ") + (info.getValue().length > 2 ? " ..." : "")
+              }),
+              columnHelper.accessor("profile.name", {
+                header: "Perfil",
+                cell: (info) => profileMapping[info.getValue()] || "-"
+              }),
+              columnHelper.accessor("_id", {
+                header: "Associar",
+                cell: (info) => (
+                  <Button
+                    primary
+                    inverted
+                    onClick={() => handleOpenAssociationModal(info.getValue())}
+                    disabled={["admin", "analyst"].includes(
+                      info.row.original.profile?.name || ""
+                    )}
+                  >
+                    <i className="fa-solid fa-share p-1 text-blue-950"></i>
                     Associar
                   </Button>
-                </td>
-                <td className="text-center">
-                  <button
-                    className="btn text-blue-950"
-                    onClick={() => navigate(`/usuarios/${user._id}`)}
-                    aria-label="Editar usuário"
-                    title="Editar usuário"
-                  >
-                    <i className="fa-solid fa-pen-to-square pr-2"></i>
-                  </button>
-                  <button
-                    className="btn text-red"
-                    onClick={() => handleOpenModal(user._id)}
-                    aria-label="Excluir usuário"
-                    title="Excluir usuário"
-                  >
-                    <i className="fa-solid fa-trash fa-fw pl-2"></i>
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                )
+              }),
+              columnHelper.accessor("_id", {
+                header: "Ações",
+                cell: (info) => (
+                  <div className="flex justify-center gap-2">
+                    <button
+                      className="btn text-blue-950"
+                      onClick={() => navigate(`/usuarios/${info.getValue()}`)}
+                      aria-label="Editar usuário"
+                      title="Editar usuário"
+                    >
+                      <i className="fa-solid fa-pen-to-square pr-2"></i>
+                    </button>
+                    <button
+                      className="btn text-blue-950"
+                      onClick={() => handleOpenModal(info.getValue())}
+                      aria-label="Excluir usuário"
+                      title="Excluir usuário"
+                    >
+                      <i className="fa-solid fa-trash fa-fw pl-2"></i>
+                    </button>
+                  </div>
+                )
+              })
+            ] as ColumnDef<User>[]
+          }
+          data={userData?.docs || []}
+          pagination={true}
+        />
       </div>
 
       {/* Modal de Confirmação */}
@@ -296,23 +305,23 @@ const Index: React.FC = () => {
                     name="museus"
                     render={({ field }) => (
                       <Select
-                        type="multiple" // Configura o Select para múltiplos valores
+                        type="multiple"
                         selectAllText={""}
                         label="Museus"
                         placeholder="Selecione..."
                         options={
                           museus?.map((m) => ({
-                            label: m.nome, // Nome do museu
-                            value: m._id // ID único do museu
+                            label: m.nome,
+                            value: m._id
                           })) ?? []
                         }
                         className="!w-full mt-2"
                         {...field}
-                        value={selectedMuseus} // Passa o estado como valor inicial
+                        value={selectedMuseus}
                         onChange={(selected: string[]) => {
                           console.log("Selecionados (onChange):", selected)
-                          field.onChange(selected) // Atualiza o valor no form
-                          setSelectedMuseus(selected) // Atualiza o estado diretamente com os valores retornados
+                          field.onChange(selected)
+                          setSelectedMuseus(selected)
                         }}
                       />
                     )}

@@ -9,7 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import clsx from "clsx"
 import { Link } from "react-router-dom"
 import request from "../../../utils/request"
-import { Textarea } from "react-dsgov"
+import Table from "../../../components/Table"
 import toast from "react-hot-toast"
 
 const schema = z.object({
@@ -80,7 +80,7 @@ const EditUser: React.FC = () => {
   }, [user])
 
   if (!user) {
-    return <div>Carregando...</div> // Exibe uma mensagem enquanto os dados não estão disponíveis
+    return <div>Carregando...</div>
   }
 
   const profileTranslations: Record<string, string> = {
@@ -88,6 +88,15 @@ const EditUser: React.FC = () => {
     analyst: "Analista",
     declarant: "Declarante"
   }
+
+  const museuColumns = [
+    {
+      accessor: "nome",
+      header: "Nome do Museu",
+      cell: (info: { row: { original: { nome: string } } }) =>
+        info.row.original.nome || "Nome não disponível"
+    }
+  ]
 
   return (
     <DefaultLayout>
@@ -128,19 +137,18 @@ const EditUser: React.FC = () => {
                 rows={1}
                 readOnly
               />
-              <Textarea
-                label="Museus"
-                className="col-span-4"
-                value={
-                  user.museus && user.museus.length > 0
-                    ? user.museus
-                        .map((museu: { nome: string }) => `- ${museu.nome}`)
-                        .join("\n")
-                    : "Nenhum museu associado"
-                }
-                rows={5}
-                readOnly
-              />
+            </div>
+            <div className="mt-6">
+              <h2 className="text-lg font-semibold">Museus Associados</h2>
+              {user.museus && user.museus.length > 0 ? (
+                <Table
+                  columns={museuColumns}
+                  data={user.museus}
+                  pagination={true}
+                />
+              ) : (
+                <p className="text-gray-500">Nenhum museu associado.</p>
+              )}
             </div>
           </div>
           <div className="flex space-x-4 justify-end">

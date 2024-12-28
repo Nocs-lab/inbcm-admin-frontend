@@ -81,7 +81,7 @@ const Museus: React.FC = () => {
 
   return (
     <DefaultLayout>
-      <h1>Museus</h1>
+      <h2>Museus</h2>
       <fieldset
         className="rounded-lg p-3 grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-4"
         style={{ border: "2px solid #e0e0e0" }}

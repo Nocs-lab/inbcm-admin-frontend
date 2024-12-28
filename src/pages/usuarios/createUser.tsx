@@ -132,7 +132,7 @@ const CreateUser: React.FC = () => {
           <i className="fas fa-arrow-left" aria-hidden="true"></i>
           Voltar
         </Link>
-        <h1>Criar usuário</h1>
+        <h2>Criar usuário</h2>
         <form onSubmit={handleSubmit(onSubmit)} className="mt-5">
           <div className="flex items-center justify-center">
             <div className="grid gap-2 w-1/2">
@@ -152,7 +152,7 @@ const CreateUser: React.FC = () => {
                   {...register("email")}
                 />
               </div>
-              <div className="flex gap-2 w-full">
+              <div className="flex gap-2 w-auto">
                 <Controller
                   name="profile"
                   control={control}
@@ -161,6 +161,7 @@ const CreateUser: React.FC = () => {
                       id="select-simples"
                       placeholder="Selecione um perfil"
                       label="Perfil"
+                      className="w-full"
                       options={profileOptions}
                       {...field}
                     />
@@ -173,8 +174,10 @@ const CreateUser: React.FC = () => {
                     render={({ field }) => (
                       <Select
                         type="multiple"
+                        selectAllText={""}
                         placeholder="Selecione os tipos de analista"
                         label="Tipo de Analista"
+                        className="w-full"
                         options={[
                           { label: "Arquivístico", value: "arquivistico" },
                           { label: "Museológico", value: "museologico" },

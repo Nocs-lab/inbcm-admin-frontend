@@ -32,7 +32,7 @@ const DeclaracaoPage: React.FC = () => {
         Voltar
       </Link>
       <h2 className="mt-3 mb-0">
-        Histórico de declaração{" "}
+        Declaração{" "}
         {declaracao.retificacao
           ? `retificadora 0${declaracao.versao - 1}`
           : "original"}
