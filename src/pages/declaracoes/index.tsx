@@ -388,7 +388,7 @@ const AcoesDefinirStatus: React.FC<{
                 {row.original?.museu_id?.nome || "Carregando..."}
               </p>
               <p>
-                <strong>Analista: </strong>
+                <strong>Analista:</strong>
                 {row.original?.analistasResponsaveisNome?.join(", ") ||
                   "Carregando..."}
               </p>
@@ -476,6 +476,41 @@ const AcoesDefinirStatus: React.FC<{
         </Button>
       </div>
     </>
+  )
+}
+
+const AcoesBotaoHistorico: React.FC<{
+  row: TableRow<{
+    _id: string
+    anoDeclaracao: string
+    retificacao: boolean
+    status: string
+    dataCriacao: Date
+    regiao: string
+    museu_id: {
+      _id: string
+      nome: string
+      endereco: {
+        municipio: string
+        uf: string
+        regiao: string
+      }
+    }
+    analistasResponsaveisNome: string[]
+  }>
+}> = ({ row }) => {
+  const navigate = useNavigate()
+
+  return (
+    <div className="flex space-x-2">
+      <Button
+        small
+        onClick={() => navigate(`/declaracoes/${row.original._id}`)}
+        className="!font-thin analise"
+      >
+        <i className="fa-solid fa-timeline p-2"></i>Histórico
+      </Button>
+    </div>
   )
 }
 
@@ -571,6 +606,11 @@ const columns = [
     id: "definirStatus",
     header: () => <div className="text-center w-full">Ações</div>,
     cell: ({ row }) => <AcoesDefinirStatus row={row} />
+  }),
+  columnHelper.display({
+    id: "historico",
+    header: () => <div className="text-center w-full">Ações</div>,
+    cell: ({ row }) => <AcoesBotaoHistorico row={row} />
   })
 ]
 
@@ -714,7 +754,8 @@ const DeclaracoesPage = () => {
         enviarParaAnalise: true,
         excluirDeclaracao: false,
         analistasResponsaveisNome: false,
-        definirStatus: false
+        definirStatus: false,
+        historico: false
       })
     } else {
       setVisibility((prev) => ({
@@ -771,7 +812,8 @@ const DeclaracoesPage = () => {
                     enviarParaAnalise: true,
                     excluirDeclaracao: false,
                     definirStatus: false,
-                    analistasResponsaveisNome: false
+                    analistasResponsaveisNome: false,
+                    historico: false
                   }))
                 }}
               >
@@ -802,7 +844,8 @@ const DeclaracoesPage = () => {
                     status: false,
                     enviarParaAnalise: false,
                     excluirDeclaracao: false,
-                    definirStatus: true
+                    definirStatus: true,
+                    historico: false
                   }))
                 }}
               >
@@ -833,7 +876,8 @@ const DeclaracoesPage = () => {
                     status: false,
                     enviarParaAnalise: false,
                     excluirDeclaracao: false,
-                    definirStatus: false
+                    definirStatus: false,
+                    historico: true
                   }))
                 }}
               >
@@ -864,7 +908,8 @@ const DeclaracoesPage = () => {
                     status: false,
                     enviarParaAnalise: false,
                     excluirDeclaracao: false,
-                    definirStatus: false
+                    definirStatus: false,
+                    historico: true
                   }))
                 }}
               >
@@ -895,7 +940,8 @@ const DeclaracoesPage = () => {
                     status: false,
                     enviarParaAnalise: false,
                     excluirDeclaracao: true,
-                    definirStatus: false
+                    definirStatus: false,
+                    historico: false
                   }))
                 }}
               >
@@ -923,7 +969,8 @@ const DeclaracoesPage = () => {
                     status: true,
                     enviarParaAnalise: false,
                     excluirDeclaracao: false,
-                    definirStatus: false
+                    definirStatus: false,
+                    historico: true
                   }))
                 }}
               >
