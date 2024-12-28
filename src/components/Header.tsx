@@ -87,6 +87,12 @@ const Header: React.FC = () => {
                   role="menu"
                   aria-labelledby="avatar-dropdown-trigger"
                 >
+                  <Link to="/perfil">
+                    <button className="br-item flex items-center space-x-2">
+                      <i className="fa-solid fa-user"></i>
+                      <span>Perfil</span>
+                    </button>
+                  </Link>
                   <button
                     className="br-item flex items-center space-x-2"
                     onClick={logout}
