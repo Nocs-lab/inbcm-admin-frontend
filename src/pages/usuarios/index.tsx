@@ -11,9 +11,9 @@ interface User {
   _id: string
   nome: string
   email: string
-  // profile?: {
-  //   name: string;
-  // };
+  profile?: {
+    name: string
+  }
   ativo: boolean
 }
 
@@ -36,11 +36,18 @@ const fetchUsers = async (): Promise<User[]> => {
   }
 
   try {
-    return await response.json()
+    const responseData = await response.json()
+    if (responseData.docs) {
+      return responseData.docs
+    } else {
+      throw new Error("Formato inesperado na resposta da API")
+    }
   } catch (error) {
-    throw new Error("Failed to parse JSON response")
+    throw new Error("Falha ao analisar a resposta JSON")
   }
 }
+
+console.log("Users:", fetchUsers())
 
 const fetchMuseus = async (): Promise<Museu[]> => {
   const response = await request(
@@ -194,8 +201,8 @@ const Index: React.FC = () => {
               <th className="text-center">Nome</th>
               <th className="text-center">Email</th>
               <th className="text-center">Museus</th>
+              <th className="text-center">Perfil</th>
               <th className="text-center">Associar</th>
-              {/*<th>Perfil</th>*/}
               <th className="text-center">Ações</th>
             </tr>
           </thead>
@@ -211,13 +218,13 @@ const Index: React.FC = () => {
                     .join(", ")}
                   {user.museus.length > 3 && " ..."}
                 </td>
+                <td>{user.profile?.name}</td>
                 <td className="text-center">
                   <Button onClick={() => handleOpenAssociationModal(user._id)}>
                     <i className="fa-solid fa-share p-1"></i>
                     Associar
                   </Button>
                 </td>
-                {/*<td>{user.profile?.name || 'Não especificado'}</td>*/}
                 <td className="text-center">
                   <button
                     className="btn text-blue-950"

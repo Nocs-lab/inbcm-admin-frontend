@@ -732,7 +732,7 @@ const DeclaracoesPage = () => {
 
   return (
     <DefaultLayout>
-      <h2>Listagem de declarações</h2>
+      <h1>Listagem de declarações</h1>
       <div className="br-tab small">
         <nav className="tab-nav">
           <ul>

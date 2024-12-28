@@ -1,11 +1,11 @@
-import React from "react"
+import React, { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import DefaultLayout from "../../layouts/default"
-import { useMutation } from "@tanstack/react-query" //add useSuspenseQuery
+import { useMutation, useSuspenseQuery } from "@tanstack/react-query" //add useSuspenseQuery
 import Input from "../../components/Input"
-//import { Select } from 'react-dsgov';
+import { Select } from "react-dsgov"
 import { z } from "zod"
-import { useForm } from "react-hook-form" //add Controller
+import { useForm, Controller } from "react-hook-form" //add Controller
 import { zodResolver } from "@hookform/resolvers/zod"
 import clsx from "clsx"
 import { Link } from "react-router-dom"
@@ -16,9 +16,10 @@ const schema = z
   .object({
     email: z.string().min(1, "Este campo é obrigatório"),
     nome: z.string().min(1, "Este campo é obrigatório"),
-    //profile: z.string().min(1, "Este campo é obrigatório"),
+    profile: z.string().min(1, "Este campo é obrigatório"),
     password: z.string().min(1, "Este campo é obrigatório"),
-    confirmPassword: z.string().min(1, "Este campo é obrigatório")
+    confirmPassword: z.string().min(1, "Este campo é obrigatório"),
+    tipoAnalista: z.array(z.string()).optional()
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "As senhas não são iguais",
@@ -26,27 +27,30 @@ const schema = z
   })
 type FormData = z.infer<typeof schema>
 
-// interface Profile {
-//   _id: string;
-//   name: string;
-//   description: string;
-// }
+interface Profile {
+  _id: string
+  name: string
+  description: string
+}
 
 const CreateUser: React.FC = () => {
-  // const { data: profiles } = useSuspenseQuery<Profile[]>({
-  //   queryKey: ['profiles'],
-  //   queryFn: async () => {
-  //     const response = await fetch('/api/admin/profile');
-  //     if (!response.ok) {
-  //       throw new Error('Failed to fetch profiles');
-  //     }
-  //     return response.json();
-  //   },
-  // });
+  const [isAnalyst, setIsAnalyst] = useState(false)
+
+  const { data: profiles } = useSuspenseQuery<Profile[]>({
+    queryKey: ["profiles"],
+    queryFn: async () => {
+      const response = await fetch("/api/admin/profile")
+      if (!response.ok) {
+        throw new Error("Failed to fetch profiles")
+      }
+      return response.json()
+    }
+  })
   const {
     register,
     handleSubmit,
-    //control,
+    control,
+    watch,
     formState: { errors, isSubmitting }
   } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -56,7 +60,13 @@ const CreateUser: React.FC = () => {
   const navigate = useNavigate()
 
   const { mutate } = useMutation({
-    mutationFn: async ({ email, nome, password }: FormData) => {
+    mutationFn: async ({
+      email,
+      nome,
+      password,
+      profile,
+      tipoAnalista
+    }: FormData) => {
       //add profile
 
       const res = await request("/api/admin/users", {
@@ -64,8 +74,9 @@ const CreateUser: React.FC = () => {
         data: {
           email,
           nome,
-          //profile,
-          senha: password
+          profile,
+          senha: password,
+          tipoAnalista: isAnalyst ? tipoAnalista : []
           //museus: []
         }
       })
@@ -81,21 +92,46 @@ const CreateUser: React.FC = () => {
     }
   })
 
-  const onSubmit = ({ email, nome, password }: FormData) => {
+  const onSubmit = ({
+    email,
+    nome,
+    password,
+    profile,
+    confirmPassword,
+    tipoAnalista
+  }: FormData) => {
     //add profile
 
-    mutate({ email, nome, password }) //add profile
+    mutate({ email, nome, password, profile, confirmPassword, tipoAnalista }) //add profile
   }
 
-  // Transformar perfis em opções para o componente Select
-  // const profileOptions = profiles.map(profile => ({
-  //   label: profile.name,
-  //   value: profile._id
-  // }));
+  const profileOptions = profiles.map((profile) => {
+    const labelMap: Record<string, string> = {
+      admin: "Administrador",
+      analyst: "Analista",
+      declarant: "Declarante"
+    }
+
+    return {
+      label: labelMap[profile.name.toLowerCase()] || profile.name,
+      value: profile._id
+    }
+  })
+
+  // Monitorar mudanças no campo 'profile' para habilitar/desabilitar o multiselect
+  const selectedProfile = watch("profile")
+  React.useEffect(() => {
+    const selected = profiles.find((p) => p._id === selectedProfile)
+    setIsAnalyst(selected?.name.toLowerCase() === "analyst")
+  }, [selectedProfile, profiles])
 
   return (
     <DefaultLayout>
       <div className="container mx-auto p-4">
+        <Link to="/usuarios" className="text-lg">
+          <i className="fas fa-arrow-left" aria-hidden="true"></i>
+          Voltar
+        </Link>
         <h1>Criar usuário</h1>
         <form onSubmit={handleSubmit(onSubmit)} className="mt-5">
           <div className="flex items-center justify-center">
@@ -117,6 +153,40 @@ const CreateUser: React.FC = () => {
                 />
               </div>
               <div className="flex gap-2 w-full">
+                <Controller
+                  name="profile"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      id="select-simples"
+                      placeholder="Selecione um perfil"
+                      label="Perfil"
+                      options={profileOptions}
+                      {...field}
+                    />
+                  )}
+                />
+                {isAnalyst && (
+                  <Controller
+                    name="tipoAnalista"
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        type="multiple"
+                        placeholder="Selecione os tipos de analista"
+                        label="Tipo de Analista"
+                        options={[
+                          { label: "Arquivístico", value: "arquivistico" },
+                          { label: "Museológico", value: "museologico" },
+                          { label: "Bibliográfico", value: "bibliografico" }
+                        ]}
+                        {...field}
+                      />
+                    )}
+                  />
+                )}
+              </div>
+              <div className="flex gap-2 w-full">
                 <Input
                   type="password"
                   label="Senha"
@@ -132,19 +202,6 @@ const CreateUser: React.FC = () => {
                   {...register("confirmPassword")}
                 />
               </div>
-              {/* <Controller
-                      name="profile"
-                      control={control}
-                      render={({ field }) => (
-                        <Select
-                          id="select-simples"
-                          placeholder="Selecione um perfil"
-                          label="Perfil"
-                          options={profileOptions}
-                          {...field}
-                        />
-                      )}
-                    /> */}
             </div>
           </div>
           <div className="flex space-x-4 justify-end">
