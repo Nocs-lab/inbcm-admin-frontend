@@ -26,11 +26,8 @@ interface Museu {
   nome: string
 }
 
-const fetchUsers = async (
-  page = 1,
-  limit = 10
-): Promise<{ docs: User[]; totalPages: number }> => {
-  const response = await request(`/api/admin/users?page=${page}&limit=${limit}`)
+const fetchUsers = async (): Promise<User[]> => {
+  const response = await request("/api/admin/users")
   if (!response.ok) {
     let errorMessage = "Perfil não encontrado"
     try {
@@ -67,12 +64,9 @@ const Index: React.FC = () => {
   const navigate = useNavigate()
   const { control } = useForm<{ museus: string[] }>()
 
-  const [page] = useState(1)
-  const [pageSize] = useState(10)
-
-  const { data: userData } = useQuery({
-    queryKey: ["users", page],
-    queryFn: () => fetchUsers(page, pageSize),
+  const { data: userData } = useQuery<User[]>({
+    queryKey: ["users"],
+    queryFn: fetchUsers,
     keepPreviousData: true
   })
 
@@ -255,7 +249,7 @@ const Index: React.FC = () => {
               })
             ] as ColumnDef<User>[]
           }
-          data={userData?.docs || []}
+          data={userData || []}
           pagination={true}
         />
       </div>
