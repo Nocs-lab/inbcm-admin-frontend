@@ -374,28 +374,28 @@ const AcoesDefinirStatus: React.FC<{
           <div className="space-y-4">
             <div>
               <p>
-                <strong>Envio:</strong>
+                <strong>Envio: </strong>
                 {row.original?.dataCriacao
                   ? new Date(row.original.dataCriacao).toLocaleString()
                   : "Carregando..."}
               </p>
               <p>
-                <strong>Ano:</strong>
+                <strong>Ano: </strong>
                 {row.original?.anoDeclaracao || "Carregando..."}
               </p>
               <p>
-                <strong>Museu:</strong>
+                <strong>Museu: </strong>
                 {row.original?.museu_id?.nome || "Carregando..."}
               </p>
               <p>
-                <strong>Analista:</strong>
+                <strong>Analista: </strong>
                 {row.original?.analistasResponsaveisNome?.join(", ") ||
                   "Carregando..."}
               </p>
             </div>
             <div className="text-lg space-y-2">
               <p>
-                <strong>Concluisão:</strong>
+                <strong>Conclusão:</strong>
               </p>
               <div id="radio-conclusao" className="flex items-center space-x-6">
                 <div className="flex items-center space-x-2">

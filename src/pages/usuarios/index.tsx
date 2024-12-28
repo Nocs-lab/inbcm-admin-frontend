@@ -214,19 +214,21 @@ const Index: React.FC = () => {
               }),
               columnHelper.accessor("_id", {
                 header: "Associar",
-                cell: (info) => (
-                  <Button
-                    primary
-                    inverted
-                    onClick={() => handleOpenAssociationModal(info.getValue())}
-                    disabled={["admin", "analyst"].includes(
-                      info.row.original.profile?.name || ""
-                    )}
-                  >
-                    <i className="fa-solid fa-share p-1 text-blue-950"></i>
-                    Associar
-                  </Button>
-                )
+                cell: (info) => {
+                  const profileName = info.row.original.profile?.name || ""
+                  return !["admin", "analyst"].includes(profileName) ? (
+                    <Button
+                      primary
+                      inverted
+                      onClick={() =>
+                        handleOpenAssociationModal(info.getValue())
+                      }
+                    >
+                      <i className="fa-solid fa-share p-1 text-blue-950"></i>
+                      Associar
+                    </Button>
+                  ) : null
+                }
               }),
               columnHelper.accessor("_id", {
                 header: "Ações",

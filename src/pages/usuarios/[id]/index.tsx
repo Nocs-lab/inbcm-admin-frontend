@@ -138,18 +138,20 @@ const EditUser: React.FC = () => {
                 readOnly
               />
             </div>
-            <div className="mt-6">
-              <h2 className="text-lg font-semibold">Museus Associados</h2>
-              {user.museus && user.museus.length > 0 ? (
-                <Table
-                  columns={museuColumns}
-                  data={user.museus}
-                  pagination={true}
-                />
-              ) : (
-                <p className="text-gray-500">Nenhum museu associado.</p>
-              )}
-            </div>
+            {user.profile?.name === "declarant" && (
+              <div className="mt-6">
+                <h2 className="text-lg font-semibold">Museus Associados</h2>
+                {user.museus && user.museus.length > 0 ? (
+                  <Table
+                    columns={museuColumns}
+                    data={user.museus}
+                    pagination={true}
+                  />
+                ) : (
+                  <p className="text-gray-500">Nenhum museu associado.</p>
+                )}
+              </div>
+            )}
           </div>
           <div className="flex space-x-4 justify-end">
             <Link to="/usuarios" className="br-button secondary mt-5">
