@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useState, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import DefaultLayout from "../../layouts/default"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
@@ -9,6 +9,7 @@ import toast from "react-hot-toast"
 import Table from "../../components/Table"
 import { type ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import { Link } from "react-router-dom"
+import { debounce } from "lodash"
 
 interface User {
   _id: string
@@ -24,6 +25,18 @@ interface User {
 interface Museu {
   _id: string
   nome: string
+}
+
+interface Paginacao {
+  currentPage: number
+  totalPages: number
+  totalItems: number
+  itemsPerPage: number
+}
+
+interface RespostaMuseus {
+  museus: Museu[]
+  pagination: Paginacao
 }
 
 const fetchUsers = async (): Promise<User[]> => {
@@ -42,13 +55,28 @@ const fetchUsers = async (): Promise<User[]> => {
   return response.json()
 }
 
-const fetchMuseus = async (): Promise<Museu[]> => {
+const fetchMuseus = async (
+  search: string,
+  page: number
+): Promise<RespostaMuseus> => {
+  console.log("Buscando museus com termo:", search, "na página:", page) // Debug
   const response = await request(
-    "/api/admin/museus?semVinculoUsuario=true&page=1&limit=10"
+    `/api/admin/museus?semVinculoUsuario=true&search=${search}&page=${page}`
   )
   if (!response.ok) throw new Error("Erro ao carregar museus")
+
   const data = await response.json()
-  return data.museus || []
+  console.log("Resposta recebida:", data.museus) // Debug
+
+  return {
+    museus: data.museus || [],
+    pagination: data.pagination || {
+      currentPage: 0,
+      totalPages: 0,
+      totalItems: 0,
+      itemsPerPage: 0
+    }
+  }
 }
 
 const columnHelper = createColumnHelper<User>()
@@ -63,23 +91,42 @@ const Index: React.FC = () => {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const { control } = useForm<{ museus: string[] }>()
+  const [search, setSearch] = useState("")
+  const [page, setPage] = useState(1)
+  const [isLoading, setIsLoading] = useState(false)
 
   const { data: userData } = useQuery<User[]>({
     queryKey: ["users"],
     queryFn: fetchUsers,
-    keepPreviousData: true
+    staleTime: 5000
   })
 
-  const { data: museus } = useQuery<Museu[]>({
-    queryKey: ["museus"],
-    queryFn: fetchMuseus
+  const { data: museusData } = useQuery<RespostaMuseus>({
+    queryKey: ["museus", search, page],
+    queryFn: () => fetchMuseus(search, page), // Busca museus com o termo e página
+    enabled: search.length > 0,
+    onSettled: () => setIsLoading(false)
   })
+
+  const museus = museusData?.museus || []
 
   const [showAssociationModal, setShowAssociationModal] = useState(false)
   const [selectedMuseus, setSelectedMuseus] = useState<string[]>([])
   const [userIdToAssociate, setUserIdToAssociate] = useState<string>("")
   const [showModal, setShowModal] = useState(false)
   const [userIdToDelete, setUserIdToDelete] = useState<string>("")
+
+  const debounceSearch = useCallback(
+    debounce((value: string) => {
+      if (value.trim().length > 0) {
+        console.log("Buscando museus com o termo:", value) // Debug
+        setIsLoading(true)
+        setSearch(value) // Atualiza o estado de busca após o debounce
+        setPage(1) // Reseta para a primeira página ao fazer uma nova busca
+      }
+    }, 500),
+    [setIsLoading, setSearch, setPage]
+  )
 
   const mutation = useMutation({
     mutationFn: async (userId: string) => {
@@ -139,6 +186,12 @@ const Index: React.FC = () => {
     setUserIdToAssociate(userId)
     setSelectedMuseus([])
     setShowAssociationModal(true)
+  }
+
+  const handleCloseAssociationModal = () => {
+    setShowAssociationModal(false)
+    setSearch("") // Limpa a pesquisa
+    setPage(1) // Reseta a página
   }
 
   const handleSubmitAssociation = async () => {
@@ -284,7 +337,7 @@ const Index: React.FC = () => {
           className="w-full max-w-[90%] sm:max-w-[600px] md:max-w-[800px] p-3"
           title="Associar Museus"
           modalOpened={showAssociationModal}
-          onCloseButtonClick={() => setShowAssociationModal(false)}
+          onCloseButtonClick={handleCloseAssociationModal}
         >
           <form
             onSubmit={(e) => {
@@ -300,26 +353,37 @@ const Index: React.FC = () => {
                     control={control}
                     name="museus"
                     render={({ field }) => (
-                      <Select
-                        type="multiple"
-                        selectAllText={""}
-                        label="Museus"
-                        placeholder="Selecione..."
-                        options={
-                          museus?.map((m) => ({
-                            label: m.nome,
-                            value: m._id
-                          })) ?? []
-                        }
-                        className="!w-full mt-2"
-                        {...field}
-                        value={selectedMuseus}
-                        onChange={(selected: string[]) => {
-                          console.log("Selecionados (onChange):", selected)
-                          field.onChange(selected)
-                          setSelectedMuseus(selected)
-                        }}
-                      />
+                      <>
+                        <Select
+                          type="multiple"
+                          selectAllText={""}
+                          label="Museus"
+                          placeholder="Digite para buscar..."
+                          options={
+                            museus.length > 0
+                              ? museus.map((m: Museu) => ({
+                                  label: m.nome,
+                                  value: m._id
+                                }))
+                              : []
+                          }
+                          className="!w-full mt-2"
+                          {...field}
+                          value={selectedMuseus}
+                          onInput={(e) => {
+                            const inputValue = (e.target as HTMLInputElement)
+                              .value
+                            console.log("Valor digitado:", inputValue)
+                            debounceSearch(inputValue) // Atualiza a busca com debounce
+                          }}
+                          onChange={(selected: string[]) => {
+                            console.log("Selecionados (onChange):", selected)
+                            field.onChange(selected)
+                            setSelectedMuseus(selected)
+                          }}
+                        />
+                        {isLoading && <p>Carregando museus...</p>}
+                      </>
                     )}
                   />
                 </Col>
@@ -339,7 +403,7 @@ const Index: React.FC = () => {
                 small
                 m={2}
                 type="button"
-                onClick={() => setShowAssociationModal(false)}
+                onClick={handleCloseAssociationModal}
               >
                 Cancelar
               </Button>
