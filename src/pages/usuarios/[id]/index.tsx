@@ -92,9 +92,27 @@ const EditUser: React.FC = () => {
   const museuColumns = [
     {
       accessor: "nome",
-      header: "Nome do Museu",
+      header: "Nome",
       cell: (info: { row: { original: { nome: string } } }) =>
         info.row.original.nome || "Nome não disponível"
+    },
+    {
+      accessor: "municipio",
+      header: "Município",
+      cell: (info: { row: { original: { municipio: string } } }) =>
+        info.row.original.endereco.municipio || "Nome não disponível"
+    },
+    {
+      accessor: "bairro",
+      header: "Bairro",
+      cell: (info: { row: { original: { bairro: string } } }) =>
+        info.row.original.endereco.bairro || "Nome não disponível"
+    },
+    {
+      accessor: "esferaAdministraiva",
+      header: "Administração",
+      cell: (info: { row: { original: { esferaAdministraiva: string } } }) =>
+        info.row.original.esferaAdministraiva || "Nome não disponível"
     }
   ]
 
