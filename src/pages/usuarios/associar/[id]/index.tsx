@@ -277,14 +277,18 @@ const AssociarPage: React.FC = () => {
           <div className="mt-4">
             {selectedMuseusNames.length > 0 && (
               <>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 mb-2">
                   {selectedMuseusNames.length} museu(s) selecionado(s):
                 </p>
-                <p>
+                <div className="flex flex-wrap gap-2">
                   {selectedMuseusNames.map((name, index) => (
-                    <strong key={index} className="br-tag gap-2">
+                    <strong
+                      key={index}
+                      className="br-tag gap-2 flex items-center justify-between"
+                    >
+                      {name}
                       <i
-                        className="fa-solid fa-xmark cursor-pointer"
+                        className="fa-solid fa-xmark ml-2 cursor-pointer"
                         onClick={() => {
                           const updatedMuseus = selectedMuseus.filter(
                             (_, i) => i !== index
@@ -297,10 +301,9 @@ const AssociarPage: React.FC = () => {
                           setSelectedMuseusNames(updatedNames)
                         }}
                       ></i>
-                      {name}
                     </strong>
                   ))}
-                </p>
+                </div>
               </>
             )}
           </div>
