@@ -122,7 +122,7 @@ const EditUser: React.FC = () => {
         <i className="fas fa-arrow-left" aria-hidden="true"></i>
         Voltar
       </Link>
-      <h1>Editar usuário</h1>
+      <h1 className="p-4">Editar usuário</h1>
       <div className="container mx-auto p-6 bg-white rounded-lg">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div>
@@ -160,11 +160,7 @@ const EditUser: React.FC = () => {
               <div className="mt-6">
                 <h2 className="text-lg font-semibold">Museus Associados</h2>
                 {user.museus && user.museus.length > 0 ? (
-                  <Table
-                    columns={museuColumns}
-                    data={user.museus}
-                    pagination={true}
-                  />
+                  <Table columns={museuColumns} data={user.museus} />
                 ) : (
                   <p className="text-gray-500">Nenhum museu associado.</p>
                 )}
