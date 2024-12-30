@@ -7,7 +7,6 @@ import { Modal, Button } from "react-dsgov"
 
 import toast from "react-hot-toast"
 import Table from "../../components/Table"
-import { type ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import { Link } from "react-router-dom"
 
 interface User {
@@ -29,20 +28,17 @@ interface Museu {
 const fetchUsers = async (): Promise<User[]> => {
   const response = await request("/api/admin/users")
   if (!response.ok) {
-    let errorMessage = "Perfil não encontrado"
+    let errorMessage = "Usuários não encontrados"
     try {
       const errorData = await response.json()
       errorMessage = errorData.message || errorMessage
     } catch (e) {
-      console.error("Failed to parse error response", e)
+      throw new Error(errorMessage)
     }
-    throw new Error(errorMessage)
   }
 
-  return response.json()
+  return await response.json()
 }
-
-const columnHelper = createColumnHelper<User>()
 
 const profileMapping: { [key: string]: string } = {
   admin: "Administrador",
@@ -104,33 +100,44 @@ const Index: React.FC = () => {
   }
 
   const museuColumns = [
-    columnHelper.accessor("nome", {
+    {
+      accessor: "nome",
       header: "Nome",
-      cell: (info) => info.getValue()
-    }),
-    columnHelper.accessor("email", {
+      cell: (info: { row: { original: { nome: string } } }) =>
+        info.row.original.nome || "Nome não disponível"
+    },
+    {
+      accessor: "email",
       header: "Email",
-      cell: (info) => info.getValue()
-    }),
-    columnHelper.accessor("museus", {
+      cell: (info: { row: { original: { email: string } } }) =>
+        info.row.original.email || "Email não disponível"
+    },
+    {
+      accessor: "museus",
       header: "Museus",
-      cell: (info) =>
-        info
-          .getValue()
-          .slice(0, 2)
-          .map((museu: Museu) => museu.nome)
-          .join(", ") + (info.getValue().length > 2 ? " ..." : "")
-    }),
-    columnHelper.accessor("profile.name", {
+      cell: (info: { row: { original: { museus: Museu[] } } }) => {
+        const museus = info.row.original.museus || []
+        return (
+          museus
+            .slice(0, 2)
+            .map((museu) => museu.nome)
+            .join(", ") + (museus.length > 2 ? " ..." : "")
+        )
+      }
+    },
+    {
+      accessor: "profile.name",
       header: "Perfil",
-      cell: (info) => profileMapping[info.getValue()] || "-"
-    }),
-    columnHelper.accessor("_id", {
+      cell: (info: { row: { original: { profile?: { name: string } } } }) =>
+        profileMapping[info.row.original.profile?.name ?? ""] || "-"
+    },
+    {
+      accessor: "_id",
       header: "Associar",
-      cell: (info) => {
+      cell: (info: { row: { original: User } }) => {
         const profileName = info.row.original.profile?.name || ""
         return !["admin", "analyst"].includes(profileName) ? (
-          <Link to={`/usuarios/associar/${info.getValue()}`}>
+          <Link to={`/usuarios/associar/${info.row.original._id}`}>
             <Button primary inverted small>
               <i className="fa-solid fa-share p-1 text-blue-950"></i>
               Associar
@@ -138,14 +145,15 @@ const Index: React.FC = () => {
           </Link>
         ) : null
       }
-    }),
-    columnHelper.accessor("_id", {
+    },
+    {
+      accessor: "_id",
       header: "Ações",
-      cell: (info) => (
+      cell: (info: { row: { original: { _id: string } } }) => (
         <div className="flex justify-center gap-2">
           <button
             className="btn text-blue-950"
-            onClick={() => navigate(`/usuarios/${info.getValue()}`)}
+            onClick={() => navigate(`/usuarios/${info.row.original._id}`)}
             aria-label="Editar usuário"
             title="Editar usuário"
           >
@@ -153,7 +161,7 @@ const Index: React.FC = () => {
           </button>
           <button
             className="btn text-blue-950"
-            onClick={() => handleOpenModal(info.getValue())}
+            onClick={() => handleOpenModal(info.row.original._id)}
             aria-label="Excluir usuário"
             title="Excluir usuário"
           >
@@ -161,8 +169,8 @@ const Index: React.FC = () => {
           </button>
         </div>
       )
-    })
-  ] as ColumnDef<User>[]
+    }
+  ]
 
   return (
     <DefaultLayout>
