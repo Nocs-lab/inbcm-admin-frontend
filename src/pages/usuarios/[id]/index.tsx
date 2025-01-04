@@ -115,7 +115,7 @@ const EditUser: React.FC = () => {
         <i className="fas fa-arrow-left" aria-hidden="true"></i>
         Voltar
       </Link>
-      <h1 className="p-4">Editar usuário</h1>
+      <h2 className="p-4">Editar usuário</h2>
       <div className="container mx-auto p-6 bg-white rounded-lg">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div>

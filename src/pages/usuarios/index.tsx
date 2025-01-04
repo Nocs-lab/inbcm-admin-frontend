@@ -103,18 +103,27 @@ const Index: React.FC = () => {
     {
       accessor: "nome",
       header: "Nome",
+      meta: {
+        filterVariant: "text"
+      },
       cell: (info: { row: { original: { nome: string } } }) =>
         info.row.original.nome || "Nome não disponível"
     },
     {
       accessor: "email",
       header: "Email",
+      meta: {
+        filterVariant: "text"
+      },
       cell: (info: { row: { original: { email: string } } }) =>
         info.row.original.email || "Email não disponível"
     },
     {
       accessor: "museus",
       header: "Museus",
+      meta: {
+        filterVariant: "text"
+      },
       cell: (info: { row: { original: { museus: Museu[] } } }) => {
         const museus = info.row.original.museus || []
         return (
@@ -128,6 +137,9 @@ const Index: React.FC = () => {
     {
       accessor: "profile.name",
       header: "Perfil",
+      meta: {
+        filterVariant: "select"
+      },
       cell: (info: { row: { original: { profile?: { name: string } } } }) =>
         profileMapping[info.row.original.profile?.name ?? ""] || "-"
     },
@@ -149,6 +161,9 @@ const Index: React.FC = () => {
     {
       accessor: "_id",
       header: "Ações",
+      meta: {
+        filterVariant: "select"
+      },
       cell: (info: { row: { original: { _id: string } } }) => (
         <div className="flex justify-center gap-2">
           <button
@@ -175,7 +190,7 @@ const Index: React.FC = () => {
   return (
     <DefaultLayout>
       <div className="flex justify-between items-center mb-4">
-        <h1>Usuários</h1>
+        <h2>Listagem de usuários</h2>
         <Link to="/usuarios/createuser" className="btn text-xl p-3">
           <i className="fa-solid fa-user-plus"></i> Novo usuário
         </Link>

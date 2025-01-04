@@ -205,22 +205,19 @@ const AssociarPage: React.FC = () => {
         <i className="fas fa-arrow-left" aria-hidden="true"></i>
         Voltar
       </Link>
-      <h1 className="p-4">Associar museu</h1>
+      <h2 className="p-4">Associar museu</h2>
       <div className="p-4">
-        <div>
-          <div className="flex space-x-4">
-            <p>
-              <strong>Declarante: </strong>
-              {user.nome}
-            </p>
-            <p>
-              <strong>Email: </strong>
-              {user.email}
-            </p>
+        <div className="grid gap-2">
+          <div className="flex">
+            <p className="font-bold w-40">Declarante:</p>
+            <p>{user.nome}</p>
+          </div>
+          <div className="flex">
+            <p className="font-bold w-40">Email:</p>
+            <p>{user.email}</p>
           </div>
         </div>
         <div className="mt-6">
-          <h2 className="text-lg font-semibold">Associar Museus</h2>
           <Row>
             <Col>
               <Controller
@@ -312,7 +309,7 @@ const AssociarPage: React.FC = () => {
               type="button"
               onClick={handleSubmitAssociation}
             >
-              Associar Museus
+              Associar
             </button>
           </div>
         </div>
