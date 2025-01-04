@@ -133,14 +133,14 @@ const Index: React.FC = () => {
     },
     {
       accessor: "_id",
-      header: "Associar",
+      header: "Associar museus",
       cell: (info: { row: { original: User } }) => {
         const profileName = info.row.original.profile?.name || ""
         return !["admin", "analyst"].includes(profileName) ? (
           <Link to={`/usuarios/associar/${info.row.original._id}`}>
             <Button primary inverted small>
               <i className="fa-solid fa-share p-1 text-blue-950"></i>
-              Associar
+              Associar museus
             </Button>
           </Link>
         ) : null

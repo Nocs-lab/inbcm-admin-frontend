@@ -14,7 +14,7 @@ import { Link } from "react-router-dom"
 import request from "../../../../utils/request"
 import Table from "../../../../components/Table"
 import toast from "react-hot-toast"
-import { Select, Row, Col } from "react-dsgov"
+import { Select, Row, Col, Button } from "react-dsgov"
 import { debounce } from "lodash"
 
 const schema = z.object({
@@ -276,9 +276,11 @@ const AssociarPage: React.FC = () => {
                 </p>
                 <div className="flex flex-wrap gap-2 p-2">
                   {selectedMuseusNames.map((name, index) => (
-                    <strong
+                    <Button
+                      primary
+                      inverted
                       key={index}
-                      className="br-tag gap-2 flex items-center justify-between"
+                      className="gap-2 flex items-center justify-between"
                     >
                       <i
                         className="fa-solid fa-xmark ml-2 cursor-pointer"
@@ -295,7 +297,7 @@ const AssociarPage: React.FC = () => {
                         }}
                       ></i>
                       {name}
-                    </strong>
+                    </Button>
                   ))}
                 </div>
               </>
