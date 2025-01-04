@@ -1,4 +1,3 @@
-import React, { useEffect } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import DefaultLayout from "../../../layouts/default"
 import { useMutation, useSuspenseQueries } from "@tanstack/react-query"
@@ -72,12 +71,6 @@ const EditUser: React.FC = () => {
   const onSubmit = ({ email, nome }: FormData) => {
     mutate({ email, nome })
   }
-
-  useEffect(() => {
-    if (user) {
-      console.log("Dados do usuário:", user)
-    }
-  }, [user])
 
   if (!user) {
     return <div>Carregando...</div>

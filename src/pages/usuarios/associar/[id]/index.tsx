@@ -64,7 +64,6 @@ const fetchMuseus = async (
   if (!response.ok) throw new Error("Erro ao carregar museus")
 
   const data = await response.json()
-  console.log("Fetched Museus Data:", data)
 
   return {
     museus: data.museus || [],
@@ -95,12 +94,6 @@ const AssociarPage: React.FC = () => {
     queryFn: () => fetchMuseus(search, page),
     enabled: search.length > 0
   })
-
-  useEffect(() => {
-    if (museusData) {
-      console.log("Museus Data:", museusData, isLoading)
-    }
-  }, [museusData])
 
   const museus = museusData?.museus || []
 
@@ -165,7 +158,6 @@ const AssociarPage: React.FC = () => {
       setIsLoading(true)
       setSearch(value)
       setPage(1)
-      console.log("Search Value:", value)
     }, 500),
     [setIsLoading, setSearch, setPage]
   )
@@ -262,13 +254,15 @@ const AssociarPage: React.FC = () => {
                         const nomesMuseus = selected.map(
                           (item) => item.split(",")[1]
                         ) // Pegando o segundo elemento (Nome)
-                        console.log("Selected IDs:", selected)
-                        console.log("Selected nome:", nomesMuseus)
                         setSelectedMuseus(selected)
                         setSelectedMuseusNames(nomesMuseus)
-                        console.log("Selected:", selected)
                       }}
                     />
+                    {isLoading && (
+                      <p className="text-sm text-gray-500 mt-2">
+                        Carregando museus...
+                      </p>
+                    )}
                   </>
                 )}
               />
@@ -280,13 +274,12 @@ const AssociarPage: React.FC = () => {
                 <p className="text-sm text-gray-500 mb-2">
                   {selectedMuseusNames.length} museu(s) selecionado(s):
                 </p>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2 p-2">
                   {selectedMuseusNames.map((name, index) => (
                     <strong
                       key={index}
                       className="br-tag gap-2 flex items-center justify-between"
                     >
-                      {name}
                       <i
                         className="fa-solid fa-xmark ml-2 cursor-pointer"
                         onClick={() => {
@@ -301,6 +294,7 @@ const AssociarPage: React.FC = () => {
                           setSelectedMuseusNames(updatedNames)
                         }}
                       ></i>
+                      {name}
                     </strong>
                   ))}
                 </div>
