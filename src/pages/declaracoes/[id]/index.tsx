@@ -68,25 +68,39 @@ const DeclaracaoPage: React.FC = () => {
                   dataEvento: Date
                   nomeEvento: string
                   autorEvento: string
-                }) => (
-                  <button
-                    key={item.dataEvento.toISOString() + item.nomeEvento}
-                    className="step-progress-btn"
-                    role="option"
-                    aria-posinset={3}
-                    aria-setsize={3}
-                    type="button"
-                  >
-                    <span className="step-info text-left">
-                      {item.nomeEvento}
-                      <br />
-                      Em {format(
-                        item.dataEvento,
-                        "dd/MM/yyyy 'às' HH:mm"
-                      )} por {item.autorEvento}
-                    </span>
-                  </button>
-                )
+                  analistaResponsavel: string[]
+                }) => {
+                  // Função para formatar os analistas
+                  const formatAnalistas = (analistas: string[]) => {
+                    if (analistas.length === 0) return ""
+                    if (analistas.length === 1) return analistas[0]
+                    const allButLast = analistas.slice(0, -1).join(", ")
+                    const last = analistas[analistas.length - 1]
+                    return `${allButLast} e ${last}`
+                  }
+
+                  return (
+                    <button
+                      key={item.dataEvento.toISOString() + item.nomeEvento}
+                      className="step-progress-btn"
+                      role="option"
+                      aria-posinset={3}
+                      aria-setsize={3}
+                      type="button"
+                    >
+                      <span className="step-info text-left">
+                        {item.nomeEvento}{" "}
+                        {formatAnalistas(item.analistaResponsavel)}
+                        <br />
+                        Em {format(
+                          item.dataEvento,
+                          "dd/MM/yyyy 'às' HH:mm"
+                        )}{" "}
+                        por {item.autorEvento}
+                      </span>
+                    </button>
+                  )
+                }
               )}
           </div>
         </nav>

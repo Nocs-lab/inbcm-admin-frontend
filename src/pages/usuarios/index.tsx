@@ -4,7 +4,7 @@ import DefaultLayout from "../../layouts/default"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import request from "../../utils/request"
 import { Modal, Button } from "react-dsgov"
-
+import { type ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import toast from "react-hot-toast"
 import Table from "../../components/Table"
 import { Link } from "react-router-dom"
@@ -99,27 +99,31 @@ const Index: React.FC = () => {
     }
   }
 
+  const columnHelper = createColumnHelper<{
+    nome: string
+    email: string
+    museus: Museu[]
+    profile?: { name: string }
+  }>()
+
   const museuColumns = [
-    {
-      accessor: "nome",
+    columnHelper.accessor("nome", {
       header: "Nome",
       meta: {
         filterVariant: "text"
       },
       cell: (info: { row: { original: { nome: string } } }) =>
         info.row.original.nome || "Nome não disponível"
-    },
-    {
-      accessor: "email",
+    }),
+    columnHelper.accessor("email", {
       header: "Email",
       meta: {
         filterVariant: "text"
       },
       cell: (info: { row: { original: { email: string } } }) =>
         info.row.original.email || "Email não disponível"
-    },
-    {
-      accessor: "museus",
+    }),
+    columnHelper.accessor("museus", {
       header: "Museus",
       meta: {
         filterVariant: "text"
@@ -133,18 +137,16 @@ const Index: React.FC = () => {
             .join(", ") + (museus.length > 2 ? " ..." : "")
         )
       }
-    },
-    {
-      accessor: "profile.name",
+    }),
+    columnHelper.accessor("profile.name", {
       header: "Perfil",
       meta: {
         filterVariant: "select"
       },
       cell: (info: { row: { original: { profile?: { name: string } } } }) =>
         profileMapping[info.row.original.profile?.name ?? ""] || "-"
-    },
-    {
-      accessor: "_id",
+    }),
+    columnHelper.accessor("_id", {
       header: "Associar museus",
       cell: (info: { row: { original: User } }) => {
         const profileName = info.row.original.profile?.name || ""
@@ -157,9 +159,8 @@ const Index: React.FC = () => {
           </Link>
         ) : null
       }
-    },
-    {
-      accessor: "_id",
+    }),
+    columnHelper.accessor("_id", {
       header: "Ações",
       meta: {
         filterVariant: "select"
@@ -184,8 +185,8 @@ const Index: React.FC = () => {
           </button>
         </div>
       )
-    }
-  ]
+    })
+  ] as ColumnDef<User>[]
 
   return (
     <DefaultLayout>
@@ -196,7 +197,10 @@ const Index: React.FC = () => {
         </Link>
       </div>
       <div className="overflow-x-auto">
-        <Table columns={museuColumns} data={userData || []} />
+        <Table
+          columns={museuColumns as ColumnDef<unknown>[]}
+          data={userData || []}
+        />
       </div>
 
       {/* Modal de Confirmação */}

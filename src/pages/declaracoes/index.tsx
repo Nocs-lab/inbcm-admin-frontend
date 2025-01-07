@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useSuspenseQuery } from "@tanstack/react-query"
+import { useMutation, useSuspenseQuery } from "@tanstack/react-query"
 import { useNavigate } from "react-router-dom"
 import {
   Column,
@@ -20,11 +20,10 @@ import {
 import clsx from "clsx"
 import { format } from "date-fns"
 import React, { useEffect, useMemo, useState } from "react"
-import { Button, Modal, Row, Col } from "react-dsgov"
+import { Button, Modal } from "react-dsgov"
 import DefaultLayout from "../../layouts/default"
 import request from "../../utils/request"
 import { stateRegions } from ".././../utils/regioes"
-import { Select } from "react-dsgov"
 import toast from "react-hot-toast"
 
 declare module "@tanstack/react-table" {
@@ -57,154 +56,16 @@ const AcoesEnviarParaAnalise: React.FC<{
     analistasResponsaveisNome: string[]
   }>
 }> = ({ row }) => {
-  const [modalAberta, setModalAberta] = useState(false)
-  const [analista, setAnalista] = useState("")
-
-  const { data: analistas, isLoading: isLoadingAnalistas } = useQuery({
-    queryKey: ["analistas"],
-    queryFn: async () => {
-      const response = await request("/api/admin/declaracoes/analistas", {
-        method: "GET"
-      })
-      return response.json()
-    }
-  })
-
-  useEffect(() => {
-    if (analistas && analistas.length > 0) {
-      setAnalista(analistas[0]._id) // Define o primeiro analista como padrão
-    }
-  }, [analistas])
-
-  const handleAnalistaChange = (value: React.SetStateAction<string>) =>
-    setAnalista(value)
-
-  // Mutation para atualizar o status
-  const { mutate: mutateAtualizarStatus, isPending: isUpdatingStatus } =
-    useMutation({
-      mutationFn: () => {
-        return request(
-          `/api/admin/declaracoes/atualizarStatus/${row.original._id}`,
-          {
-            method: "PUT",
-            data: {
-              status: "Em análise"
-            }
-          }
-        )
-      },
-      onSuccess: () => {
-        window.location.reload()
-      }
-    })
-  const { mutate: mutateEnviarParaAnalise, isPending: isSendingAnalysis } =
-    useMutation({
-      mutationFn: async () => {
-        const response = await request(
-          `/api/admin/declaracoes/${row.original._id}/analises`,
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              analistas: [analista]
-            })
-          }
-        )
-        if (!response.ok) {
-          const errorData = await response.json()
-          throw new Error(errorData.message)
-        }
-      },
-      onSuccess: () => {
-        toast.success("Declaração enviada para análise com sucesso!")
-        mutateAtualizarStatus()
-      },
-      onError: (error) => {
-        toast.error(
-          error.message ||
-            "Este analista não está disponível para essa especialidade"
-        )
-      }
-    })
-
   const navigate = useNavigate()
 
   return (
     <>
-      <Modal
-        useScrim
-        showCloseButton
-        className="w-full max-w-[90%] sm:max-w-[600px] md:max-w-[800px] p-3"
-        title="Enviar para análise"
-        modalOpened={modalAberta}
-        onCloseButtonClick={() => setModalAberta(false)}
-      >
-        <form
-          onSubmit={(e) => {
-            e.preventDefault()
-            mutateEnviarParaAnalise()
-          }}
-        >
-          <Modal.Body className="p-4">
-            <Row>
-              <Col>
-                <Select
-                  id="select-simples"
-                  placeholder="Selecione..."
-                  label="Analista"
-                  options={
-                    analistas?.map(
-                      (analista: { nome: string; _id: string }) => ({
-                        label: analista.nome,
-                        value: analista._id
-                      })
-                    ) ?? []
-                  }
-                  value={analista}
-                  onChange={handleAnalistaChange}
-                  disabled={isLoadingAnalistas}
-                />
-              </Col>
-            </Row>
-
-            <Row>
-              <Col my={6}></Col>
-            </Row>
-          </Modal.Body>
-
-          <Modal.Footer justify-content="end" className="pt-4">
-            <p className="mb-4">
-              Tem certeza que deseja enviar esta declaração para análise?
-            </p>
-            <Button
-              secondary
-              small
-              m={2}
-              type="button"
-              onClick={() => setModalAberta(false)}
-              disabled={isSendingAnalysis || isUpdatingStatus}
-            >
-              Cancelar
-            </Button>
-            <Button
-              primary
-              small
-              m={2}
-              type="submit"
-              loading={isSendingAnalysis || isUpdatingStatus}
-            >
-              Confirmar
-            </Button>
-          </Modal.Footer>
-        </form>
-      </Modal>
-
       <div className="flex space-x-2">
         <Button
           small
-          onClick={() => setModalAberta(true)}
+          onClick={() =>
+            navigate(`/declaracoes/enviarAnalise/${row.original._id}`)
+          }
           className="!font-thin analise"
         >
           <i className="fa-solid fa-magnifying-glass-arrow-right p-2"></i>
@@ -534,6 +395,15 @@ const columnHelper = createColumnHelper<{
     }
   }
   analistasResponsaveisNome: string[]
+  museologico?: {
+    analistasResponsaveisNome: string[]
+  }
+  arquivistico?: {
+    analistasResponsaveisNome: string[]
+  }
+  bibliografico?: {
+    analistasResponsaveisNome: string[]
+  }
 }>()
 
 const columns = [
@@ -589,12 +459,27 @@ const columns = [
     enableColumnFilter: false
   }),
   columnHelper.accessor("analistasResponsaveisNome", {
-    cell: (info) => info.getValue(),
-    header: "Analistas",
+    cell: (info) => {
+      const data = info.row.original // Acessa o objeto original da linha
+      const analistas = [
+        ...(data.analistasResponsaveisNome || []),
+        ...(data.museologico?.analistasResponsaveisNome || []),
+        ...(data.arquivistico?.analistasResponsaveisNome || []),
+        ...(data.bibliografico?.analistasResponsaveisNome || [])
+      ]
+
+      // Remove duplicatas e retorna os analistas formatados
+      const analistasUnicos = [...new Set(analistas)]
+      return analistasUnicos.length > 0
+        ? analistasUnicos.join(", ")
+        : "Nenhum analista"
+    },
+    header: "Todos os Analistas",
     meta: {
       filterVariant: "select"
     }
   }),
+
   columnHelper.display({
     id: "enviarParaAnalise",
     header: () => <div className="text-center w-full">Ações</div>,
