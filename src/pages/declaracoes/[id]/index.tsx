@@ -31,12 +31,7 @@ const DeclaracaoPage: React.FC = () => {
         <i className="fas fa-arrow-left" aria-hidden="true"></i>
         Voltar
       </Link>
-      <h2 className="mt-3 mb-0">
-        Declaração{" "}
-        {declaracao.retificacao
-          ? `retificadora 0${declaracao.versao - 1}`
-          : "original"}
-      </h2>
+      <h2 className="mt-3 mb-0">Histórico da Declaração</h2>
       <span className="br-tag mb-5">{declaracao.status}</span>
       <div className="flex gap-10 text-lg">
         <span>

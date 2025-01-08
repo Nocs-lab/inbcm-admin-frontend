@@ -127,95 +127,96 @@ const CreateUser: React.FC = () => {
 
   return (
     <DefaultLayout>
-      <div className="container mx-auto p-4">
-        <Link to="/usuarios" className="text-lg">
+      <div className="container mx-auto p-8">
+        <Link to="/usuarios" className="text-lg flex items-center gap-2 mb-4">
           <i className="fas fa-arrow-left" aria-hidden="true"></i>
           Voltar
         </Link>
-        <h2>Criar usuário</h2>
-        <form onSubmit={handleSubmit(onSubmit)} className="mt-5">
-          <div className="flex items-center justify-center">
-            <div className="grid gap-2 w-1/2">
-              <div className="grid gap-2 w-full">
-                <Input
-                  type="text"
-                  label="Nome"
-                  placeholder="Digite seu nome"
-                  error={errors.nome}
-                  {...register("nome")}
-                />
-                <Input
-                  type="email"
-                  label="Email"
-                  placeholder="Digite seu email"
-                  error={errors.email}
-                  {...register("email")}
-                />
-              </div>
-              <div className="flex gap-2 w-auto">
+        <h2>Criar Usuário</h2>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <div className="p-2">
+            <p>Informações Pessoais</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input
+                type="text"
+                label="Nome"
+                placeholder="Digite seu nome"
+                error={errors.nome}
+                {...register("nome")}
+              />
+              <Input
+                type="email"
+                label="Email"
+                placeholder="Digite seu email"
+                error={errors.email}
+                {...register("email")}
+              />
+            </div>
+          </div>
+          <div className="p-2">
+            <p>Detalhes de Acesso</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Controller
+                name="profile"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    id="select-simples"
+                    placeholder="Selecione um perfil"
+                    label="Perfil"
+                    className="w-full"
+                    options={profileOptions}
+                    {...field}
+                  />
+                )}
+              />
+              {isAnalyst && (
                 <Controller
-                  name="profile"
+                  name="tipoAnalista"
                   control={control}
                   render={({ field }) => (
                     <Select
-                      id="select-simples"
-                      placeholder="Selecione um perfil"
-                      label="Perfil"
+                      type="multiple"
+                      selectAllText=""
+                      placeholder="Selecione os tipos de analista"
+                      label="Tipo de Analista"
                       className="w-full"
-                      options={profileOptions}
+                      options={[
+                        { label: "Arquivístico", value: "arquivistico" },
+                        { label: "Museológico", value: "museologico" },
+                        { label: "Bibliográfico", value: "bibliografico" }
+                      ]}
                       {...field}
                     />
                   )}
                 />
-                {isAnalyst && (
-                  <Controller
-                    name="tipoAnalista"
-                    control={control}
-                    render={({ field }) => (
-                      <Select
-                        type="multiple"
-                        selectAllText={""}
-                        placeholder="Selecione os tipos de analista"
-                        label="Tipo de Analista"
-                        className="w-full"
-                        options={[
-                          { label: "Arquivístico", value: "arquivistico" },
-                          { label: "Museológico", value: "museologico" },
-                          { label: "Bibliográfico", value: "bibliografico" }
-                        ]}
-                        {...field}
-                      />
-                    )}
-                  />
-                )}
-              </div>
-              <div className="flex gap-2 w-full">
-                <Input
-                  type="password"
-                  label="Senha"
-                  placeholder="Digite sua senha"
-                  error={errors.password}
-                  {...register("password")}
-                />
-                <Input
-                  type="password"
-                  label="Confirmar senha"
-                  placeholder="Digite sua senha novamente"
-                  error={errors.confirmPassword}
-                  {...register("confirmPassword")}
-                />
-              </div>
+              )}
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input
+                type="password"
+                label="Senha"
+                placeholder="Digite sua senha"
+                error={errors.password}
+                {...register("password")}
+              />
+              <Input
+                type="password"
+                label="Confirmar Senha"
+                placeholder="Digite sua senha novamente"
+                error={errors.confirmPassword}
+                {...register("confirmPassword")}
+              />
             </div>
           </div>
-          <div className="flex space-x-4 justify-end">
-            <Link to={"/usuarios"} className="br-button secondary mt-5">
+
+          {/* Botões */}
+          <div className="flex justify-end space-x-4">
+            <Link to="/usuarios" className="br-button secondary">
               Voltar
             </Link>
             <button
-              className={clsx(
-                "br-button primary mt-5",
-                isSubmitting && "loading"
-              )}
+              className={clsx("br-button primary", isSubmitting && "loading")}
               type="submit"
             >
               Criar

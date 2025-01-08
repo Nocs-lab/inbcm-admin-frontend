@@ -141,7 +141,7 @@ const Index: React.FC = () => {
     columnHelper.accessor("profile.name", {
       header: "Perfil",
       meta: {
-        filterVariant: "select"
+        filterVariant: "text"
       },
       cell: (info: { row: { original: { profile?: { name: string } } } }) =>
         profileMapping[info.row.original.profile?.name ?? ""] || "-"
@@ -151,14 +151,18 @@ const Index: React.FC = () => {
       cell: (info: { row: { original: User } }) => {
         const profileName = info.row.original.profile?.name || ""
         return !["admin", "analyst"].includes(profileName) ? (
-          <Link to={`/usuarios/associar/${info.row.original._id}`}>
-            <Button primary inverted small>
-              <i className="fa-solid fa-share p-1 text-blue-950"></i>
-              Associar museus
-            </Button>
-          </Link>
+          <Button
+            small
+            onClick={() =>
+              navigate(`/usuarios/associar/${info.row.original._id}`)
+            }
+          >
+            <i className="fa-solid fa-share p-2"></i>
+            Associar museus
+          </Button>
         ) : null
-      }
+      },
+      enableColumnFilter: false
     }),
     columnHelper.accessor("_id", {
       header: "Ações",
@@ -168,7 +172,7 @@ const Index: React.FC = () => {
       cell: (info: { row: { original: { _id: string } } }) => (
         <div className="flex justify-center gap-2">
           <button
-            className="btn text-blue-950"
+            className="btn text-[#1351b4]"
             onClick={() => navigate(`/usuarios/${info.row.original._id}`)}
             aria-label="Editar usuário"
             title="Editar usuário"
@@ -176,7 +180,7 @@ const Index: React.FC = () => {
             <i className="fa-solid fa-pen-to-square pr-2"></i>
           </button>
           <button
-            className="btn text-blue-950"
+            className="btn text-[#1351b4]"
             onClick={() => handleOpenModal(info.row.original._id)}
             aria-label="Excluir usuário"
             title="Excluir usuário"
@@ -184,7 +188,8 @@ const Index: React.FC = () => {
             <i className="fa-solid fa-trash fa-fw pl-2"></i>
           </button>
         </div>
-      )
+      ),
+      enableColumnFilter: false
     })
   ] as ColumnDef<User>[]
 

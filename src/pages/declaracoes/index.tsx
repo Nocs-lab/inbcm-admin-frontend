@@ -107,19 +107,19 @@ const AcoesExcluirDeclaracao: React.FC<{
 
   const { mutate, isPending } = useMutation({
     mutationFn: () => {
-      return request(
-        `/api/admin/declaracoes/atualizarStatus/${row.original._id}`,
-        {
-          method: "PUT",
-          data: {
-            status: "Recebida"
-          }
-        }
-      )
+      return request(`/api/admin/declaracoes/restaurar/${row.original._id}`, {
+        method: "PUT"
+      })
     },
     onSuccess: () => {
       window.location.reload()
-      toast.success("Declaração excluída com sucesso!")
+      toast.success("Declaração recuperada com sucesso!")
+    },
+    onError: (error: Error) => {
+      toast.error(
+        error.message ||
+          "Não é possível restaurar esta declaração porque há versões mais recentes."
+      )
     }
   })
 
@@ -182,6 +182,9 @@ const AcoesExcluirDeclaracao: React.FC<{
 
 const AcoesDefinirStatus: React.FC<{
   row: TableRow<{
+    museologico: unknown
+    arquivistico: unknown
+    bibliografico: unknown
     _id: string
     anoDeclaracao: string
     retificacao: boolean
@@ -200,132 +203,15 @@ const AcoesDefinirStatus: React.FC<{
     analistasResponsaveisNome: string[]
   }>
 }> = ({ row }) => {
-  const [modalAberta, setModalAberta] = useState(false)
-  const [statusSelecionado, setStatusSelecionado] = useState<
-    "Em conformidade" | "Não conformidade" | ""
-  >("")
-
-  const { mutate, isPending } = useMutation({
-    mutationFn: (status: "Em conformidade" | "Não conformidade") => {
-      return request(
-        `/api/admin/declaracoes/atualizarStatus/${row.original._id}`,
-        {
-          method: "PUT",
-          data: {
-            status
-          }
-        }
-      )
-    },
-    onSuccess: () => {
-      window.location.reload()
-    }
-  })
-
   const navigate = useNavigate()
-
   return (
     <>
-      <Modal
-        useScrim
-        showCloseButton
-        className="large w-full max-w-[90%] sm:max-w-[600px] md:max-w-[800px] p-3"
-        title="Finalizar análise de declaração"
-        modalOpened={modalAberta}
-        onCloseButtonClick={() => setModalAberta(false)}
-      >
-        <Modal.Body>
-          <div className="space-y-4">
-            <div>
-              <p>
-                <strong>Envio: </strong>
-                {row.original?.dataCriacao
-                  ? new Date(row.original.dataCriacao).toLocaleString()
-                  : "Carregando..."}
-              </p>
-              <p>
-                <strong>Ano: </strong>
-                {row.original?.anoDeclaracao || "Carregando..."}
-              </p>
-              <p>
-                <strong>Museu: </strong>
-                {row.original?.museu_id?.nome || "Carregando..."}
-              </p>
-              <p>
-                <strong>Analista: </strong>
-                {row.original?.analistasResponsaveisNome?.join(", ") ||
-                  "Carregando..."}
-              </p>
-            </div>
-            <div className="text-lg space-y-2">
-              <p>
-                <strong>Conclusão:</strong>
-              </p>
-              <div id="radio-conclusao" className="flex items-center space-x-6">
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="radio"
-                    id="conformidade"
-                    name="conclusao"
-                    value="Em conformidade"
-                    checked={statusSelecionado === "Em conformidade"}
-                    onChange={() => setStatusSelecionado("Em conformidade")}
-                    className="h-5 w-5 text-blue-600 border-gray-300 focus:ring-blue-500"
-                  />
-                  <label
-                    htmlFor="conformidade"
-                    className="text-gray-600 cursor-pointer"
-                  >
-                    Em conformidade
-                  </label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="radio"
-                    id="nao-conformidade"
-                    name="conclusao"
-                    value="Não conformidade"
-                    checked={statusSelecionado === "Não conformidade"}
-                    onChange={() => setStatusSelecionado("Não conformidade")}
-                    className="h-5 w-5 text-blue-600 border-gray-300 focus:ring-blue-500"
-                  />
-                  <label
-                    htmlFor="nao-conformidade"
-                    className="text-gray-600 cursor-pointer"
-                  >
-                    Não conformidade
-                  </label>
-                </div>
-              </div>
-            </div>
-          </div>
-        </Modal.Body>
-        <Modal.Footer justify-content="end">
-          <Button
-            secondary
-            small
-            m={2}
-            onClick={() => setModalAberta(false)}
-            disabled={isPending}
-          >
-            Cancelar
-          </Button>
-          <Button
-            primary
-            small
-            m={2}
-            loading={isPending}
-            onClick={() => mutate(statusSelecionado)}
-          >
-            Confirmar
-          </Button>
-        </Modal.Footer>
-      </Modal>
-
       <div className="flex space-x-2">
         <Button
           small
-          onClick={() => setModalAberta(true)}
+          onClick={() =>
+            navigate(`/declaracoes/finalizarAnalise/${row.original._id}`)
+          }
           className="!font-thin concluir"
         >
           <i className="fa-solid fa-circle-check p-2"></i>Finalizar
@@ -1116,7 +1002,7 @@ const DeclaracoesPage = () => {
             aria-label="Informação. Seus dados só serão salvos após o preenchimento do primeiro campo do formulário."
             role="alert"
           >
-            <span className="message-body">Nenhum registro encontrado</span>
+            <span className="message-body">Nenhum registro encontrado.</span>
           </div>
         </div>
       )}

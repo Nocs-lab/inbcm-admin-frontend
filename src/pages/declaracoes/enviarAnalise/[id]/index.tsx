@@ -3,7 +3,8 @@ import { useSuspenseQuery, useMutation } from "@tanstack/react-query"
 import { useParams, Link, useNavigate } from "react-router-dom"
 import { useState, useEffect } from "react"
 import request from "../../../../utils/request"
-import { Select, Button, Row, Col } from "react-dsgov"
+import { Select, Row, Col, Button } from "react-dsgov"
+import { format } from "date-fns"
 import toast from "react-hot-toast"
 
 const EnviarParaAnalise: React.FC = () => {
@@ -68,20 +69,27 @@ const EnviarParaAnalise: React.FC = () => {
     }))
   }
 
-  const { mutate: enviarAnalise, isLoading } = useMutation({
+  const { mutate: enviarAnalise, isPending } = useMutation({
     mutationFn: async () => {
+      // Filtrar apenas os analistas que estão presentes na declaração
+      const analistasSelecionados = {
+        ...(declaracao?.museologico && {
+          museologico: [analistaSelecionado.museologico].filter(Boolean)
+        }),
+        ...(declaracao?.bibliografico && {
+          bibliografico: [analistaSelecionado.bibliografico].filter(Boolean)
+        }),
+        ...(declaracao?.arquivistico && {
+          arquivistico: [analistaSelecionado.arquivistico].filter(Boolean)
+        })
+      }
+
       const response = await request(`/api/admin/declaracoes/${id}/analises`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-          analistas: {
-            museologico: [analistaSelecionado.museologico].filter(Boolean),
-            bibliografico: [analistaSelecionado.bibliografico].filter(Boolean),
-            arquivistico: [analistaSelecionado.arquivistico].filter(Boolean)
-          }
-        })
+        body: JSON.stringify({ analistas: analistasSelecionados })
       })
 
       if (!response.ok) {
@@ -89,6 +97,7 @@ const EnviarParaAnalise: React.FC = () => {
         throw new Error(errorData.message)
       }
     },
+
     onSuccess: () => {
       toast.success("Declaração enviada para análise com sucesso!")
       navigate("/declaracoes")
@@ -104,7 +113,12 @@ const EnviarParaAnalise: React.FC = () => {
         Voltar
       </Link>
       <h2>Enviar declaração para análise</h2>
+      <span className="br-tag mb-5">{declaracao.status}</span>
       <div className="flex gap-10 text-lg mb-5">
+        <span>
+          <span className="font-bold">Envio: </span>
+          {format(declaracao.dataCriacao, "dd/MM/yyyy 'às' HH:mm")}{" "}
+        </span>
         <span>
           <span className="font-bold">Ano: </span>
           {declaracao.anoDeclaracao}
@@ -186,7 +200,7 @@ const EnviarParaAnalise: React.FC = () => {
           >
             Cancelar
           </Button>
-          <Button primary small type="submit" loading={isLoading}>
+          <Button primary small type="submit" loading={isPending}>
             Confirmar
           </Button>
         </Row>

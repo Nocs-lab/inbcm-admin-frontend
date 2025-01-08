@@ -24,6 +24,7 @@
     "@unocss/reset": "^0.60.4",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "inbcm-xlsx-validator": "github:Nocs-lab/inbcm-xlsx-parser",
     "lodash": "^4.17.21",
     "msgpackr": "^1.11.2",
     "react": "^18.3.1",
