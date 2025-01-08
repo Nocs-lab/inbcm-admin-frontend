@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Set Docker repository name for main branch
         if: github.ref == 'refs/heads/main'
@@ -26,7 +26,7 @@ jobs:
         run: echo "DOCKER_REPOSITORY=inbcm-admin" >> $GITHUB_ENV
 
       - name: Truncate commit SHA
-        run: echo "SHORT_SHA=${GITHUB_SHA:0:7}" >> $GITHUB_ENV
+        run: echo "VITE_SHORT_SHA=${GITHUB_SHA:0:7}" >> $GITHUB_ENV
 
       - name: Log in to Docker Registry
         uses: docker/login-action@v3
@@ -41,31 +41,5 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_REPOSITORY }}:${{ github.event_name }}-${{ env.SHORT_SHA }}
+            ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_REPOSITORY }}:${{ github.event_name }}-${{ env.VITE_SHORT_SHA }}
             ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_REPOSITORY }}:latest
-
-# Environment update
-
-  updating_environment:   
-    needs: push_to_registry
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout do código
-        uses: actions/checkout@v4
-      
-      - name: Create file .env
-        run: echo "${{ secrets.ENVS_UPDATE }}" > .env
-
-      - name: Configurar Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.9'
-
-      - name: Instalar o Playwright e o Chromium
-        run: |
-          pip install playwright
-          playwright install chromium
-          pip install python-dotenv
-
-      - name: Executar script de atualização
-        run: python ./src/scripts/updatePortainer.py

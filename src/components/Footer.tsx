@@ -56,7 +56,8 @@ const Footer: React.FC = () => {
           <div className="text-down-01 text-medium pb-3">
             Este sistema foi desenvolvido pelo <strong>Nocs Lab</strong>, que
             detém os direitos da&nbsp;
-            <strong>licença de uso.</strong>
+            <strong>licença de uso. </strong>
+            Versão {import.meta.env.VITE_SHORT_SHA}
           </div>
         </div>
       </div>
