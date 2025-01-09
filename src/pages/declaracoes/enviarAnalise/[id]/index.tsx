@@ -194,13 +194,12 @@ const EnviarParaAnalise: React.FC = () => {
         <Row justify-content="end" className="mt-4 gap-2 p-2">
           <Button
             secondary
-            small
             type="button"
             onClick={() => navigate("/declaracoes")}
           >
             Cancelar
           </Button>
-          <Button primary small type="submit" loading={isPending}>
+          <Button primary type="submit" loading={isPending}>
             Confirmar
           </Button>
         </Row>

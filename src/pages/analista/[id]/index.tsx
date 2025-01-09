@@ -4,9 +4,9 @@ import { format } from "date-fns"
 import { useState } from "react"
 import { useParams, Link, useNavigate } from "react-router-dom"
 import { Select, Textarea, Row, Button, Modal } from "react-dsgov"
-import MismatchsModal from "../../../../components/MismatchsModal"
-import DefaultLayout from "../../../../layouts/default"
-import request from "../../../../utils/request"
+import MismatchsModal from "../../../components/MismatchsModal"
+import DefaultLayout from "../../../layouts/default"
+import request from "../../../utils/request"
 import toast from "react-hot-toast"
 
 type Payload =
@@ -35,44 +35,6 @@ export default function FinalizarAnalise() {
   const [modalConfirmar, setModalConfirmar] = useState(false)
   const [confirmPayload, setConfirmPayload] = useState(null)
   const [confirmTipo, setConfirmTipo] = useState("")
-  const [modalAssinar, setModalAssinar] = useState(false)
-
-  const { mutate: assinarDeclaracao } = useMutation({
-    mutationFn: async ({ tipo }: { tipo: string }) => {
-      const response = await fetch(
-        `/api/admin/declaracoes/alterar-analistas/${id}/${tipo}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json"
-          }
-        }
-      )
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.message || "Erro ao assinar a declaração")
-      }
-      return response.json()
-    },
-    onSuccess: () => {
-      toast.success("Declaração assinada com sucesso!")
-      setModalAssinar(false)
-      window.location.reload()
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || "Erro ao assinar a declaração")
-    }
-  })
-
-  const [tipoDeclaracao, setTipoDeclaracao] = useState<string | null>(null)
-
-  const handleConfirmAssinar = () => {
-    if (!tipoDeclaracao) {
-      toast.error("Tipo de declaração não definido.")
-      return
-    }
-    assinarDeclaracao({ tipo: tipoDeclaracao })
-  }
 
   const getDefaultTab = () => {
     if (data.museologico?.status) {
@@ -198,29 +160,6 @@ export default function FinalizarAnalise() {
     if (currentTab === "museologico") {
       return (
         <>
-          <div className="flex text-lg items-center justify-between">
-            <span>
-              <span className="font-bold">Analista museológico: </span>
-              {data.museologico.analistasResponsaveisNome}
-            </span>
-            <div className="flex gap-10">
-              <a
-                className="text-xl"
-                href="#"
-                onClick={() => {
-                  setTipoDeclaracao("museologico")
-                  setModalAssinar(true)
-                }}
-                role="button"
-              >
-                <i
-                  className="fa-solid fa-file-signature"
-                  aria-hidden="true"
-                ></i>{" "}
-                Assinar declaração
-              </a>
-            </div>
-          </div>
           <div className="flex items-center justify-between">
             <Select
               id="select-status-museologico"
@@ -443,15 +382,6 @@ export default function FinalizarAnalise() {
               <i className="fas fa-exclamation-triangle" aria-hidden="true"></i>{" "}
               Pendências
             </a>
-            <a
-              className="text-xl"
-              href="#"
-              onClick={() => navigate(`/declaracoes/enviarAnalise/${id}`)}
-              role="button"
-            >
-              <i className="fa-solid fa-clipboard-user" aria-hidden="true"></i>{" "}
-              Alterar analista
-            </a>
             <MismatchsModal
               opened={showModal}
               onClose={() => setShowModal(false)}
@@ -547,30 +477,6 @@ export default function FinalizarAnalise() {
           </div>
         </div>
       </div>
-      {modalAssinar && (
-        <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
-          <Modal
-            title="Confirmar assinatura"
-            showCloseButton
-            onCloseButtonClick={() => setModalAssinar(false)}
-          >
-            <Modal.Body>
-              Tem certeza de que deseja assinar a declaração do tipo{" "}
-              <b>{tipoDeclaracao}</b>?
-            </Modal.Body>
-            <Modal.Footer justify-content="end">
-              <div className="flex gap-2">
-                <Button secondary onClick={() => setModalAssinar(false)}>
-                  Cancelar
-                </Button>
-                <Button primary onClick={handleConfirmAssinar}>
-                  Confirmar
-                </Button>
-              </div>
-            </Modal.Footer>
-          </Modal>
-        </div>
-      )}
       {modalConfirmar && (
         <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
           <Modal

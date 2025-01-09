@@ -19,7 +19,7 @@ const schema = z
     profile: z.string().min(1, "Este campo é obrigatório"),
     password: z.string().min(1, "Este campo é obrigatório"),
     confirmPassword: z.string().min(1, "Este campo é obrigatório"),
-    tipoAnalista: z.array(z.string()).optional()
+    especialidadeAnalista: z.array(z.string()).optional()
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "As senhas não são iguais",
@@ -65,7 +65,7 @@ const CreateUser: React.FC = () => {
       nome,
       password,
       profile,
-      tipoAnalista
+      especialidadeAnalista
     }: FormData) => {
       //add profile
 
@@ -76,7 +76,7 @@ const CreateUser: React.FC = () => {
           nome,
           profile,
           senha: password,
-          tipoAnalista: isAnalyst ? tipoAnalista : []
+          especialidadeAnalista: isAnalyst ? especialidadeAnalista : []
           //museus: []
         }
       })
@@ -98,11 +98,18 @@ const CreateUser: React.FC = () => {
     password,
     profile,
     confirmPassword,
-    tipoAnalista
+    especialidadeAnalista
   }: FormData) => {
     //add profile
 
-    mutate({ email, nome, password, profile, confirmPassword, tipoAnalista }) //add profile
+    mutate({
+      email,
+      nome,
+      password,
+      profile,
+      confirmPassword,
+      especialidadeAnalista
+    }) //add profile
   }
 
   const profileOptions = profiles.map((profile) => {
@@ -172,7 +179,7 @@ const CreateUser: React.FC = () => {
               />
               {isAnalyst && (
                 <Controller
-                  name="tipoAnalista"
+                  name="especialidadeAnalista"
                   control={control}
                   render={({ field }) => (
                     <Select
