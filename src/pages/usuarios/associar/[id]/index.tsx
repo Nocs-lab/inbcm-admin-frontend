@@ -205,7 +205,7 @@ const AssociarPage: React.FC = () => {
         <i className="fas fa-arrow-left" aria-hidden="true"></i>
         Voltar
       </Link>
-      <h2 className="p-4">Associar museu</h2>
+      <h2>Associar museu</h2>
       <div className="p-4">
         <div className="grid gap-2">
           <div className="flex">

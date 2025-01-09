@@ -85,7 +85,7 @@ const MismatchsModal: React.FC<{
     <Modal
       useScrim
       modalOpened={opened}
-      title="Listagem de Pendências"
+      title="Listagem de pendências"
       showCloseButton
       onCloseButtonClick={() => onClose()}
       className="min-w-1/2"

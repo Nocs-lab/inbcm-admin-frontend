@@ -178,8 +178,8 @@ const CreateUser: React.FC = () => {
                     <Select
                       type="multiple"
                       selectAllText=""
-                      placeholder="Selecione os tipos de analista"
-                      label="Tipo de Analista"
+                      placeholder="Selecione os tipos de especialidade"
+                      label="Tipo de especialidade"
                       className="w-full"
                       options={[
                         { label: "Arquivístico", value: "arquivistico" },

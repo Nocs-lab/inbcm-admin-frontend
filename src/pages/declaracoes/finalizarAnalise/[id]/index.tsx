@@ -162,21 +162,30 @@ export default function FinalizarAnalise() {
     if (currentTab === "museologico") {
       return (
         <>
-          <div className="flex gap-4">
-            <a
-              className="text-xl"
-              href="#"
-              onClick={() => assinarDeclaracao({ tipo: "museologico" })}
-              role="button"
-            >
-              <i className="fa-solid fa-file-signature" aria-hidden="true"></i>{" "}
-              Assinar declaração
-            </a>
+          <div className="flex text-lg items-center justify-between">
+            <span>
+              <span className="font-bold">Analista museológico: </span>
+              {data.museologico.analistasResponsaveisNome}
+            </span>
+            <div className="flex gap-10">
+              <a
+                className="text-xl"
+                href="#"
+                onClick={() => assinarDeclaracao({ tipo: "museologico" })}
+                role="button"
+              >
+                <i
+                  className="fa-solid fa-file-signature"
+                  aria-hidden="true"
+                ></i>{" "}
+                Assinar declaração
+              </a>
+            </div>
           </div>
           <div className="flex items-center justify-between">
             <Select
               id="select-status-museologico"
-              label="Parecer museológico"
+              label="Parecer de bens museológicos"
               placeholder="Selecione um parecer"
               className="w-1/2"
               options={[
@@ -195,7 +204,7 @@ export default function FinalizarAnalise() {
             </a>
           </div>
           <Textarea
-            label="Observações"
+            label="Despacho do acervo museológico"
             rows={4}
             className="w-full"
             style={{ minHeight: "100px" }}
@@ -226,21 +235,30 @@ export default function FinalizarAnalise() {
     } else if (currentTab === "bibliografico") {
       return (
         <>
-          <div className="flex gap-4">
-            <a
-              className="text-xl"
-              href="#"
-              onClick={() => assinarDeclaracao({ tipo: "bibliografico" })}
-              role="button"
-            >
-              <i className="fa-solid fa-file-signature" aria-hidden="true"></i>{" "}
-              Assinar declaração
-            </a>
+          <div className="flex text-lg items-center justify-between">
+            <span>
+              <span className="font-bold">Analista bibliográfico: </span>
+              {data.bibliografico.analistasResponsaveisNome}
+            </span>
+            <div className="flex gap-10">
+              <a
+                className="text-xl"
+                href="#"
+                onClick={() => assinarDeclaracao({ tipo: "bibliografico" })}
+                role="button"
+              >
+                <i
+                  className="fa-solid fa-file-signature"
+                  aria-hidden="true"
+                ></i>{" "}
+                Assinar declaração
+              </a>
+            </div>
           </div>
           <div className="flex items-center justify-between">
             <Select
               id="select-status-bibliografico"
-              label="Parecer bibliográfico"
+              label="Parecer de bens bibliográficos"
               placeholder="Selecione um parecer"
               className="w-1/2"
               options={[
@@ -251,7 +269,7 @@ export default function FinalizarAnalise() {
               value={statusBibliografico}
             />
             <a
-              href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao}/museologico`}
+              href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao}/bibliografico`}
               className="mb-2"
             >
               <i className="fas fa-download" aria-hidden="true"></i> Baixar
@@ -259,7 +277,7 @@ export default function FinalizarAnalise() {
             </a>
           </div>
           <Textarea
-            label="Observações"
+            label="Despacho do acervo bibliográfico"
             rows={4}
             className="w-full"
             style={{ minHeight: "100px" }}
@@ -290,21 +308,30 @@ export default function FinalizarAnalise() {
     } else if (currentTab === "arquivistico") {
       return (
         <>
-          <div className="flex gap-4">
-            <a
-              className="text-xl"
-              href="#"
-              onClick={() => assinarDeclaracao({ tipo: "arquivistico" })}
-              role="button"
-            >
-              <i className="fa-solid fa-file-signature" aria-hidden="true"></i>{" "}
-              Assinar declaração
-            </a>
+          <div className="flex text-lg items-center justify-between">
+            <span>
+              <span className="font-bold">Analista arquivístico: </span>
+              {data.arquivistico.analistasResponsaveisNome}
+            </span>
+            <div className="flex gap-10">
+              <a
+                className="text-xl"
+                href="#"
+                onClick={() => assinarDeclaracao({ tipo: "arquivistico" })}
+                role="button"
+              >
+                <i
+                  className="fa-solid fa-file-signature"
+                  aria-hidden="true"
+                ></i>{" "}
+                Assinar declaração
+              </a>
+            </div>
           </div>
           <div className="flex items-center justify-between">
             <Select
               id="select-status-arquivistico"
-              label="Parecer arquivístico"
+              label="Parecer de bens arquivísticos"
               placeholder="Selecione um parecer"
               className="w-1/2"
               options={[
@@ -315,7 +342,7 @@ export default function FinalizarAnalise() {
               value={statusArquivistico}
             />
             <a
-              href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao}/museologico`}
+              href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao}/arquivistico`}
               className="mb-2"
             >
               <i className="fas fa-download" aria-hidden="true"></i> Baixar
@@ -323,7 +350,7 @@ export default function FinalizarAnalise() {
             </a>
           </div>
           <Textarea
-            label="Observações"
+            label="Despacho do acervo arquivístico"
             rows={4}
             className="w-full"
             style={{ minHeight: "100px" }}
@@ -361,7 +388,7 @@ export default function FinalizarAnalise() {
         <i className="fas fa-arrow-left" aria-hidden="true"></i>
         Voltar
       </Link>
-      <h2 className="mt-3 mb-0"> Finalizar análise da declaração</h2>
+      <h2> Finalizar análise da declaração</h2>
       <span className="br-tag mb-5">{data.status}</span>
       <div className="flex gap-4">
         {(data.museologico?.pendencias.length > 0 ||
@@ -376,6 +403,15 @@ export default function FinalizarAnalise() {
             >
               <i className="fas fa-exclamation-triangle" aria-hidden="true"></i>{" "}
               Visualizar pendências
+            </a>
+            <a
+              className="text-xl"
+              href="#"
+              onClick={() => navigate(`/declaracoes/enviarAnalise/${id}`)}
+              role="button"
+            >
+              <i className="fa-solid fa-clipboard-user" aria-hidden="true"></i>{" "}
+              Alterar analista
             </a>
             <MismatchsModal
               opened={showModal}
