@@ -43,6 +43,24 @@ const regionsMap = {
   sul: ["PR", "SC", "RS"]
 }
 
+const Card: React.FC<{
+  title: string
+  value: number | string
+  subtitle: string
+}> = ({ title, value, subtitle }) => {
+  return (
+    <div className="br-card p-1 m-0">
+      <div className="card-header flex items-end">
+        <span className="text-5xl font-extrabold">{value}</span>
+        <span className="text-xl font-bold ml-2">{title}</span>
+      </div>
+      <div className="card-content">
+        <span className="text-2xl font-bold">{subtitle}</span>
+      </div>
+    </div>
+  )
+}
+
 const Charts: React.FC<{
   params: URLSearchParams
   estados: string[]
@@ -75,6 +93,8 @@ const Charts: React.FC<{
     ]
   })
 
+  console.log(data)
+
   const {
     quantidadeDeclaracoesPorAno: {
       quantidadePorAno: declaracoesPorAnoDashboard,
@@ -87,10 +107,10 @@ const Charts: React.FC<{
     },
     cards: {
       quantidadeDeBens: bensCountPorTipo,
-      totalDeclaracoes: declaracoesCount
-    },
-    declaracoesEmConformidade,
-    bensCountTotal
+      totalDeclaracoes: declaracoesCount,
+      totalMuseus: museusCount,
+      statusPercentages: statusPorcentagem
+    }
   } = data
 
   let locationText = ""
@@ -103,53 +123,49 @@ const Charts: React.FC<{
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 mb-50 gap-10 auto-rows-fr">
-        <div className="br-card p-3">
-          <div className="card-header">
-            <span className="text-6xl font-extrabold">{declaracoesCount}</span>
-          </div>
-          <div className="card-content mt-1">
-            <span className="text-3xl font-bold">
-              Declarações enviadas por museus
-            </span>
-          </div>
-        </div>
-        <div className="br-card p-3">
-          <div className="card-header">
-            <span className="text-6xl font-extrabold">10%</span>
-          </div>
-          <div className="card-content mt-1">
-            <span className="text-3xl font-bold">
-              Atingidos da meta esperada
-            </span>
-          </div>
-        </div>
-        <div className="br-card p-3">
-          <div className="card-header">
-            <span className="text-6xl font-extrabold">
-              {declaracoesEmConformidade}
-            </span>
-          </div>
-          <div className="card-content mt-1">
-            <span className="text-3xl font-bold">
-              {fim !== inicio
-                ? `Declarações de ${inicio} a ${fim} analisadas`
-                : `Declarações de ${inicio} analisadas`}
-            </span>
-          </div>
-        </div>
-        <div className="br-card p-3">
-          <div className="card-header">
-            <span className="text-6xl font-extrabold">{bensCountTotal}</span>
-          </div>
-          <div className="card-content mt-1">
-            <span className="text-3xl font-bold">
-              {fim !== inicio
-                ? `Bens de ${inicio} a ${fim} cadastrados`
-                : `Bens de ${inicio} cadastrados`}
-            </span>
-          </div>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mb-50 gap-4">
+        <Card
+          title="declarações"
+          value={declaracoesCount}
+          subtitle="Enviadas"
+        />
+        <Card title="atingidos" value="10%" subtitle="da meta esperada" />
+        <Card title="museus" value={museusCount} subtitle="declarantes" />
+        <Card
+          title="das declarações"
+          value={statusPorcentagem["Recebida"]}
+          subtitle="aguardando análise"
+        />
+        <Card
+          title="das declarações"
+          value={statusPorcentagem["Em análise"]}
+          subtitle="em análise"
+        />
+        <Card
+          title="das declarações"
+          value={statusPorcentagem["Em conformidade"]}
+          subtitle="em conformidade"
+        />
+        <Card
+          title="das declarações"
+          value={statusPorcentagem["Não conformidade"]}
+          subtitle="não conformidade"
+        />
+        <Card
+          title="itens"
+          value={bensCountPorTipo["museologico"]}
+          subtitle="museológicos"
+        />
+        <Card
+          title="itens"
+          value={bensCountPorTipo["bibliografico"]}
+          subtitle="bibliográficos"
+        />
+        <Card
+          title="itens"
+          value={bensCountPorTipo["arquivistico"]}
+          subtitle="arquivísticos"
+        />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-44">
         <div>
