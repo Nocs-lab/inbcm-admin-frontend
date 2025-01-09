@@ -139,7 +139,7 @@ const EnviarParaAnalise: React.FC = () => {
             <Col>
               <Select
                 id="select-museologico"
-                label="Analista Museológico"
+                label="Analista museológico"
                 placeholder="Selecione um analista"
                 options={analistas.museologico.map(
                   (analista: { nome: string; _id: string }) => ({
@@ -156,7 +156,7 @@ const EnviarParaAnalise: React.FC = () => {
             <Col>
               <Select
                 id="select-bibliografico"
-                label="Analista Bibliográfico"
+                label="Analista bibliográfico"
                 placeholder="Selecione um analista"
                 options={analistas.bibliografico.map(
                   (analista: { nome: string; _id: string }) => ({
@@ -175,7 +175,7 @@ const EnviarParaAnalise: React.FC = () => {
             <Col>
               <Select
                 id="select-arquivistico"
-                label="Analista Arquivístico"
+                label="Analista arquivístico"
                 placeholder="Selecione um analista"
                 options={analistas.arquivistico.map(
                   (analista: { nome: string; _id: string }) => ({

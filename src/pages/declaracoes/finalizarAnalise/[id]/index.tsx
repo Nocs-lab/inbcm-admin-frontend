@@ -3,12 +3,16 @@ import clsx from "clsx"
 import { format } from "date-fns"
 import { useState } from "react"
 import { useParams, Link, useNavigate } from "react-router-dom"
-import { Select, Textarea, Row, Button } from "react-dsgov"
-//import TableItens from "../../../../components/TableItens";
+import { Select, Textarea, Row, Button, Modal } from "react-dsgov"
 import MismatchsModal from "../../../../components/MismatchsModal"
 import DefaultLayout from "../../../../layouts/default"
 import request from "../../../../utils/request"
 import toast from "react-hot-toast"
+
+type Payload =
+  | { statusBens: { museologico: { status: string; comentario: string } } }
+  | { statusBens: { bibliografico: { status: string; comentario: string } } }
+  | { statusBens: { arquivistico: { status: string; comentario: string } } }
 
 export default function FinalizarAnalise() {
   const params = useParams()
@@ -28,6 +32,10 @@ export default function FinalizarAnalise() {
   })
 
   const [showModal, setShowModal] = useState(false)
+  const [modalConfirmar, setModalConfirmar] = useState(false)
+  const [confirmPayload, setConfirmPayload] = useState(null)
+  const [confirmTipo, setConfirmTipo] = useState("")
+  const [modalAssinar, setModalAssinar] = useState(false)
 
   const { mutate: assinarDeclaracao } = useMutation({
     mutationFn: async ({ tipo }: { tipo: string }) => {
@@ -48,11 +56,23 @@ export default function FinalizarAnalise() {
     },
     onSuccess: () => {
       toast.success("Declaração assinada com sucesso!")
+      setModalAssinar(false)
+      window.location.reload()
     },
     onError: (error: Error) => {
       toast.error(error.message || "Erro ao assinar a declaração")
     }
   })
+
+  const [tipoDeclaracao, setTipoDeclaracao] = useState<string | null>(null)
+
+  const handleConfirmAssinar = () => {
+    if (!tipoDeclaracao) {
+      toast.error("Tipo de declaração não definido.")
+      return
+    }
+    assinarDeclaracao({ tipo: tipoDeclaracao })
+  }
 
   const getDefaultTab = () => {
     if (data.museologico?.status) {
@@ -104,6 +124,22 @@ export default function FinalizarAnalise() {
     }
   })
 
+  const openConfirmModal = (tipo: string, payload: Payload) => {
+    setConfirmTipo(tipo)
+    setConfirmPayload(payload)
+    setModalConfirmar(true)
+  }
+
+  const handleConfirmarAnalise = () => {
+    if (!confirmPayload || !confirmTipo) {
+      toast.error("Erro interno. Tente novamente.")
+      return
+    }
+
+    atualizarStatus(confirmPayload)
+    setModalConfirmar(false) // Fecha o modal após a confirmação
+  }
+
   const handleSaveMuseologico = () => {
     if (!statusMuseologico || !commentMuseologico) {
       toast.error("Preencha todos os campos antes de confirmar.")
@@ -119,7 +155,7 @@ export default function FinalizarAnalise() {
       }
     }
 
-    atualizarStatus(payload)
+    openConfirmModal("museologico", payload)
   }
 
   const handleSaveBibliografico = () => {
@@ -137,7 +173,7 @@ export default function FinalizarAnalise() {
       }
     }
 
-    atualizarStatus(payload)
+    openConfirmModal("bibliografico", payload)
   }
 
   const handleSaveArquivistico = () => {
@@ -155,7 +191,7 @@ export default function FinalizarAnalise() {
       }
     }
 
-    atualizarStatus(payload)
+    openConfirmModal("arquivistico", payload)
   }
 
   const renderFormFields = () => {
@@ -171,7 +207,10 @@ export default function FinalizarAnalise() {
               <a
                 className="text-xl"
                 href="#"
-                onClick={() => assinarDeclaracao({ tipo: "museologico" })}
+                onClick={() => {
+                  setTipoDeclaracao("museologico")
+                  setModalAssinar(true)
+                }}
                 role="button"
               >
                 <i
@@ -185,7 +224,7 @@ export default function FinalizarAnalise() {
           <div className="flex items-center justify-between">
             <Select
               id="select-status-museologico"
-              label="Parecer de bens museológicos"
+              label="Situação do acervo museológico"
               placeholder="Selecione um parecer"
               className="w-1/2"
               options={[
@@ -204,7 +243,7 @@ export default function FinalizarAnalise() {
             </a>
           </div>
           <Textarea
-            label="Despacho do acervo museológico"
+            label=" Parecer técnico sobre os bens museológicos"
             rows={4}
             className="w-full"
             style={{ minHeight: "100px" }}
@@ -244,7 +283,10 @@ export default function FinalizarAnalise() {
               <a
                 className="text-xl"
                 href="#"
-                onClick={() => assinarDeclaracao({ tipo: "bibliografico" })}
+                onClick={() => {
+                  setTipoDeclaracao("bibliografico")
+                  setModalAssinar(true)
+                }}
                 role="button"
               >
                 <i
@@ -258,7 +300,7 @@ export default function FinalizarAnalise() {
           <div className="flex items-center justify-between">
             <Select
               id="select-status-bibliografico"
-              label="Parecer de bens bibliográficos"
+              label="Situação do acervo bibliográfico"
               placeholder="Selecione um parecer"
               className="w-1/2"
               options={[
@@ -277,7 +319,7 @@ export default function FinalizarAnalise() {
             </a>
           </div>
           <Textarea
-            label="Despacho do acervo bibliográfico"
+            label=" Parecer técnico sobre os bens bibliográficos"
             rows={4}
             className="w-full"
             style={{ minHeight: "100px" }}
@@ -317,7 +359,10 @@ export default function FinalizarAnalise() {
               <a
                 className="text-xl"
                 href="#"
-                onClick={() => assinarDeclaracao({ tipo: "arquivistico" })}
+                onClick={() => {
+                  setTipoDeclaracao("arquivistico")
+                  setModalAssinar(true)
+                }}
                 role="button"
               >
                 <i
@@ -331,7 +376,7 @@ export default function FinalizarAnalise() {
           <div className="flex items-center justify-between">
             <Select
               id="select-status-arquivistico"
-              label="Parecer de bens arquivísticos"
+              label="Situação do acervo arquivístico"
               placeholder="Selecione um parecer"
               className="w-1/2"
               options={[
@@ -350,7 +395,7 @@ export default function FinalizarAnalise() {
             </a>
           </div>
           <Textarea
-            label="Despacho do acervo arquivístico"
+            label=" Parecer técnico sobre os bens arquivísticos"
             rows={4}
             className="w-full"
             style={{ minHeight: "100px" }}
@@ -388,7 +433,7 @@ export default function FinalizarAnalise() {
         <i className="fas fa-arrow-left" aria-hidden="true"></i>
         Voltar
       </Link>
-      <h2> Finalizar análise da declaração</h2>
+      <h2> Analisar declaração</h2>
       <span className="br-tag mb-5">{data.status}</span>
       <div className="flex gap-4">
         {(data.museologico?.pendencias.length > 0 ||
@@ -402,7 +447,7 @@ export default function FinalizarAnalise() {
               role="button"
             >
               <i className="fas fa-exclamation-triangle" aria-hidden="true"></i>{" "}
-              Visualizar pendências
+              Pendências
             </a>
             <a
               className="text-xl"
@@ -508,6 +553,58 @@ export default function FinalizarAnalise() {
           </div>
         </div>
       </div>
+      {modalAssinar && (
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
+          <Modal
+            title="Confirmar assinatura"
+            showCloseButton
+            onCloseButtonClick={() => setModalAssinar(false)}
+          >
+            <Modal.Body>
+              Tem certeza de que deseja assinar a declaração do tipo{" "}
+              <b>{tipoDeclaracao}</b>?
+            </Modal.Body>
+            <Modal.Footer justify-content="end">
+              <div className="flex gap-2">
+                <Button secondary small onClick={() => setModalAssinar(false)}>
+                  Cancelar
+                </Button>
+                <Button primary small onClick={handleConfirmAssinar}>
+                  Confirmar
+                </Button>
+              </div>
+            </Modal.Footer>
+          </Modal>
+        </div>
+      )}
+      {modalConfirmar && (
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
+          <Modal
+            title="Confirmar análise"
+            showCloseButton
+            onCloseButtonClick={() => setModalConfirmar(false)}
+          >
+            <Modal.Body>
+              Tem certeza de que deseja confimar a análise da declaração{" "}
+              <b>{confirmTipo}</b>?
+            </Modal.Body>
+            <Modal.Footer justify-content="end">
+              <div className="flex gap-2">
+                <Button
+                  secondary
+                  small
+                  onClick={() => setModalConfirmar(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button primary small onClick={handleConfirmarAnalise}>
+                  Confirmar
+                </Button>
+              </div>
+            </Modal.Footer>
+          </Modal>
+        </div>
+      )}
     </DefaultLayout>
   )
 }
