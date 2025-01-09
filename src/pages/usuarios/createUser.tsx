@@ -128,7 +128,7 @@ const CreateUser: React.FC = () => {
   return (
     <DefaultLayout>
       <div className="container mx-auto p-8">
-        <Link to="/usuarios" className="text-lg flex items-center gap-2 mb-4">
+        <Link to="/usuarios" className="text-lg">
           <i className="fas fa-arrow-left" aria-hidden="true"></i>
           Voltar
         </Link>

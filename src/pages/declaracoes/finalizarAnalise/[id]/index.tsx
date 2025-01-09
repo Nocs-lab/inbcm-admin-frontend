@@ -10,7 +10,7 @@ import DefaultLayout from "../../../../layouts/default"
 import request from "../../../../utils/request"
 import toast from "react-hot-toast"
 
-export default function DeclaracaoPage() {
+export default function FinalizarAnalise() {
   const params = useParams()
   const id = params.id!
   const navigate = useNavigate()
@@ -29,6 +29,31 @@ export default function DeclaracaoPage() {
 
   const [showModal, setShowModal] = useState(false)
 
+  const { mutate: assinarDeclaracao } = useMutation({
+    mutationFn: async ({ tipo }: { tipo: string }) => {
+      const response = await fetch(
+        `/api/admin/declaracoes/alterar-analistas/${id}/${tipo}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json"
+          }
+        }
+      )
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.message || "Erro ao assinar a declaração")
+      }
+      return response.json()
+    },
+    onSuccess: () => {
+      toast.success("Declaração assinada com sucesso!")
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Erro ao assinar a declaração")
+    }
+  })
+
   const getDefaultTab = () => {
     if (data.museologico?.status) {
       return "museologico"
@@ -45,35 +70,289 @@ export default function DeclaracaoPage() {
     "museologico" | "bibliografico" | "arquivistico" | "timeline"
   >(getDefaultTab())
 
-  const [status, setStatus] = useState("")
-  const [comment, setComment] = useState("")
+  const [statusMuseologico, setStatusMuseologico] = useState("")
+  const [commentMuseologico, setCommentMuseologico] = useState("")
+  const [statusBibliografico, setStatusBibliografico] = useState("")
+  const [commentBibliografico, setCommentBibliografico] = useState("")
+  const [statusArquivistico, setStatusArquivistico] = useState("")
+  const [commentArquivistico, setCommentArquivistico] = useState("")
 
-  // Mutation para atualizar status e comentário
   const { mutate: atualizarStatus, isLoading: isUpdating } = useMutation({
-    mutationFn: async () => {
-      return request(`/api/admin/declaracoes/atualizar/${id}/${currentTab}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ status, comentario: comment })
-      })
+    mutationFn: async (payload) => {
+      const response = await fetch(
+        `/api/admin/declaracoes/atualizarStatus/${id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        }
+      )
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.message || "Erro desconhecido")
+      }
+      return response.json()
     },
     onSuccess: () => {
-      toast.success("Status atualizado com sucesso!")
       window.location.reload()
+      toast.success("Status atualizado com sucesso!")
     },
-    onError: () => {
-      toast.error("Erro ao atualizar status. Tente novamente.")
+    onError: (error: Error) => {
+      toast.error(error.message || "Erro ao atualizar status")
     }
   })
 
-  const handleSave = () => {
-    if (!status || !comment) {
+  const handleSaveMuseologico = () => {
+    if (!statusMuseologico || !commentMuseologico) {
       toast.error("Preencha todos os campos antes de confirmar.")
       return
     }
-    atualizarStatus()
+
+    const payload = {
+      statusBens: {
+        museologico: {
+          status: statusMuseologico,
+          comentario: commentMuseologico
+        }
+      }
+    }
+
+    atualizarStatus(payload)
+  }
+
+  const handleSaveBibliografico = () => {
+    if (!statusBibliografico || !commentBibliografico) {
+      toast.error("Preencha todos os campos antes de confirmar.")
+      return
+    }
+
+    const payload = {
+      statusBens: {
+        bibliografico: {
+          status: statusBibliografico,
+          comentario: commentBibliografico
+        }
+      }
+    }
+
+    atualizarStatus(payload)
+  }
+
+  const handleSaveArquivistico = () => {
+    if (!statusArquivistico || !commentArquivistico) {
+      toast.error("Preencha todos os campos antes de confirmar.")
+      return
+    }
+
+    const payload = {
+      statusBens: {
+        arquivistico: {
+          status: statusArquivistico,
+          comentario: commentArquivistico
+        }
+      }
+    }
+
+    atualizarStatus(payload)
+  }
+
+  const renderFormFields = () => {
+    if (currentTab === "museologico") {
+      return (
+        <>
+          <div className="flex gap-4">
+            <a
+              className="text-xl"
+              href="#"
+              onClick={() => assinarDeclaracao({ tipo: "museologico" })}
+              role="button"
+            >
+              <i className="fa-solid fa-file-signature" aria-hidden="true"></i>{" "}
+              Assinar declaração
+            </a>
+          </div>
+          <div className="flex items-center justify-between">
+            <Select
+              id="select-status-museologico"
+              label="Parecer museológico"
+              placeholder="Selecione um parecer"
+              className="w-1/2"
+              options={[
+                { label: "Em conformidade", value: "Em conformidade" },
+                { label: "Não conformidade", value: "Não conformidade" }
+              ]}
+              onChange={(value) => setStatusMuseologico(value)}
+              value={statusMuseologico}
+            />
+            <a
+              href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao}/museologico`}
+              className="mb-2"
+            >
+              <i className="fas fa-download" aria-hidden="true"></i> Baixar
+              planilha
+            </a>
+          </div>
+          <Textarea
+            label="Observações"
+            rows={4}
+            className="w-full"
+            style={{ minHeight: "100px" }}
+            value={commentMuseologico}
+            onChange={(e) => setCommentMuseologico(e.target.value)}
+          />
+          <Row justify-content="end" className="mt-4 gap-2 p-2">
+            <Button
+              secondary
+              small
+              type="button"
+              onClick={() => navigate("/declaracoes")}
+            >
+              Cancelar
+            </Button>
+            <Button
+              primary
+              small
+              type="button"
+              onClick={handleSaveMuseologico}
+              disabled={isUpdating}
+            >
+              {isUpdating ? "Salvando..." : "Confirmar"}
+            </Button>
+          </Row>
+        </>
+      )
+    } else if (currentTab === "bibliografico") {
+      return (
+        <>
+          <div className="flex gap-4">
+            <a
+              className="text-xl"
+              href="#"
+              onClick={() => assinarDeclaracao({ tipo: "bibliografico" })}
+              role="button"
+            >
+              <i className="fa-solid fa-file-signature" aria-hidden="true"></i>{" "}
+              Assinar declaração
+            </a>
+          </div>
+          <div className="flex items-center justify-between">
+            <Select
+              id="select-status-bibliografico"
+              label="Parecer bibliográfico"
+              placeholder="Selecione um parecer"
+              className="w-1/2"
+              options={[
+                { label: "Em conformidade", value: "Em conformidade" },
+                { label: "Não conformidade", value: "Não conformidade" }
+              ]}
+              onChange={(value) => setStatusBibliografico(value)}
+              value={statusBibliografico}
+            />
+            <a
+              href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao}/museologico`}
+              className="mb-2"
+            >
+              <i className="fas fa-download" aria-hidden="true"></i> Baixar
+              planilha
+            </a>
+          </div>
+          <Textarea
+            label="Observações"
+            rows={4}
+            className="w-full"
+            style={{ minHeight: "100px" }}
+            value={commentBibliografico}
+            onChange={(e) => setCommentBibliografico(e.target.value)}
+          />
+          <Row justify-content="end" className="mt-4 gap-2 p-2">
+            <Button
+              secondary
+              small
+              type="button"
+              onClick={() => navigate("/declaracoes")}
+            >
+              Cancelar
+            </Button>
+            <Button
+              primary
+              small
+              type="button"
+              onClick={handleSaveBibliografico}
+              disabled={isUpdating}
+            >
+              {isUpdating ? "Salvando..." : "Confirmar"}
+            </Button>
+          </Row>
+        </>
+      )
+    } else if (currentTab === "arquivistico") {
+      return (
+        <>
+          <div className="flex gap-4">
+            <a
+              className="text-xl"
+              href="#"
+              onClick={() => assinarDeclaracao({ tipo: "arquivistico" })}
+              role="button"
+            >
+              <i className="fa-solid fa-file-signature" aria-hidden="true"></i>{" "}
+              Assinar declaração
+            </a>
+          </div>
+          <div className="flex items-center justify-between">
+            <Select
+              id="select-status-arquivistico"
+              label="Parecer arquivístico"
+              placeholder="Selecione um parecer"
+              className="w-1/2"
+              options={[
+                { label: "Em conformidade", value: "Em conformidade" },
+                { label: "Não conformidade", value: "Não conformidade" }
+              ]}
+              onChange={(value) => setStatusArquivistico(value)}
+              value={statusArquivistico}
+            />
+            <a
+              href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao}/museologico`}
+              className="mb-2"
+            >
+              <i className="fas fa-download" aria-hidden="true"></i> Baixar
+              planilha
+            </a>
+          </div>
+          <Textarea
+            label="Observações"
+            rows={4}
+            className="w-full"
+            style={{ minHeight: "100px" }}
+            value={commentArquivistico}
+            onChange={(e) => setCommentArquivistico(e.target.value)}
+          />
+          <Row justify-content="end" className="mt-4 gap-2 p-2">
+            <Button
+              secondary
+              small
+              type="button"
+              onClick={() => navigate("/declaracoes")}
+            >
+              Cancelar
+            </Button>
+            <Button
+              primary
+              small
+              type="button"
+              onClick={handleSaveArquivistico}
+              disabled={isUpdating}
+            >
+              {isUpdating ? "Salvando..." : "Confirmar"}
+            </Button>
+          </Row>
+        </>
+      )
+    }
+    return null
   }
 
   return (
@@ -187,63 +466,12 @@ export default function DeclaracaoPage() {
         </nav>
         <div className="tab-content">
           <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <Select
-                id="select-status"
-                label="Situação"
-                placeholder="Selecione uma situação"
-                className="w-1/2"
-                options={[
-                  {
-                    label: "Em conformidade",
-                    value: "em conformidade"
-                  },
-                  {
-                    label: "Não conformidade",
-                    value: "nao conformidade"
-                  }
-                ]}
-                onChange={(value) => setStatus(value)}
-              />
-              <a
-                href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao}/museologico`}
-                className="mb-2"
-              >
-                <i className="fas fa-download" aria-hidden="true"></i> Baixar
-                planilha
-              </a>
+            <div className="tab-content">
+              <div className="flex flex-col gap-4">{renderFormFields()}</div>
             </div>
-
-            <Textarea
-              label="Observações"
-              rows={4}
-              className="w-full"
-              style={{ minHeight: "100px" }}
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-            />
           </div>
         </div>
       </div>
-      <Row justify-content="end" className="mt-4 gap-2 p-2">
-        <Button
-          secondary
-          small
-          type="button"
-          onClick={() => navigate("/declaracoes")}
-        >
-          Cancelar
-        </Button>
-        <Button
-          primary
-          small
-          type="button"
-          onClick={handleSave}
-          disabled={isUpdating}
-        >
-          {isUpdating ? "Salvando..." : "Confirmar"}
-        </Button>
-      </Row>
     </DefaultLayout>
   )
 }
