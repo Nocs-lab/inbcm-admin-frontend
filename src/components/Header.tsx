@@ -46,11 +46,14 @@ const Header: React.FC = () => {
                 <div className="header">
                   <div className="title">Acesso Rápido</div>
                 </div>
-                {Object.entries(pathnameMap).map(([path, name]) => (
-                  <Link key={path} className="br-item" to={path}>
-                    {name}
-                  </Link>
-                ))}
+                {user.perfil === "admin" &&
+                  Object.entries(pathnameMap).map(
+                    ([path, name]: [string, string]) => (
+                      <Link key={path} className="br-item" to={path}>
+                        {name}
+                      </Link>
+                    )
+                  )}
               </div>
             </div>
             <span className="br-divider vertical mx-half mx-sm-1"></span>

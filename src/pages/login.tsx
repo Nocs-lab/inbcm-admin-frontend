@@ -50,7 +50,8 @@ const LoginPage: React.FC = () => {
     onSuccess: (data) => {
       setUser({
         email: data.email,
-        name: data.name
+        name: data.name,
+        perfil: data.perfil
       })
 
       navigate("/")

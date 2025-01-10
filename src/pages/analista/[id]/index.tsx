@@ -161,199 +161,236 @@ export default function FinalizarAnalise() {
       return (
         <>
           <div className="flex items-center justify-between">
-            <Select
-              id="select-status-museologico"
-              label="Situação do acervo museológico"
-              placeholder="Selecione um parecer"
-              className="w-1/2"
-              options={[
-                { label: "Em conformidade", value: "Em conformidade" },
-                { label: "Não conformidade", value: "Não conformidade" }
-              ]}
-              onChange={(value) => setStatusMuseologico(value)}
-              value={statusMuseologico}
-            />
-            <a
-              href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao}/museologico`}
-              className="mb-2"
-            >
-              <i className="fas fa-download" aria-hidden="true"></i> Baixar
-              planilha
-            </a>
+            <span className="br-tag mb-5">{data.museologico.status}</span>
+            {data.museologico.status != "Recebida" && (
+              <a
+                href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao}/museologico`}
+                className="mb-2"
+              >
+                <i className="fas fa-download" aria-hidden="true"></i> Baixar
+                planilha
+              </a>
+            )}
           </div>
+
+          {data.museologico.status === "Recebida" && (
+            <div className="flex items-center justify-between">
+              <Select
+                id="select-status-museologico"
+                label="Situação do acervo museológico"
+                placeholder="Selecione um parecer"
+                className="w-1/2"
+                options={[
+                  { label: "Em conformidade", value: "Em conformidade" },
+                  { label: "Não conformidade", value: "Não conformidade" }
+                ]}
+                onChange={(value) => setStatusMuseologico(value)}
+                value={statusMuseologico}
+              />
+              <a
+                href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao}/museologico`}
+                className="mb-2"
+              >
+                <i className="fas fa-download" aria-hidden="true"></i> Baixar
+                planilha
+              </a>
+            </div>
+          )}
+
           <Textarea
             label=" Parecer técnico sobre os bens museológicos"
             rows={4}
             className="w-full"
             style={{ minHeight: "100px" }}
-            value={commentMuseologico}
+            value={
+              data.museologico.status !== "Recebida"
+                ? data.museologico.comentarios.length > 0
+                  ? data.museologico.comentarios[
+                      data.museologico.comentarios.length - 1
+                    ].mensagem
+                  : ""
+                : commentMuseologico
+            }
+            disabled={data.museologico.status !== "Recebida"}
             onChange={(e) => setCommentMuseologico(e.target.value)}
           />
-          <Row justify-content="end" className="mt-4 gap-2 p-2">
-            <Button
-              secondary
-              type="button"
-              onClick={() => navigate("/declaracoes")}
-            >
-              Cancelar
-            </Button>
-            <Button
-              primary
-              type="button"
-              onClick={handleSaveMuseologico}
-              disabled={isUpdating}
-            >
-              {isUpdating ? "Salvando..." : "Confirmar"}
-            </Button>
-          </Row>
+          {data.museologico.status === "Recebida" && (
+            <Row justify-content="end" className="mt-4 gap-2 p-2">
+              <Button
+                secondary
+                type="button"
+                onClick={() => navigate("/analista")}
+              >
+                Cancelar
+              </Button>
+              <Button
+                primary
+                type="button"
+                onClick={handleSaveMuseologico}
+                disabled={isUpdating}
+              >
+                {isUpdating ? "Salvando..." : "Confirmar"}
+              </Button>
+            </Row>
+          )}
         </>
       )
     } else if (currentTab === "bibliografico") {
       return (
         <>
-          <div className="flex text-lg items-center justify-between">
-            <span>
-              <span className="font-bold">Analista bibliográfico: </span>
-              {data.bibliografico.analistasResponsaveisNome}
-            </span>
-            <div className="flex gap-10">
+          <div className="flex items-center justify-between">
+            <span className="br-tag mb-5">{data.bibliografico.status}</span>
+            {data.bibliografico.status != "Recebida" && (
               <a
-                className="text-xl"
-                href="#"
-                onClick={() => {
-                  setTipoDeclaracao("bibliografico")
-                  setModalAssinar(true)
-                }}
-                role="button"
+                href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao}/bibliografico`}
+                className="mb-2"
               >
-                <i
-                  className="fa-solid fa-file-signature"
-                  aria-hidden="true"
-                ></i>{" "}
-                Assinar declaração
+                <i className="fas fa-download" aria-hidden="true"></i> Baixar
+                planilha
+              </a>
+            )}
+          </div>
+
+          {data.bibliografico.status === "Recebida" && (
+            <div className="flex items-center justify-between">
+              <Select
+                id="select-status-bibliografico"
+                label="Situação do acervo bibliográfico"
+                placeholder="Selecione um parecer"
+                className="w-1/2"
+                options={[
+                  { label: "Em conformidade", value: "Em conformidade" },
+                  { label: "Não conformidade", value: "Não conformidade" }
+                ]}
+                onChange={(value) => setStatusBibliografico(value)}
+                value={statusBibliografico}
+              />
+              <a
+                href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao}/bibliografico`}
+                className="mb-2"
+              >
+                <i className="fas fa-download" aria-hidden="true"></i> Baixar
+                planilha
               </a>
             </div>
-          </div>
-          <div className="flex items-center justify-between">
-            <Select
-              id="select-status-bibliografico"
-              label="Situação do acervo bibliográfico"
-              placeholder="Selecione um parecer"
-              className="w-1/2"
-              options={[
-                { label: "Em conformidade", value: "Em conformidade" },
-                { label: "Não conformidade", value: "Não conformidade" }
-              ]}
-              onChange={(value) => setStatusBibliografico(value)}
-              value={statusBibliografico}
-            />
-            <a
-              href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao}/bibliografico`}
-              className="mb-2"
-            >
-              <i className="fas fa-download" aria-hidden="true"></i> Baixar
-              planilha
-            </a>
-          </div>
+          )}
+
           <Textarea
             label=" Parecer técnico sobre os bens bibliográficos"
             rows={4}
             className="w-full"
             style={{ minHeight: "100px" }}
-            value={commentBibliografico}
+            value={
+              data.bibliografico.status !== "Recebida"
+                ? data.bibliografico.comentarios.length > 0
+                  ? data.bibliografico.comentarios[
+                      data.bibliografico.comentarios.length - 1
+                    ].mensagem
+                  : ""
+                : commentBibliografico
+            }
+            disabled={data.bibliografico.status !== "Recebida"}
             onChange={(e) => setCommentBibliografico(e.target.value)}
           />
-          <Row justify-content="end" className="mt-4 gap-2 p-2">
-            <Button
-              secondary
-              type="button"
-              onClick={() => navigate("/declaracoes")}
-            >
-              Cancelar
-            </Button>
-            <Button
-              primary
-              type="button"
-              onClick={handleSaveBibliografico}
-              disabled={isUpdating}
-            >
-              {isUpdating ? "Salvando..." : "Confirmar"}
-            </Button>
-          </Row>
+
+          {data.bibliografico.status === "Recebida" && (
+            <Row justify-content="end" className="mt-4 gap-2 p-2">
+              <Button
+                secondary
+                type="button"
+                onClick={() => navigate("/analista")}
+              >
+                Cancelar
+              </Button>
+              <Button
+                primary
+                type="button"
+                onClick={handleSaveBibliografico}
+                disabled={isUpdating}
+              >
+                {isUpdating ? "Salvando..." : "Confirmar"}
+              </Button>
+            </Row>
+          )}
         </>
       )
     } else if (currentTab === "arquivistico") {
       return (
         <>
-          <div className="flex text-lg items-center justify-between">
-            <span>
-              <span className="font-bold">Analista arquivístico: </span>
-              {data.arquivistico.analistasResponsaveisNome}
-            </span>
-            <div className="flex gap-10">
+          <div className="flex items-center justify-between">
+            <span className="br-tag mb-5">{data.arquivistico.status}</span>
+            {data.arquivistico.status != "Recebida" && (
               <a
-                className="text-xl"
-                href="#"
-                onClick={() => {
-                  setTipoDeclaracao("arquivistico")
-                  setModalAssinar(true)
-                }}
-                role="button"
+                href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao}/arquivistico`}
+                className="mb-2"
               >
-                <i
-                  className="fa-solid fa-file-signature"
-                  aria-hidden="true"
-                ></i>{" "}
-                Assinar declaração
+                <i className="fas fa-download" aria-hidden="true"></i> Baixar
+                planilha
+              </a>
+            )}
+          </div>
+
+          {data.arquivistico.status === "Recebida" && (
+            <div className="flex items-center justify-between">
+              <Select
+                id="select-status-arquivistico"
+                label="Situação do acervo arquivístico"
+                placeholder="Selecione um parecer"
+                className="w-1/2"
+                options={[
+                  { label: "Em conformidade", value: "Em conformidade" },
+                  { label: "Não conformidade", value: "Não conformidade" }
+                ]}
+                onChange={(value) => setStatusArquivistico(value)}
+                value={statusArquivistico}
+              />
+              <a
+                href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao}/arquivistico`}
+                className="mb-2"
+              >
+                <i className="fas fa-download" aria-hidden="true"></i> Baixar
+                planilha
               </a>
             </div>
-          </div>
-          <div className="flex items-center justify-between">
-            <Select
-              id="select-status-arquivistico"
-              label="Situação do acervo arquivístico"
-              placeholder="Selecione um parecer"
-              className="w-1/2"
-              options={[
-                { label: "Em conformidade", value: "Em conformidade" },
-                { label: "Não conformidade", value: "Não conformidade" }
-              ]}
-              onChange={(value) => setStatusArquivistico(value)}
-              value={statusArquivistico}
-            />
-            <a
-              href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao}/arquivistico`}
-              className="mb-2"
-            >
-              <i className="fas fa-download" aria-hidden="true"></i> Baixar
-              planilha
-            </a>
-          </div>
+          )}
+
           <Textarea
             label=" Parecer técnico sobre os bens arquivísticos"
             rows={4}
             className="w-full"
             style={{ minHeight: "100px" }}
-            value={commentArquivistico}
+            value={
+              data.arquivistico.status !== "Recebida"
+                ? data.arquivistico.comentarios.length > 0
+                  ? data.arquivistico.comentarios[
+                      data.arquivistico.comentarios.length - 1
+                    ].mensagem
+                  : ""
+                : commentArquivistico
+            }
+            disabled={data.arquivistico.status !== "Recebida"}
             onChange={(e) => setCommentArquivistico(e.target.value)}
           />
-          <Row justify-content="end" className="mt-4 gap-2 p-2">
-            <Button
-              secondary
-              type="button"
-              onClick={() => navigate("/declaracoes")}
-            >
-              Cancelar
-            </Button>
-            <Button
-              primary
-              type="button"
-              onClick={handleSaveArquivistico}
-              disabled={isUpdating}
-            >
-              {isUpdating ? "Salvando..." : "Confirmar"}
-            </Button>
-          </Row>
+
+          {data.arquivistico.status === "Recebida" && (
+            <Row justify-content="end" className="mt-4 gap-2 p-2">
+              <Button
+                secondary
+                type="button"
+                onClick={() => navigate("/analista")}
+              >
+                Cancelar
+              </Button>
+              <Button
+                primary
+                type="button"
+                onClick={handleSaveArquivistico}
+                disabled={isUpdating}
+              >
+                {isUpdating ? "Salvando..." : "Confirmar"}
+              </Button>
+            </Row>
+          )}
         </>
       )
     }
@@ -362,7 +399,7 @@ export default function FinalizarAnalise() {
 
   return (
     <DefaultLayout>
-      <Link to="/declaracoes" className="text-lg">
+      <Link to="/analista" className="text-lg">
         <i className="fas fa-arrow-left" aria-hidden="true"></i>
         Voltar
       </Link>
