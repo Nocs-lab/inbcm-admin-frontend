@@ -10,7 +10,6 @@ const Header: React.FC = () => {
 
   const pathnameMap = {
     "/": "Painel analítico",
-    "/museus": "Museus",
     "/gestao": "Gestão",
     "/declaracoes": "Declarações",
     "/usuarios": "Usuários"
@@ -46,11 +45,14 @@ const Header: React.FC = () => {
                 <div className="header">
                   <div className="title">Acesso Rápido</div>
                 </div>
-                {Object.entries(pathnameMap).map(([path, name]) => (
-                  <Link key={path} className="br-item" to={path}>
-                    {name}
-                  </Link>
-                ))}
+                {user.perfil === "admin" &&
+                  Object.entries(pathnameMap).map(
+                    ([path, name]: [string, string]) => (
+                      <Link key={path} className="br-item" to={path}>
+                        {name}
+                      </Link>
+                    )
+                  )}
               </div>
             </div>
             <span className="br-divider vertical mx-half mx-sm-1"></span>
@@ -87,6 +89,12 @@ const Header: React.FC = () => {
                   role="menu"
                   aria-labelledby="avatar-dropdown-trigger"
                 >
+                  <Link to="/perfil">
+                    <button className="br-item flex items-center space-x-2">
+                      <i className="fa-solid fa-user"></i>
+                      <span>Perfil</span>
+                    </button>
+                  </Link>
                   <button
                     className="br-item flex items-center space-x-2"
                     onClick={logout}

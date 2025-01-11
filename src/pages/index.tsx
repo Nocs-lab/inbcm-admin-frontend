@@ -138,7 +138,7 @@ const IndexPage = () => {
 
   return (
     <DefaultLayout>
-      <h1>Painel analítico</h1>
+      <h2>Painel analítico</h2>
       <form onSubmit={handleSubmit((data) => console.log(data))}>
         <fieldset
           className="rounded-lg p-3"

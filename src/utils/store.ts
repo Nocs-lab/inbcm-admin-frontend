@@ -4,6 +4,7 @@ import { persist, createJSONStorage } from "zustand/middleware"
 interface User {
   email: string
   name: string
+  perfil: string
 }
 
 interface State {

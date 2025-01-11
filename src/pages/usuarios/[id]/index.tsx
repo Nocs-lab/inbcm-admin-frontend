@@ -1,4 +1,3 @@
-import React, { useEffect } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import DefaultLayout from "../../../layouts/default"
 import { useMutation, useSuspenseQueries } from "@tanstack/react-query"
@@ -9,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import clsx from "clsx"
 import { Link } from "react-router-dom"
 import request from "../../../utils/request"
-import { Textarea } from "react-dsgov"
+import Table from "../../../components/Table"
 import toast from "react-hot-toast"
 
 const schema = z.object({
@@ -73,14 +72,8 @@ const EditUser: React.FC = () => {
     mutate({ email, nome })
   }
 
-  useEffect(() => {
-    if (user) {
-      console.log("Dados do usuário:", user)
-    }
-  }, [user])
-
   if (!user) {
-    return <div>Carregando...</div> // Exibe uma mensagem enquanto os dados não estão disponíveis
+    return <div>Carregando...</div>
   }
 
   const profileTranslations: Record<string, string> = {
@@ -89,9 +82,40 @@ const EditUser: React.FC = () => {
     declarant: "Declarante"
   }
 
+  const museuColumns = [
+    {
+      accessor: "nome",
+      header: "Nome",
+      cell: (info: { row: { original: { nome: string } } }) =>
+        info.row.original.nome || "Nome não disponível"
+    },
+    {
+      accessor: "municipio",
+      header: "Município",
+      cell: (info: { row: { original: { municipio: string } } }) =>
+        info.row.original.endereco.municipio || "Nome não disponível"
+    },
+    {
+      accessor: "bairro",
+      header: "Bairro",
+      cell: (info: { row: { original: { bairro: string } } }) =>
+        info.row.original.endereco.bairro || "Nome não disponível"
+    },
+    {
+      accessor: "esferaAdministraiva",
+      header: "Administração",
+      cell: (info: { row: { original: { esferaAdministraiva: string } } }) =>
+        info.row.original.esferaAdministraiva || "Nome não disponível"
+    }
+  ]
+
   return (
     <DefaultLayout>
-      <h1>Editar usuário</h1>
+      <Link to="/usuarios" className="text-lg">
+        <i className="fas fa-arrow-left" aria-hidden="true"></i>
+        Voltar
+      </Link>
+      <h2>Editar usuário</h2>
       <div className="container mx-auto p-6 bg-white rounded-lg">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div>
@@ -124,20 +148,17 @@ const EditUser: React.FC = () => {
                 rows={1}
                 readOnly
               />
-              <Textarea
-                label="Museus"
-                className="col-span-4"
-                value={
-                  user.museus && user.museus.length > 0
-                    ? user.museus
-                        .map((museu: { nome: string }) => `- ${museu.nome}`)
-                        .join("\n")
-                    : "Nenhum museu associado"
-                }
-                rows={5}
-                readOnly
-              />
             </div>
+            {user.profile?.name === "declarant" && (
+              <div className="mt-6">
+                <h2 className="text-lg font-semibold">Museus Associados</h2>
+                {user.museus && user.museus.length > 0 ? (
+                  <Table columns={museuColumns} data={user.museus} />
+                ) : (
+                  <p className="text-gray-500">Nenhum museu associado.</p>
+                )}
+              </div>
+            )}
           </div>
           <div className="flex space-x-4 justify-end">
             <Link to="/usuarios" className="br-button secondary mt-5">
@@ -150,7 +171,7 @@ const EditUser: React.FC = () => {
               )}
               type="submit"
             >
-              Salvar Alterações
+              Salvar
             </button>
           </div>
         </form>

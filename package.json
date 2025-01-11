@@ -24,6 +24,7 @@
     "@unocss/reset": "^0.60.4",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "inbcm-xlsx-validator": "github:Nocs-lab/inbcm-xlsx-parser",
     "lodash": "^4.17.21",
     "msgpackr": "^1.11.2",
     "react": "^18.3.1",
@@ -64,7 +65,7 @@
     "lint-staged": "^15.2.10",
     "typescript": "^5.7.2",
     "unocss": "^0.60.4",
-    "vite": "^5.4.11",
+    "vite": "^4.4.9",
     "vite-plugin-pages": "^0.32.4",
     "vitest": "^1.6.0"
   },

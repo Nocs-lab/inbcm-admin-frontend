@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useSuspenseQuery } from "@tanstack/react-query"
+import { useMutation, useSuspenseQuery } from "@tanstack/react-query"
 import { useNavigate } from "react-router-dom"
 import {
   Column,
@@ -20,11 +20,10 @@ import {
 import clsx from "clsx"
 import { format } from "date-fns"
 import React, { useEffect, useMemo, useState } from "react"
-import { Button, Modal, Row, Col } from "react-dsgov"
+import { Button, Modal } from "react-dsgov"
 import DefaultLayout from "../../layouts/default"
 import request from "../../utils/request"
 import { stateRegions } from ".././../utils/regioes"
-import { Select } from "react-dsgov"
 import toast from "react-hot-toast"
 
 declare module "@tanstack/react-table" {
@@ -36,6 +35,9 @@ declare module "@tanstack/react-table" {
 
 const AcoesEnviarParaAnalise: React.FC<{
   row: TableRow<{
+    museologico: unknown
+    arquivistico: unknown
+    bibliografico: unknown
     _id: string
     anoDeclaracao: string
     retificacao: boolean
@@ -54,141 +56,16 @@ const AcoesEnviarParaAnalise: React.FC<{
     analistasResponsaveisNome: string[]
   }>
 }> = ({ row }) => {
-  const [modalAberta, setModalAberta] = useState(false)
-  const [analista, setAnalista] = useState("")
-
-  const { data: analistas, isLoading: isLoadingAnalistas } = useQuery({
-    queryKey: ["analistas"],
-    queryFn: async () => {
-      const response = await request("/api/admin/declaracoes/analistas", {
-        method: "GET"
-      })
-      return response.json()
-    }
-  })
-
-  useEffect(() => {
-    if (analistas && analistas.length > 0) {
-      setAnalista(analistas[0]._id) // Define o primeiro analista como padrão
-    }
-  }, [analistas])
-
-  const handleAnalistaChange = (value: React.SetStateAction<string>) =>
-    setAnalista(value)
-
-  // Mutation para atualizar o status
-  const { mutate: mutateAtualizarStatus, isPending: isUpdatingStatus } =
-    useMutation({
-      mutationFn: () => {
-        return request(
-          `/api/admin/declaracoes/atualizarStatus/${row.original._id}`,
-          {
-            method: "PUT",
-            data: {
-              status: "Em análise"
-            }
-          }
-        )
-      },
-      onSuccess: () => {
-        window.location.reload()
-      }
-    })
-  const { mutate: mutateEnviarParaAnalise, isPending: isSendingAnalysis } =
-    useMutation({
-      mutationFn: async () => {
-        await request(`/api/admin/declaracoes/${row.original._id}/analises`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            analistas: [analista]
-          })
-        })
-      },
-      onSuccess: () => {
-        toast.success("Declaração enviada para análise com sucesso!")
-        mutateAtualizarStatus()
-      }
-    })
-
   const navigate = useNavigate()
 
   return (
     <>
-      <Modal
-        useScrim
-        showCloseButton
-        className="w-full max-w-[90%] sm:max-w-[600px] md:max-w-[800px] p-3"
-        title="Enviar para análise"
-        modalOpened={modalAberta}
-        onCloseButtonClick={() => setModalAberta(false)}
-      >
-        <form
-          onSubmit={(e) => {
-            e.preventDefault()
-            mutateEnviarParaAnalise()
-          }}
-        >
-          <Modal.Body className="p-4">
-            <Row>
-              <Col>
-                <Select
-                  id="select-simples"
-                  placeholder="Selecione..."
-                  label="Analista"
-                  options={
-                    analistas?.map(
-                      (analista: { nome: string; _id: string }) => ({
-                        label: analista.nome,
-                        value: analista._id
-                      })
-                    ) ?? []
-                  }
-                  value={analista}
-                  onChange={handleAnalistaChange}
-                  disabled={isLoadingAnalistas}
-                />
-              </Col>
-            </Row>
-
-            <Row>
-              <Col my={6}></Col>
-            </Row>
-          </Modal.Body>
-
-          <Modal.Footer justify-content="end" className="pt-4">
-            <p className="mb-4">
-              Tem certeza que deseja enviar esta declaração para análise?
-            </p>
-            <Button
-              secondary
-              small
-              m={2}
-              type="button"
-              onClick={() => setModalAberta(false)}
-              disabled={isSendingAnalysis || isUpdatingStatus}
-            >
-              Cancelar
-            </Button>
-            <Button
-              primary
-              small
-              m={2}
-              type="submit"
-              loading={isSendingAnalysis || isUpdatingStatus}
-            >
-              Confirmar
-            </Button>
-          </Modal.Footer>
-        </form>
-      </Modal>
-
       <div className="flex space-x-2">
         <Button
           small
-          onClick={() => setModalAberta(true)}
+          onClick={() =>
+            navigate(`/declaracoes/enviarAnalise/${row.original._id}`)
+          }
           className="!font-thin analise"
         >
           <i className="fa-solid fa-magnifying-glass-arrow-right p-2"></i>
@@ -230,19 +107,19 @@ const AcoesExcluirDeclaracao: React.FC<{
 
   const { mutate, isPending } = useMutation({
     mutationFn: () => {
-      return request(
-        `/api/admin/declaracoes/atualizarStatus/${row.original._id}`,
-        {
-          method: "PUT",
-          data: {
-            status: "Recebida"
-          }
-        }
-      )
+      return request(`/api/admin/declaracoes/restaurar/${row.original._id}`, {
+        method: "PUT"
+      })
     },
     onSuccess: () => {
       window.location.reload()
-      toast.success("Declaração excluída com sucesso!")
+      toast.success("Declaração recuperada com sucesso!")
+    },
+    onError: (error: Error) => {
+      toast.error(
+        error.message ||
+          "Não é possível restaurar esta declaração porque há versões mais recentes."
+      )
     }
   })
 
@@ -305,6 +182,9 @@ const AcoesExcluirDeclaracao: React.FC<{
 
 const AcoesDefinirStatus: React.FC<{
   row: TableRow<{
+    museologico: unknown
+    arquivistico: unknown
+    bibliografico: unknown
     _id: string
     anoDeclaracao: string
     retificacao: boolean
@@ -323,132 +203,15 @@ const AcoesDefinirStatus: React.FC<{
     analistasResponsaveisNome: string[]
   }>
 }> = ({ row }) => {
-  const [modalAberta, setModalAberta] = useState(false)
-  const [statusSelecionado, setStatusSelecionado] = useState<
-    "Em conformidade" | "Não conformidade" | ""
-  >("")
-
-  const { mutate, isPending } = useMutation({
-    mutationFn: (status: "Em conformidade" | "Não conformidade") => {
-      return request(
-        `/api/admin/declaracoes/atualizarStatus/${row.original._id}`,
-        {
-          method: "PUT",
-          data: {
-            status
-          }
-        }
-      )
-    },
-    onSuccess: () => {
-      window.location.reload()
-    }
-  })
-
   const navigate = useNavigate()
-
   return (
     <>
-      <Modal
-        useScrim
-        showCloseButton
-        className="large w-full max-w-[90%] sm:max-w-[600px] md:max-w-[800px] p-3"
-        title="Finalizar análise de declaração"
-        modalOpened={modalAberta}
-        onCloseButtonClick={() => setModalAberta(false)}
-      >
-        <Modal.Body>
-          <div className="space-y-4">
-            <div>
-              <p>
-                <strong>Envio:</strong>
-                {row.original?.dataCriacao
-                  ? new Date(row.original.dataCriacao).toLocaleString()
-                  : "Carregando..."}
-              </p>
-              <p>
-                <strong>Ano:</strong>
-                {row.original?.anoDeclaracao || "Carregando..."}
-              </p>
-              <p>
-                <strong>Museu:</strong>
-                {row.original?.museu_id?.nome || "Carregando..."}
-              </p>
-              <p>
-                <strong>Analista:</strong>
-                {row.original?.analistasResponsaveisNome?.join(", ") ||
-                  "Carregando..."}
-              </p>
-            </div>
-            <div className="text-lg space-y-2">
-              <p>
-                <strong>Concluisão:</strong>
-              </p>
-              <div id="radio-conclusao" className="flex items-center space-x-6">
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="radio"
-                    id="conformidade"
-                    name="conclusao"
-                    value="Em conformidade"
-                    checked={statusSelecionado === "Em conformidade"}
-                    onChange={() => setStatusSelecionado("Em conformidade")}
-                    className="h-5 w-5 text-blue-600 border-gray-300 focus:ring-blue-500"
-                  />
-                  <label
-                    htmlFor="conformidade"
-                    className="text-gray-600 cursor-pointer"
-                  >
-                    Em conformidade
-                  </label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="radio"
-                    id="nao-conformidade"
-                    name="conclusao"
-                    value="Não conformidade"
-                    checked={statusSelecionado === "Não conformidade"}
-                    onChange={() => setStatusSelecionado("Não conformidade")}
-                    className="h-5 w-5 text-blue-600 border-gray-300 focus:ring-blue-500"
-                  />
-                  <label
-                    htmlFor="nao-conformidade"
-                    className="text-gray-600 cursor-pointer"
-                  >
-                    Não conformidade
-                  </label>
-                </div>
-              </div>
-            </div>
-          </div>
-        </Modal.Body>
-        <Modal.Footer justify-content="end">
-          <Button
-            secondary
-            small
-            m={2}
-            onClick={() => setModalAberta(false)}
-            disabled={isPending}
-          >
-            Cancelar
-          </Button>
-          <Button
-            primary
-            small
-            m={2}
-            loading={isPending}
-            onClick={() => mutate(statusSelecionado)}
-          >
-            Confirmar
-          </Button>
-        </Modal.Footer>
-      </Modal>
-
       <div className="flex space-x-2">
         <Button
           small
-          onClick={() => setModalAberta(true)}
+          onClick={() =>
+            navigate(`/declaracoes/finalizarAnalise/${row.original._id}`)
+          }
           className="!font-thin concluir"
         >
           <i className="fa-solid fa-circle-check p-2"></i>Finalizar
@@ -463,6 +226,41 @@ const AcoesDefinirStatus: React.FC<{
         </Button>
       </div>
     </>
+  )
+}
+
+const AcoesBotaoHistorico: React.FC<{
+  row: TableRow<{
+    _id: string
+    anoDeclaracao: string
+    retificacao: boolean
+    status: string
+    dataCriacao: Date
+    regiao: string
+    museu_id: {
+      _id: string
+      nome: string
+      endereco: {
+        municipio: string
+        uf: string
+        regiao: string
+      }
+    }
+    analistasResponsaveisNome: string[]
+  }>
+}> = ({ row }) => {
+  const navigate = useNavigate()
+
+  return (
+    <div className="flex space-x-2">
+      <Button
+        small
+        onClick={() => navigate(`/declaracoes/${row.original._id}`)}
+        className="!font-thin analise"
+      >
+        <i className="fa-solid fa-timeline p-2"></i>Histórico
+      </Button>
+    </div>
   )
 }
 
@@ -483,6 +281,15 @@ const columnHelper = createColumnHelper<{
     }
   }
   analistasResponsaveisNome: string[]
+  museologico?: {
+    analistasResponsaveisNome: string[]
+  }
+  arquivistico?: {
+    analistasResponsaveisNome: string[]
+  }
+  bibliografico?: {
+    analistasResponsaveisNome: string[]
+  }
 }>()
 
 const columns = [
@@ -538,12 +345,27 @@ const columns = [
     enableColumnFilter: false
   }),
   columnHelper.accessor("analistasResponsaveisNome", {
-    cell: (info) => info.getValue(),
-    header: "Analistas",
+    cell: (info) => {
+      const data = info.row.original // Acessa o objeto original da linha
+      const analistas = [
+        ...(data.analistasResponsaveisNome || []),
+        ...(data.museologico?.analistasResponsaveisNome || []),
+        ...(data.arquivistico?.analistasResponsaveisNome || []),
+        ...(data.bibliografico?.analistasResponsaveisNome || [])
+      ]
+
+      // Remove duplicatas e retorna os analistas formatados
+      const analistasUnicos = [...new Set(analistas)]
+      return analistasUnicos.length > 0
+        ? analistasUnicos.join(", ")
+        : "Nenhum analista"
+    },
+    header: "Todos os Analistas",
     meta: {
       filterVariant: "select"
     }
   }),
+
   columnHelper.display({
     id: "enviarParaAnalise",
     header: () => <div className="text-center w-full">Ações</div>,
@@ -558,6 +380,11 @@ const columns = [
     id: "definirStatus",
     header: () => <div className="text-center w-full">Ações</div>,
     cell: ({ row }) => <AcoesDefinirStatus row={row} />
+  }),
+  columnHelper.display({
+    id: "historico",
+    header: () => <div className="text-center w-full">Ações</div>,
+    cell: ({ row }) => <AcoesBotaoHistorico row={row} />
   })
 ]
 
@@ -605,11 +432,10 @@ function Filter<TData extends RowData>({
 }) {
   const { filterVariant } = column.columnDef.meta ?? {}
   const columnFilterValue = column.getFilterValue()
-  const sortedUniqueValues = useMemo(
-    () => Array.from(column.getFacetedUniqueValues().keys()).sort(),
-    [column.getFacetedUniqueValues(), filterVariant]
-  )
-
+  const sortedUniqueValues = useMemo(() => {
+    const uniqueValues = Array.from(column.getFacetedUniqueValues().keys())
+    return uniqueValues.sort()
+  }, [column])
   return filterVariant === "select" ? (
     <select
       onChange={(e) => column.setFilterValue(e.target.value ?? "")}
@@ -702,7 +528,8 @@ const DeclaracoesPage = () => {
         enviarParaAnalise: true,
         excluirDeclaracao: false,
         analistasResponsaveisNome: false,
-        definirStatus: false
+        definirStatus: false,
+        historico: false
       })
     } else {
       setVisibility((prev) => ({
@@ -759,7 +586,8 @@ const DeclaracoesPage = () => {
                     enviarParaAnalise: true,
                     excluirDeclaracao: false,
                     definirStatus: false,
-                    analistasResponsaveisNome: false
+                    analistasResponsaveisNome: false,
+                    historico: false
                   }))
                 }}
               >
@@ -790,7 +618,8 @@ const DeclaracoesPage = () => {
                     status: false,
                     enviarParaAnalise: false,
                     excluirDeclaracao: false,
-                    definirStatus: true
+                    definirStatus: true,
+                    historico: false
                   }))
                 }}
               >
@@ -821,7 +650,8 @@ const DeclaracoesPage = () => {
                     status: false,
                     enviarParaAnalise: false,
                     excluirDeclaracao: false,
-                    definirStatus: false
+                    definirStatus: false,
+                    historico: true
                   }))
                 }}
               >
@@ -852,7 +682,8 @@ const DeclaracoesPage = () => {
                     status: false,
                     enviarParaAnalise: false,
                     excluirDeclaracao: false,
-                    definirStatus: false
+                    definirStatus: false,
+                    historico: true
                   }))
                 }}
               >
@@ -883,7 +714,8 @@ const DeclaracoesPage = () => {
                     status: false,
                     enviarParaAnalise: false,
                     excluirDeclaracao: true,
-                    definirStatus: false
+                    definirStatus: false,
+                    historico: false
                   }))
                 }}
               >
@@ -911,7 +743,8 @@ const DeclaracoesPage = () => {
                     status: true,
                     enviarParaAnalise: false,
                     excluirDeclaracao: false,
-                    definirStatus: false
+                    definirStatus: false,
+                    historico: true
                   }))
                 }}
               >
@@ -1169,7 +1002,7 @@ const DeclaracoesPage = () => {
             aria-label="Informação. Seus dados só serão salvos após o preenchimento do primeiro campo do formulário."
             role="alert"
           >
-            <span className="message-body">Nenhum registro encontrado</span>
+            <span className="message-body">Nenhum registro encontrado.</span>
           </div>
         </div>
       )}
