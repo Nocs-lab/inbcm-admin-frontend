@@ -3,6 +3,14 @@ import logoIfrn from "../images/logo-ifrn.png"
 import logoNocs from "../images/logo-nocs.png"
 
 const Footer: React.FC = () => {
+  const { data: versaoBackend } = useQuery({
+    queryKey: ["version"],
+    queryFn: async () => {
+      const res = await fetch("/api/public")
+      return res.headers.get("x-version")
+    }
+  })
+
   return (
     <footer className="br-footer mt-auto">
       <div className="container-lg">
@@ -16,7 +24,6 @@ const Footer: React.FC = () => {
                 <div className="social-network-title">Redes Sociais</div>
                 <div className="d-flex">
                   <a
-                    target="_blank"
                     className="br-button circle"
                     href="https://www.facebook.com/MuseusBR/"
                     aria-label="Compartilhar por Facebook"
@@ -24,7 +31,6 @@ const Footer: React.FC = () => {
                     <i className="fab fa-facebook-f" aria-hidden="true"></i>
                   </a>
                   <a
-                    target="_blank"
                     className="br-button circle"
                     href="https://www.youtube.com/channel/UCAUcQbl5S0_PPKYK2E-78Yw"
                     aria-label="Compartilhar por Youtube"
@@ -32,7 +38,6 @@ const Footer: React.FC = () => {
                     <i className="fab fa-youtube" aria-hidden="true"></i>
                   </a>
                   <a
-                    target="_blank"
                     className="br-button circle"
                     href="https://www.instagram.com/museusbr/"
                     aria-label="Compartilhar por Instagram"
@@ -44,8 +49,8 @@ const Footer: React.FC = () => {
             </div>
             <div className="col assigns flex items-center justify-center">
               Desenvolvido por:
-              <img className="ml-4" src={logoIfrn} alt="Imagem" />
               <img className="ml-4" src={logoNocs} alt="Imagem" />
+              <img className="ml-4" src={logoIfrn} alt="Imagem" />
             </div>
           </div>
         </div>
@@ -54,10 +59,8 @@ const Footer: React.FC = () => {
       <div className="container-lg">
         <div className="info">
           <div className="text-down-01 text-medium pb-3">
-            Este sistema foi desenvolvido pelo <strong>Nocs Lab</strong>, que
-            detém os direitos da&nbsp;
-            <strong>licença de uso. </strong>
-            Versão {import.meta.env.VITE_SHORT_SHA}
+            Versão do cliente: {import.meta.env.VITE_SHORT_SHA ?? "dev"} |
+            Versão do servidor: {versaoBackend}
           </div>
         </div>
       </div>
