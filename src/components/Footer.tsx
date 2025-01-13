@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query"
 import logoIbramBranco from "../images/logo-ibram-branco.png"
 import logoIfrn from "../images/logo-ifrn.png"
 import logoNocs from "../images/logo-nocs.png"
