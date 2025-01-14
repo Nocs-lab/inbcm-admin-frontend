@@ -2,7 +2,7 @@ import DefaultLayout from "../layouts/default"
 import Input from "../components/Input"
 import { Link } from "react-router-dom"
 import { useSuspenseQuery, useMutation } from "@tanstack/react-query"
-import request from "../utils/request"
+import useHttpClient from "../utils/request"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -15,6 +15,7 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>
 
 const PerfilPage = () => {
+  const request = useHttpClient()
   const { data: user } = useSuspenseQuery({
     queryKey: ["user"],
     queryFn: async () => {
@@ -91,12 +92,18 @@ const PerfilPage = () => {
                   type="text"
                   label="Especialidade"
                   value={user.especialidade
-                    .map((especialidade, index, array) => {
-                      if (index === array.length - 1 && index > 0) {
-                        return `e ${especialidade}`
+                    .map(
+                      (
+                        especialidade: string,
+                        index: number,
+                        array: unknown[]
+                      ) => {
+                        if (index === array.length - 1 && index > 0) {
+                          return `e ${especialidade}`
+                        }
+                        return especialidade
                       }
-                      return especialidade
-                    })
+                    )
                     .join(", ")}
                   className="w-full"
                 />
