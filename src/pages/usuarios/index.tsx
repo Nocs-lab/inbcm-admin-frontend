@@ -2,7 +2,7 @@ import React, { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import DefaultLayout from "../../layouts/default"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import request from "../../utils/request"
+import useHttpClient from "../../utils/request"
 import { Modal, Button } from "react-dsgov"
 import { type ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import toast from "react-hot-toast"
@@ -25,21 +25,6 @@ interface Museu {
   nome: string
 }
 
-const fetchUsers = async (): Promise<User[]> => {
-  const response = await request("/api/admin/users")
-  if (!response.ok) {
-    let errorMessage = "Usuários não encontrados"
-    try {
-      const errorData = await response.json()
-      errorMessage = errorData.message || errorMessage
-    } catch (e) {
-      throw new Error(errorMessage)
-    }
-  }
-
-  return await response.json()
-}
-
 const profileMapping: { [key: string]: string } = {
   admin: "Administrador",
   declarant: "Declarante",
@@ -47,12 +32,16 @@ const profileMapping: { [key: string]: string } = {
 }
 
 const Index: React.FC = () => {
+  const request = useHttpClient()
   const queryClient = useQueryClient()
   const navigate = useNavigate()
 
   const { data: userData } = useQuery<User[]>({
     queryKey: ["users"],
-    queryFn: fetchUsers
+    queryFn: async () => {
+      const res = await request("/api/admin/users")
+      return await res.json()
+    }
   })
 
   const [showModal, setShowModal] = useState(false)

@@ -1,6 +1,6 @@
 import { useSuspenseQueries } from "@tanstack/react-query"
 import DefaultLayout from "../../layouts/default"
-import request from "../../utils/request"
+import useHttpClient from "../../utils/request"
 import { Suspense } from "react"
 import Charts from "./_components/Charts"
 import { Select } from "react-dsgov"
@@ -39,6 +39,8 @@ const statesNameMap = {
 const states = Object.keys(statesNameMap)
 
 const Museus: React.FC = () => {
+  const request = useHttpClient()
+
   const [{ data: museus }, { data: cidades }] = useSuspenseQueries({
     queries: [
       {

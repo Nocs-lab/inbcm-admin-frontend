@@ -3,7 +3,7 @@ import Select from "../components/MultiSelect"
 import Charts from "./_components/Charts"
 import { Suspense, useEffect } from "react"
 import { useSuspenseQuery } from "@tanstack/react-query"
-import request from "../utils/request"
+import useHttpClient from "../utils/request"
 import { Controller, useForm } from "react-hook-form"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -61,7 +61,7 @@ type FormValues = z.infer<typeof schema>
 const IndexPage = () => {
   const currentYear = new Date().getFullYear() // Obtém o ano atual
   const anos = Array.from({ length: 10 }, (_, i) => currentYear - i) // Últimos 10 anos
-
+  const request = useHttpClient()
   const { data: cidades } = useSuspenseQuery({
     queryKey: ["cidades"],
     queryFn: async () => {

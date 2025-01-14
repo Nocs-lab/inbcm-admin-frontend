@@ -4,7 +4,7 @@ import { format } from "date-fns"
 import { Link } from "react-router-dom"
 import Table from "../../components/Table"
 import DefaultLayout from "../../layouts/default"
-import request from "../../utils/request"
+import useHttpClient from "../../utils/request"
 
 const columnHelper = createColumnHelper<{
   _id: string
@@ -77,6 +77,8 @@ const columns = [
 ]
 
 export default function Declaracoes() {
+  const request = useHttpClient()
+
   const { data } = useSuspenseQuery({
     queryKey: ["declaracoes"],
     queryFn: async () => {

@@ -2,7 +2,7 @@ import DefaultLayout from "../../../../layouts/default"
 import { useSuspenseQuery, useMutation } from "@tanstack/react-query"
 import { useParams, Link, useNavigate } from "react-router-dom"
 import { useState, useEffect } from "react"
-import request from "../../../../utils/request"
+import useHttpClient from "../../../../utils/request"
 import { Select, Row, Col, Button } from "react-dsgov"
 import { format } from "date-fns"
 import toast from "react-hot-toast"
@@ -11,6 +11,7 @@ const EnviarParaAnalise: React.FC = () => {
   const params = useParams()
   const id = params.id!
   const navigate = useNavigate()
+  const request = useHttpClient()
 
   const { data: declaracao } = useSuspenseQuery({
     queryKey: ["declaracoes", id],

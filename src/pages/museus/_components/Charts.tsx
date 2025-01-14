@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query"
 import NotFound from "../../../components/NotFound"
-import request from "../../../utils/request"
+import useHttpClient from "../../../utils/request"
 import Chart from "react-google-charts"
 
 const Charts: React.FC<{
@@ -9,6 +9,8 @@ const Charts: React.FC<{
   fim: string
   museu: string | null
 }> = ({ params, inicio, fim, museu }) => {
+  const request = useHttpClient()
+
   const {
     data: { bensCountPorTipo }
   } = useSuspenseQuery({

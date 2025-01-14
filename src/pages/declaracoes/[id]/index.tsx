@@ -1,13 +1,14 @@
 import { useParams } from "react-router"
 import DefaultLayout from "../../../layouts/default"
 import { useSuspenseQuery } from "@tanstack/react-query"
-import request from "../../../utils/request"
+import useHttpClient from "../../../utils/request"
 import { format } from "date-fns"
 import { Link } from "react-router-dom"
 
 const DeclaracaoPage: React.FC = () => {
   const params = useParams()
   const id = params.id!
+  const request = useHttpClient()
 
   const { data: timeline } = useSuspenseQuery({
     queryKey: ["timeline", id],
