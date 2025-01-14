@@ -7,7 +7,7 @@ import { useNavigate } from "react-router"
 import { z } from "zod"
 import Input from "../components/Input"
 import logoIbram from "../images/logo-ibram.png"
-import request from "../utils/request"
+import useHttpClient from "../utils/request"
 import useStore from "../utils/store"
 
 const schema = z.object({
@@ -17,6 +17,8 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>
 
 const LoginPage: React.FC = () => {
+  const request = useHttpClient()
+
   const {
     register,
     handleSubmit,
@@ -31,13 +33,17 @@ const LoginPage: React.FC = () => {
 
   const { mutate, isError } = useMutation({
     mutationFn: async ({ email, password }: FormData) => {
-      const res = await request("/api/admin/auth/login?admin=true", {
-        method: "POST",
-        data: {
-          email,
-          password
-        }
-      })
+      const res = await request(
+        "/api/admin/auth/login",
+        {
+          method: "POST",
+          data: {
+            email,
+            password
+          }
+        },
+        false
+      )
 
       const message = await res.json()
 
@@ -94,7 +100,7 @@ const LoginPage: React.FC = () => {
                 aria-label={errorMessage ?? ""}
                 role="alert"
               >
-                <span className="message-title"> Erro: </span>
+                <span className="message-title">Erro: </span>
                 <span className="message-body">{errorMessage}</span>
               </div>
               <div className="close">
@@ -111,7 +117,7 @@ const LoginPage: React.FC = () => {
           )}
           <Input
             type="email"
-            label="Email"
+            label="E-mail"
             placeholder="Digite seu email"
             error={errors.email}
             {...register("email")}

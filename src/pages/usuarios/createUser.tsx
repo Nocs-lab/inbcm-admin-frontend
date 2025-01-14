@@ -9,7 +9,7 @@ import { useForm, Controller } from "react-hook-form" //add Controller
 import { zodResolver } from "@hookform/resolvers/zod"
 import clsx from "clsx"
 import { Link } from "react-router-dom"
-import request from "../../utils/request"
+import useHttpClient from "../../utils/request"
 import toast from "react-hot-toast"
 
 const schema = z
@@ -35,6 +35,7 @@ interface Profile {
 
 const CreateUser: React.FC = () => {
   const [isAnalyst, setIsAnalyst] = useState(false)
+  const request = useHttpClient()
 
   const { data: profiles } = useSuspenseQuery<Profile[]>({
     queryKey: ["profiles"],

@@ -22,7 +22,6 @@ import { format } from "date-fns"
 import React, { useEffect, useMemo, useState } from "react"
 import { Button, Modal } from "react-dsgov"
 import DefaultLayout from "../../layouts/default"
-import request from "../../utils/request"
 import { stateRegions } from ".././../utils/regioes"
 import toast from "react-hot-toast"
 

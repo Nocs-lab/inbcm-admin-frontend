@@ -11,7 +11,7 @@ import { z } from "zod"
 import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Link } from "react-router-dom"
-import request from "../../../../utils/request"
+import useHttpClient from "../../../../utils/request"
 import Table from "../../../../components/Table"
 import toast from "react-hot-toast"
 import { Select, Row, Col, Button } from "react-dsgov"
@@ -40,46 +40,19 @@ interface RespostaMuseus {
   pagination: Paginacao
 }
 
-const userById = async (id: string) => {
-  const response = await request(`/api/admin/users/${id}`)
-  if (!response.ok) {
-    let errorMessage = "Usuário não encontrado"
-    try {
-      const errorData = await response.json()
-      errorMessage = errorData.message || errorMessage
-    } catch {
-      throw new Error(errorMessage)
-    }
-  }
-  return await response.json()
-}
-
-const fetchMuseus = async (
-  search: string,
-  page: number
-): Promise<RespostaMuseus> => {
-  const response = await request(
-    `/api/admin/museus?semVinculoUsuario=true&search=${search}&page=${page}`
-  )
-  if (!response.ok) throw new Error("Erro ao carregar museus")
-
-  const data = await response.json()
-
-  return {
-    museus: data.museus || [],
-    pagination: data.pagination || {
-      currentPage: 0,
-      totalPages: 0,
-      totalItems: 0,
-      itemsPerPage: 0
-    }
-  }
-}
-
 const AssociarPage: React.FC = () => {
+  const request = useHttpClient()
   const { id } = useParams<{ id: string }>()
   const [{ data: user }] = useSuspenseQueries({
-    queries: [{ queryKey: ["user", id], queryFn: () => userById(id!) }]
+    queries: [
+      {
+        queryKey: ["user", id],
+        queryFn: async () => {
+          const res = await request(`/api/admin/users/${id}`)
+          return await res.json()
+        }
+      }
+    ]
   })
   const queryClient = useQueryClient()
   const { control, reset } = useForm<{ museus: string[] }>()
@@ -91,7 +64,21 @@ const AssociarPage: React.FC = () => {
 
   const { data: museusData } = useQuery<RespostaMuseus>({
     queryKey: ["museus", search, page],
-    queryFn: () => fetchMuseus(search, page),
+    queryFn: async () => {
+      const res = await request(
+        `/api/admin/museus?semVinculoUsuario=true&search=${search}&page=${page}`
+      )
+      const data = await res.json()
+      return {
+        museus: data.museus || [],
+        pagination: data.pagination || {
+          currentPage: 0,
+          totalPages: 0,
+          totalItems: 0,
+          itemsPerPage: 0
+        }
+      }
+    },
     enabled: search.length > 0
   })
 
