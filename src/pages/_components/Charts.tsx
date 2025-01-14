@@ -67,35 +67,47 @@ const Charts: React.FC<{
   regioes: string[]
   inicio: string
   fim: string
-}> = ({ params, estados, regioes, inicio, fim }) => {
+  museu?: string
+}> = ({ params, estados, regioes, inicio, fim, museu }) => {
   const request = useHttpClient()
 
-  const [{ data }, { data: status }] = useSuspenseQueries({
-    queries: [
-      {
-        queryKey: ["dashboard", params.toString()],
-        queryFn: async () => {
-          {
+  const [{ data }, { data: status }, { data: dadosGrafico }] =
+    useSuspenseQueries({
+      queries: [
+        {
+          queryKey: ["dashboard", params.toString()],
+          queryFn: async () => {
+            {
+              const res = await request(
+                `/api/admin/dashboard/filtroDashBoard?${params.toString()}`
+              )
+              return await res.json()
+            }
+          }
+        },
+        {
+          queryKey: ["status"],
+          queryFn: async () => {
+            {
+              const res = await request(`/api/admin/dashboard/getStatusEnum`)
+              return await res.json()
+            }
+          }
+        },
+        {
+          queryKey: ["dadosGrafico", museu, inicio, fim],
+          queryFn: async () => {
+            if (!museu) return []
             const res = await request(
-              `/api/admin/dashboard/filtroDashBoard?${params.toString()}`
+              `/api/public/declaracoes/${museu}/itens/${inicio}/${fim}`,
+              {},
+              false
             )
             return await res.json()
           }
         }
-      },
-      {
-        queryKey: ["status"],
-        queryFn: async () => {
-          {
-            const res = await request(`/api/admin/dashboard/getStatusEnum`)
-            return await res.json()
-          }
-        }
-      }
-    ]
-  })
-
-  console.log(data)
+      ]
+    })
 
   const {
     quantidadeDeclaracoesPorAno: {
@@ -681,6 +693,91 @@ const Charts: React.FC<{
           )}
         </div>
       </div>
+      {museu && (
+        <>
+          <span className="text-lg font-gray-600 font-bold">
+            Histórico quantitativo por tipo de bem por ano
+          </span>
+          <div>
+            <Chart
+              chartType="ColumnChart"
+              data={[
+                [
+                  "Ano",
+                  "Museológico",
+                  { role: "annotation" },
+                  "Arquivístico",
+                  { role: "annotation" },
+                  "Bibliográfico",
+                  { role: "annotation" }
+                ],
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                ...(dadosGrafico?.data?.map((item: any) => [
+                  item.anoDeclaracao,
+                  item.totalMuseologico,
+                  item.totalMuseologico > 0
+                    ? item.totalMuseologico.toString()
+                    : "", // Anotação para Museológico
+                  item.totalArquivistico,
+                  item.totalArquivistico > 0
+                    ? item.totalArquivistico.toString()
+                    : "",
+                  item.totalBibliografico,
+                  item.totalBibliografico > 0
+                    ? item.totalBibliografico.toString()
+                    : ""
+                ]) ?? [])
+              ]}
+              width="100%"
+              height="400px"
+              legendToggle
+              options={{
+                hAxis: {
+                  titleTextStyle: { color: "#607d8b" },
+                  gridlines: { count: 0 },
+                  textStyle: {
+                    color: "#78909c",
+                    fontName: "Roboto",
+                    fontSize: "15",
+                    bold: true
+                  }
+                },
+                vAxis: {
+                  minValue: 0,
+                  gridlines: { color: "#cfd8dc", count: 4 },
+                  baselineColor: "transparent"
+                },
+                legend: {
+                  position: "bottom",
+                  alignment: "center",
+                  textStyle: {
+                    color: "#607d8b",
+                    fontName: "Roboto",
+                    fontSize: "15"
+                  }
+                },
+                annotations: {
+                  alwaysOutside: true,
+                  textStyle: {
+                    fontSize: 12,
+                    bold: true,
+                    color: "#000"
+                  }
+                },
+                colors: ["#3f51b5", "#2196f3", "#33F8FF"],
+                chartArea: {
+                  backgroundColor: "transparent",
+                  width: "100%",
+                  height: "80%"
+                },
+                bar: { groupWidth: "100" },
+                focusTarget: "category",
+                backgroundColor: "transparent"
+              }}
+            />
+          </div>
+        </>
+      )}
     </>
   )
 }
