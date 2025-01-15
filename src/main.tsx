@@ -7,9 +7,12 @@ import "uno.css"
 import "@unocss/reset/tailwind.css"
 import "@govbr-ds/core/dist/core.css"
 import "@fortawesome/fontawesome-free/css/all.css"
+import { BrowserRouter } from "react-router-dom"
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <App />
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
   </React.StrictMode>
 )

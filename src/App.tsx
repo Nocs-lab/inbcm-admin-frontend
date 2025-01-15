@@ -1,11 +1,11 @@
 import { Suspense } from "react"
-import { Navigate, RouterProvider } from "react-router-dom"
+import { useRoutes } from "react-router-dom"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 
 import { Toaster } from "react-hot-toast"
 
 import { ModalProvider } from "./utils/modal"
-import router from "./utils/router"
+import routes from "~react-pages"
 
 const queryClient = new QueryClient()
 
@@ -24,10 +24,7 @@ export default function App() {
     >
       <QueryClientProvider client={queryClient}>
         <ModalProvider>
-          <RouterProvider
-            router={router}
-            fallbackElement={<Navigate to="/error" />}
-          />
+          {useRoutes(routes)}
           <Toaster />
         </ModalProvider>
       </QueryClientProvider>
