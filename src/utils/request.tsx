@@ -9,7 +9,7 @@ export default function useHttpClient() {
   async function request(
     path: string,
     init?: RequestInit & { data?: unknown },
-    handleError: boolean = true
+    handleError: boolean = false
   ): Promise<Response> {
     const headers = { Accept: "application/x-msgpack", ...init?.headers } as {
       [key: string]: string
