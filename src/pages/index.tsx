@@ -53,7 +53,8 @@ const schema = z.object({
   fim: z.string(),
   regioes: z.array(z.string()),
   estados: z.array(z.string()),
-  municipios: z.array(z.string())
+  municipios: z.array(z.string()),
+  museu: z.optional(z.string())
 })
 
 type FormValues = z.infer<typeof schema>
@@ -67,30 +68,40 @@ const IndexPage = () => {
     queryFn: async () => {
       const res = await request("/api/admin/museus/listarCidades")
 
-      return await res.json()
+          return await res.json()
+        }
+      },
+      {
+        queryKey: ["museus"],
+        queryFn: async () => {
+          const res = await request("/api/admin/museus/")
+
+          return await res.json()
+        }
+      }
+    ]
+  })
+
+  const { watch, control, setValue, reset } = useForm<FormValues>({
+    resolver: zodResolver(schema),
+    mode: "onBlur",
+    defaultValues: {
+      inicio: currentYear.toString(),
+      fim: currentYear.toString(),
+      regioes: [],
+      estados: [],
+      municipios: [],
+      museu: undefined
     }
   })
 
-  const { handleSubmit, watch, control, setValue, reset } = useForm<FormValues>(
-    {
-      resolver: zodResolver(schema),
-      mode: "onBlur",
-      defaultValues: {
-        inicio: currentYear.toString(),
-        fim: currentYear.toString(),
-        regioes: [],
-        estados: [],
-        municipios: []
-      }
-    }
-  )
-
-  const [inicio, fim, regioes, estados, municipios] = watch([
+  const [inicio, fim, regioes, estados, municipios, museu] = watch([
     "inicio",
     "fim",
     "regioes",
     "estados",
-    "municipios"
+    "municipios",
+    "museu"
   ])
 
   useEffect(() => {
@@ -104,7 +115,8 @@ const IndexPage = () => {
         )
       )
     }
-  }, [regioes])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [regioes, estados])
 
   const estadosByRegiao = states.filter((uf) =>
     regioes
@@ -136,10 +148,14 @@ const IndexPage = () => {
     params.append("cidades", municipio)
   }
 
+  if (museu) {
+    params.append("museu", museu)
+  }
+
   return (
     <DefaultLayout>
       <h2>Painel analítico</h2>
-      <form onSubmit={handleSubmit((data) => console.log(data))}>
+      <form>
         <fieldset
           className="rounded-lg p-3"
           style={{ border: "2px solid #e0e0e0" }}
@@ -237,6 +253,26 @@ const IndexPage = () => {
                 />
               )}
             />
+            <Controller
+              control={control}
+              name="museu"
+              render={({ field }) => (
+                <Select
+                  label="Museu"
+                  options={
+                    museus.museus.map(
+                      (museu: { _id: string; nome: string }) => ({
+                        label: museu.nome,
+                        value: museu._id
+                      })
+                    ) ?? []
+                  }
+                  placeholder="Selecione um museu"
+                  className="w-full"
+                  {...field}
+                />
+              )}
+            />
           </div>
           <button
             type="reset"
@@ -264,6 +300,7 @@ const IndexPage = () => {
           regioes={regioes}
           inicio={inicio}
           fim={fim}
+          museu={museu}
         />
       </Suspense>
     </DefaultLayout>

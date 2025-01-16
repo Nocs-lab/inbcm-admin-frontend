@@ -25,6 +25,7 @@ import DefaultLayout from "../../layouts/default"
 import request from "../../utils/request"
 import { stateRegions } from ".././../utils/regioes"
 import toast from "react-hot-toast"
+import useHttpClient from "../../utils/request"
 
 declare module "@tanstack/react-table" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -104,6 +105,7 @@ const AcoesExcluirDeclaracao: React.FC<{
   }>
 }> = ({ row }) => {
   const [modalAberta, setModalAberta] = useState(false)
+  const request = useHttpClient()
 
   const { mutate, isPending } = useMutation({
     mutationFn: () => {
@@ -471,6 +473,7 @@ function Filter<TData extends RowData>({
 }
 
 const DeclaracoesPage = () => {
+  const request = useHttpClient()
   const { data: result } = useSuspenseQuery({
     queryKey: ["declaracoes"],
     queryFn: async () => {
