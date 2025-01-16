@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import clsx from "clsx"
 import { Link } from "react-router-dom"
-import useHttpClient from "../../../utils/request"
+import request from "../../../utils/request"
 import Table from "../../../components/Table"
 import toast from "react-hot-toast"
 
@@ -17,20 +17,24 @@ const schema = z.object({
 })
 type FormData = z.infer<typeof schema>
 
-const EditUser: React.FC = () => {
-  const request = useHttpClient()
+const userById = async (id: string) => {
+  const response = await request(`/api/admin/users/${id}`)
+  if (!response.ok) {
+    let errorMessage = "Usuário não encontrado"
+    try {
+      const errorData = await response.json()
+      errorMessage = errorData.message || errorMessage
+    } catch {
+      throw new Error(errorMessage)
+    }
+  }
+  return await response.json()
+}
 
+const EditUser: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const [{ data: user }] = useSuspenseQueries({
-    queries: [
-      {
-        queryKey: ["user", id],
-        queryFn: async () => {
-          const res = await request(`/api/admin/users/${id}`)
-          return await res.json()
-        }
-      }
-    ]
+    queries: [{ queryKey: ["user", id], queryFn: () => userById(id!) }]
   })
 
   const {
