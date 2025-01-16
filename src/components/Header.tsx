@@ -1,15 +1,12 @@
-import React, { useState } from "react"
-import { useNavigate, Link } from "react-router-dom"
-import { useSuspenseQuery } from "@tanstack/react-query"
+import { Link, useNavigate } from "react-router-dom"
 import logoImbramSimples from "../images/logo-ibram-simples.png"
-import useHttpClient from "../utils/request"
 import useStore from "../utils/store"
+import React, { useState } from "react"
 
 const Header: React.FC = () => {
+  const { setUser, ...rest } = useStore()
+  const user = rest.user!
   const navigate = useNavigate()
-  const [userMenuOpen, setUserMenuOpen] = useState(false)
-  const { setUser } = useStore()
-  const request = useHttpClient()
 
   const pathnameMap = {
     "/": "Painel analítico",
@@ -18,18 +15,12 @@ const Header: React.FC = () => {
     "/usuarios": "Usuários"
   }
 
-  const { data: user } = useSuspenseQuery({
-    queryKey: ["user"],
-    queryFn: async () => {
-      const response = await request("/api/public/users")
-      return response.json()
-    }
-  })
-
   const logout = () => {
     setUser(null)
     navigate("/login")
   }
+
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
 
   return (
     <header className="br-header compact large fixed">
@@ -54,7 +45,7 @@ const Header: React.FC = () => {
                 <div className="header">
                   <div className="title">Acesso Rápido</div>
                 </div>
-                {user.profile.name === "admin" &&
+                {user.perfil === "admin" &&
                   Object.entries(pathnameMap).map(
                     ([path, name]: [string, string]) => (
                       <Link key={path} className="br-item" to={path}>
@@ -76,9 +67,9 @@ const Header: React.FC = () => {
                   data-toggle="dropdown"
                   data-target="avatar-menu"
                 >
-                  <span className="br-avatar" title={user.nome}>
+                  <span className="br-avatar" title={user.name}>
                     <span className="content bg-orange-vivid-30 text-pure-0">
-                      {user.nome.charAt(0).toUpperCase()}
+                      {user.name.charAt(0).toUpperCase()}
                     </span>
                   </span>
                   <span
@@ -86,13 +77,13 @@ const Header: React.FC = () => {
                     data-testid="username"
                   >
                     <span className="text-weight-semi-bold">
-                      {user.nome.split(" ")[0]}
+                      {user.name.split(" ")[0]}
                     </span>
                   </span>
                   <i className="fas fa-caret-down" aria-hidden="true"></i>
                 </button>
                 <div
-                  className="br-list z-50 w-full"
+                  className="br-list z-50 w-1/5 min-w-[8rem] p-2"
                   id="avatar-menu"
                   hidden={!userMenuOpen}
                   role="menu"
