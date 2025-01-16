@@ -93,6 +93,8 @@ const Charts: React.FC<{
     ]
   })
 
+  console.log(data)
+
   const {
     quantidadeDeclaracoesPorAno: {
       quantidadePorAno: declaracoesPorAnoDashboard,
