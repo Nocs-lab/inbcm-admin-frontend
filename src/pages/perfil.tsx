@@ -128,7 +128,6 @@ const PerfilPage = () => {
   )
 }
 
-// Envolver o componente em Suspense para usar `useSuspenseQuery`
 const PerfilPageWrapper = () => (
   <Suspense fallback={<div>Carregando...</div>}>
     <PerfilPage />
