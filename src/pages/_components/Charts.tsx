@@ -1,5 +1,5 @@
 import { useSuspenseQueries } from "@tanstack/react-query"
-import useHttpClient from "../../utils/request"
+import request from "../../utils/request"
 import Chart from "react-google-charts"
 import NotFound from "../../components/NotFound"
 
@@ -68,8 +68,6 @@ const Charts: React.FC<{
   inicio: string
   fim: string
 }> = ({ params, estados, regioes, inicio, fim }) => {
-  const request = useHttpClient()
-
   const [{ data }, { data: status }] = useSuspenseQueries({
     queries: [
       {

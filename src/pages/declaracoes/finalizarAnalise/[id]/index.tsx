@@ -6,7 +6,7 @@ import { useParams, Link, useNavigate } from "react-router-dom"
 import { Select, Textarea, Row, Button, Modal } from "react-dsgov"
 import MismatchsModal from "../../../../components/MismatchsModal"
 import DefaultLayout from "../../../../layouts/default"
-import useHttpClient from "../../../../utils/request"
+import request from "../../../../utils/request"
 import toast from "react-hot-toast"
 
 type Payload =
@@ -18,7 +18,6 @@ export default function FinalizarAnalise() {
   const params = useParams()
   const id = params.id!
   const navigate = useNavigate()
-  const request = useHttpClient()
 
   const [{ data }] = useSuspenseQueries({
     queries: [
