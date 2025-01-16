@@ -67,19 +67,16 @@ const IndexPage = () => {
     queryKey: ["cidades"],
     queryFn: async () => {
       const res = await request("/api/admin/museus/listarCidades")
+      return await res.json()
+    }
+  })
 
-          return await res.json()
-        }
-      },
-      {
-        queryKey: ["museus"],
-        queryFn: async () => {
-          const res = await request("/api/admin/museus/")
-
-          return await res.json()
-        }
-      }
-    ]
+  const { data: museus } = useSuspenseQuery({
+    queryKey: ["museus"],
+    queryFn: async () => {
+      const res = await request("/api/admin/museus/")
+      return await res.json()
+    }
   })
 
   const { watch, control, setValue, reset } = useForm<FormValues>({
@@ -300,7 +297,6 @@ const IndexPage = () => {
           regioes={regioes}
           inicio={inicio}
           fim={fim}
-          museu={museu}
         />
       </Suspense>
     </DefaultLayout>
