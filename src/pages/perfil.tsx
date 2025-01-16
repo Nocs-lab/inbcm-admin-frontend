@@ -7,18 +7,23 @@ import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import toast from "react-hot-toast"
+import { Suspense } from "react"
 
+// Esquema de validação Zod
 const schema = z.object({
   email: z.string().min(1, "Este campo é obrigatório").email("Email inválido"),
   nome: z.string().min(1, "Este campo é obrigatório")
 })
+
 type FormData = z.infer<typeof schema>
 
 const PerfilPage = () => {
+  // Buscar os dados do usuário
   const { data: user } = useSuspenseQuery({
     queryKey: ["user"],
     queryFn: async () => {
       const response = await request("/api/public/users")
+      if (!response.ok) throw new Error("Erro ao carregar usuário")
       return response.json()
     }
   })
@@ -31,10 +36,12 @@ const PerfilPage = () => {
   } = useForm<FormData>({
     resolver: zodResolver(schema),
     mode: "onBlur",
-    defaultValues: {
-      email: user.email,
-      nome: user.nome
-    }
+    defaultValues: user
+      ? {
+          email: user.email || "",
+          nome: user.nome || ""
+        }
+      : {}
   })
 
   // Função para enviar os dados atualizados
@@ -44,6 +51,7 @@ const PerfilPage = () => {
         method: "PUT",
         data: { email, nome }
       })
+      if (!res.ok) throw new Error("Erro ao atualizar perfil")
       return res.json()
     },
     onSuccess: () => {
@@ -62,8 +70,7 @@ const PerfilPage = () => {
   return (
     <DefaultLayout>
       <Link to="/" className="text-lg">
-        <i className="fas fa-arrow-left" aria-hidden="true"></i>
-        Voltar
+        <i className="fas fa-arrow-left" aria-hidden="true"></i> Voltar
       </Link>
       <h2>Perfil</h2>
       <div className="container mx-auto p-6 bg-white rounded-lg">
@@ -86,21 +93,22 @@ const PerfilPage = () => {
                 {...register("email")}
                 className="w-full"
               />
-              {user.profile.name === "analyst" && (
-                <Input
-                  type="text"
-                  label="Especialidade"
-                  value={user.especialidade
-                    .map((especialidade, index, array) => {
-                      if (index === array.length - 1 && index > 0) {
-                        return `e ${especialidade}`
-                      }
-                      return especialidade
-                    })
-                    .join(", ")}
-                  className="w-full"
-                />
-              )}
+              {user?.profile?.name === "analyst" &&
+                user?.especialidade?.length > 0 && (
+                  <Input
+                    type="text"
+                    label="Especialidade"
+                    value={user.especialidade
+                      .map((especialidade, index, array) => {
+                        if (index === array.length - 1 && index > 0) {
+                          return `e ${especialidade}`
+                        }
+                        return especialidade
+                      })
+                      .join(", ")}
+                    className="w-full"
+                  />
+                )}
             </div>
           </div>
           <div className="flex space-x-4 justify-end">
@@ -108,7 +116,7 @@ const PerfilPage = () => {
               Voltar
             </Link>
             <button
-              className={`br-button primary mt-5 ${isSubmitting && "loading"}`}
+              className={`br-button primary mt-5 ${isSubmitting ? "loading" : ""}`}
               type="submit"
             >
               Salvar
@@ -120,4 +128,11 @@ const PerfilPage = () => {
   )
 }
 
-export default PerfilPage
+// Envolver o componente em Suspense para usar `useSuspenseQuery`
+const PerfilPageWrapper = () => (
+  <Suspense fallback={<div>Carregando...</div>}>
+    <PerfilPage />
+  </Suspense>
+)
+
+export default PerfilPageWrapper
