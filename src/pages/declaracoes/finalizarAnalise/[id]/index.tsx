@@ -532,15 +532,6 @@ export default function FinalizarAnalise() {
               <i className="fas fa-exclamation-triangle" aria-hidden="true"></i>{" "}
               Pendências
             </a>
-            <a
-              className="text-xl"
-              href="#"
-              onClick={() => navigate(`/declaracoes/enviarAnalise/${id}`)}
-              role="button"
-            >
-              <i className="fa-solid fa-clipboard-user" aria-hidden="true"></i>{" "}
-              Alterar analista
-            </a>
             <MismatchsModal
               opened={showModal}
               onClose={() => setShowModal(false)}
@@ -550,6 +541,15 @@ export default function FinalizarAnalise() {
             />
           </>
         )}
+        <a
+          className="text-xl"
+          href="#"
+          onClick={() => navigate(`/declaracoes/enviarAnalise/${id}`)}
+          role="button"
+        >
+          <i className="fa-solid fa-clipboard-user" aria-hidden="true"></i>{" "}
+          Alterar analista
+        </a>
       </div>
       <div className="flex gap-10 text-lg mt-5">
         <span>

@@ -135,61 +135,66 @@ const EnviarParaAnalise: React.FC = () => {
         }}
       >
         <Row>
-          {declaracao?.museologico && (
-            <Col>
-              <Select
-                id="select-museologico"
-                label="Analista museológico"
-                placeholder="Selecione um analista"
-                options={analistas.museologico.map(
-                  (analista: { nome: string; _id: string }) => ({
-                    label: analista.nome,
-                    value: analista._id
-                  })
-                )}
-                value={analistaSelecionado.museologico}
-                onChange={(value) => handleAnalistaChange("museologico", value)}
-              />
-            </Col>
-          )}
-          {declaracao?.bibliografico && (
-            <Col>
-              <Select
-                id="select-bibliografico"
-                label="Analista bibliográfico"
-                placeholder="Selecione um analista"
-                options={analistas.bibliografico.map(
-                  (analista: { nome: string; _id: string }) => ({
-                    label: analista.nome,
-                    value: analista._id
-                  })
-                )}
-                value={analistaSelecionado.bibliografico}
-                onChange={(value) =>
-                  handleAnalistaChange("bibliografico", value)
-                }
-              />
-            </Col>
-          )}
-          {declaracao?.arquivistico && (
-            <Col>
-              <Select
-                id="select-arquivistico"
-                label="Analista arquivístico"
-                placeholder="Selecione um analista"
-                options={analistas.arquivistico.map(
-                  (analista: { nome: string; _id: string }) => ({
-                    label: analista.nome,
-                    value: analista._id
-                  })
-                )}
-                value={analistaSelecionado.arquivistico}
-                onChange={(value) =>
-                  handleAnalistaChange("arquivistico", value)
-                }
-              />
-            </Col>
-          )}
+          {declaracao?.museologico &&
+            declaracao?.museologico.status === "Recebida" && (
+              <Col>
+                <Select
+                  id="select-museologico"
+                  label="Analista museológico"
+                  placeholder="Selecione um analista"
+                  options={analistas.museologico.map(
+                    (analista: { nome: string; _id: string }) => ({
+                      label: analista.nome,
+                      value: analista._id
+                    })
+                  )}
+                  value={analistaSelecionado.museologico}
+                  onChange={(value) =>
+                    handleAnalistaChange("museologico", value)
+                  }
+                />
+              </Col>
+            )}
+          {declaracao?.bibliografico &&
+            declaracao?.bibliografico.status === "Recebida" && (
+              <Col>
+                <Select
+                  id="select-bibliografico"
+                  label="Analista bibliográfico"
+                  placeholder="Selecione um analista"
+                  options={analistas.bibliografico.map(
+                    (analista: { nome: string; _id: string }) => ({
+                      label: analista.nome,
+                      value: analista._id
+                    })
+                  )}
+                  value={analistaSelecionado.bibliografico}
+                  onChange={(value) =>
+                    handleAnalistaChange("bibliografico", value)
+                  }
+                />
+              </Col>
+            )}
+          {declaracao?.arquivistico &&
+            declaracao?.arquivistico.status === "Recebida" && (
+              <Col>
+                <Select
+                  id="select-arquivistico"
+                  label="Analista arquivístico"
+                  placeholder="Selecione um analista"
+                  options={analistas.arquivistico.map(
+                    (analista: { nome: string; _id: string }) => ({
+                      label: analista.nome,
+                      value: analista._id
+                    })
+                  )}
+                  value={analistaSelecionado.arquivistico}
+                  onChange={(value) =>
+                    handleAnalistaChange("arquivistico", value)
+                  }
+                />
+              </Col>
+            )}
         </Row>
         <Row justify-content="end" className="mt-4 gap-2 p-2">
           <Button
