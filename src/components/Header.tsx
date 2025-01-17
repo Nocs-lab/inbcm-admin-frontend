@@ -13,7 +13,7 @@ const Header: React.FC = () => {
 
   const pathnameMap = {
     "/": "Painel analítico",
-    "/gestao": "Gestão",
+    //"/gestao": "Gestão",
     "/declaracoes": "Declarações",
     "/usuarios": "Usuários"
   }
@@ -51,13 +51,14 @@ const Header: React.FC = () => {
                 <i className="fas fa-ellipsis-v" aria-hidden="true"></i>
               </button>
               <div className="br-list">
-                <div className="header">
-                  <div className="title">Acesso Rápido</div>
-                </div>
                 {user.profile.name === "admin" &&
                   Object.entries(pathnameMap).map(
                     ([path, name]: [string, string]) => (
-                      <Link key={path} className="br-item" to={path}>
+                      <Link
+                        key={path}
+                        className="br-item block py-2 px-4 hover:bg-gray-100 text-gray-800"
+                        to={path}
+                      >
                         {name}
                       </Link>
                     )

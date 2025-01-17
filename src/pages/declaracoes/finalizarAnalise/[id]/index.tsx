@@ -221,7 +221,7 @@ export default function FinalizarAnalise() {
                     className="fa-solid fa-file-signature"
                     aria-hidden="true"
                   ></i>{" "}
-                  Assinar declaração
+                  Atribuir para mim
                 </a>
               </div>
             )}
@@ -326,7 +326,7 @@ export default function FinalizarAnalise() {
                     className="fa-solid fa-file-signature"
                     aria-hidden="true"
                   ></i>{" "}
-                  Assinar declaração
+                  Atribuir para mim
                 </a>
               </div>
             )}
@@ -412,7 +412,7 @@ export default function FinalizarAnalise() {
           </div>
           <div className="flex items-center justify-between">
             <span>
-              <span className="font-bold text-lg">Analista arquivístico:</span>
+              <span className="font-bold text-lg">Analista arquivístico: </span>
               {data.arquivistico.analistasResponsaveisNome}
             </span>
             {data.arquivistico.status === "Recebida" && (
@@ -430,7 +430,7 @@ export default function FinalizarAnalise() {
                     className="fa-solid fa-file-signature"
                     aria-hidden="true"
                   ></i>{" "}
-                  Assinar declaração
+                  Atribuir para mim
                 </a>
               </div>
             )}
