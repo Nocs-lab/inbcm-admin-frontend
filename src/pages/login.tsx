@@ -1,73 +1,80 @@
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import useStore from "../utils/store";
-import clsx from "clsx";
-import { useNavigate } from "react-router";
-import { useMutation } from "@tanstack/react-query";
-import request from "../utils/request";
-import React, { useState } from "react";
-import logoIbram from "../images/logo-ibram.png";
-import Input from "../components/Input";
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useMutation } from "@tanstack/react-query"
+import clsx from "clsx"
+import React, { useState } from "react"
+import { useForm } from "react-hook-form"
+import { useNavigate } from "react-router"
+import { z } from "zod"
+import Input from "../components/Input"
+import logoIbram from "../images/logo-ibram.png"
+import request from "../utils/request"
+import useStore from "../utils/store"
 
 const schema = z.object({
   email: z.string().min(1, "Este campo é obrigatório"),
-  password: z.string().min(1, "Este campo é obrigatório"),
-});
-type FormData = z.infer<typeof schema>;
+  password: z.string().min(1, "Este campo é obrigatório")
+})
+type FormData = z.infer<typeof schema>
 
 const LoginPage: React.FC = () => {
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting }
   } = useForm<FormData>({
     resolver: zodResolver(schema),
-    mode: "onBlur",
-  });
+    mode: "onBlur"
+  })
 
-  const [showError, setShowError] = useState(true);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [showError, setShowError] = useState(true)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  const { mutate, error, isError } = useMutation({
+  const { mutate, isError } = useMutation({
     mutationFn: async ({ email, password }: FormData) => {
-      const res = await request("/api/auth/login?admin=true", {
+      const res = await request("/api/admin/auth/login?admin=true", {
         method: "POST",
         data: {
           email,
-          password,
-        },
-      });
+          password
+        }
+      })
 
-      return await res.json();
+      const message = await res.json()
+
+      if (!res.ok) {
+        throw new Error(message.message)
+      }
+
+      return message
     },
     onSuccess: (data) => {
       setUser({
         email: data.email,
         name: data.name,
-      });
+        perfil: data.perfil
+      })
 
-      navigate("/");
+      navigate("/")
     },
-    onError: () => {
+    onError: (error) => {
       if (error instanceof Error) {
-        setErrorMessage(error.message);
+        setErrorMessage(error.message)
       } else if (typeof error === "string") {
-        setErrorMessage(error);
+        setErrorMessage(error)
       } else {
-        setErrorMessage("Usuário ou senha incorreta");
+        setErrorMessage("Usuário ou senha incorreta")
       }
-      setShowError(true);
-    },
-  });
+      setShowError(true)
+    }
+  })
 
-  const { setUser } = useStore();
+  const { setUser } = useStore()
 
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   const onSubmit = async ({ email, password }: FormData) => {
-    mutate({ email, password });
-  };
+    mutate({ email, password })
+  }
 
   return (
     <div className="flex h-screen">
@@ -119,7 +126,7 @@ const LoginPage: React.FC = () => {
           <button
             className={clsx(
               "br-button block primary mt-3",
-              isSubmitting && "loading",
+              isSubmitting && "loading"
             )}
             type="submit"
           >
@@ -129,7 +136,7 @@ const LoginPage: React.FC = () => {
       </div>
       <div className="hidden lg:block w-7/12 bg-blue-700"></div>
     </div>
-  );
-};
+  )
+}
 
-export default LoginPage;
+export default LoginPage

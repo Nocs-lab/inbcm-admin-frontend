@@ -26,7 +26,7 @@ jobs:
         run: echo "DOCKER_REPOSITORY=inbcm-admin" >> $GITHUB_ENV
 
       - name: Truncate commit SHA
-        run: echo "SHORT_SHA=${GITHUB_SHA:0:7}" >> $GITHUB_ENV
+        run: echo "VITE_SHORT_SHA=${GITHUB_SHA:0:7}" >> $GITHUB_ENV
 
       - name: Log in to Docker Registry
         uses: docker/login-action@v3
@@ -40,6 +40,8 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
+          build-args: |
+            VITE_SHORT_SHA=${{ env.VITE_SHORT_SHA }}
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_REPOSITORY }}:${{ github.event_name }}-${{ env.SHORT_SHA }}
+            ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_REPOSITORY }}:${{ github.event_name }}-${{ env.VITE_SHORT_SHA }}
             ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_REPOSITORY }}:latest

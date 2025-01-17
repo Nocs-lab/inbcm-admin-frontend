@@ -3,7 +3,6 @@ import {
   Column,
   ColumnFiltersState,
   RowData,
-  VisibilityState,
   useReactTable,
   getCoreRowModel,
   getFilteredRowModel,
@@ -14,7 +13,7 @@ import {
   getFacetedMinMaxValues,
   ColumnDef,
   flexRender,
-  PaginationState
+  VisibilityState
 } from "@tanstack/react-table"
 
 declare module "@tanstack/react-table" {
@@ -69,9 +68,10 @@ function DebouncedInput({
 function Filter({ column }: { column: Column<unknown, unknown> }) {
   const { filterVariant } = column.columnDef.meta ?? {}
   const columnFilterValue = column.getFilterValue()
+  const uniqueValues = column.getFacetedUniqueValues()
   const sortedUniqueValues = useMemo(
-    () => Array.from(column.getFacetedUniqueValues().keys()).sort(),
-    [column.getFacetedUniqueValues(), column]
+    () => Array.from(uniqueValues.keys()).sort(),
+    [uniqueValues]
   )
 
   return filterVariant === "select" ? (
@@ -107,16 +107,12 @@ function Filter({ column }: { column: Column<unknown, unknown> }) {
 }
 
 const Table: React.FC<{
-  title?: string,
-  actions?: JSX.Element,
-  data: unknown[],
+  title?: string
+  actions?: JSX.Element
+  data: unknown[]
   columns: ColumnDef<unknown>[]
 }> = ({ title, data, columns, actions }) => {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-  const [pagination, setPagination] = useState<PaginationState>({
-    pageIndex: 0,
-    pageSize: 10
-  })
   const [visibility, setVisibility] = useState<VisibilityState>({})
 
   const table = useReactTable({
@@ -124,11 +120,9 @@ const Table: React.FC<{
     columns,
     state: {
       columnFilters,
-      pagination,
       columnVisibility: visibility
     },
     onColumnFiltersChange: setColumnFilters,
-    onPaginationChange: setPagination,
     onColumnVisibilityChange: setVisibility,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
@@ -152,9 +146,7 @@ const Table: React.FC<{
           <div className="top-bar">
             <div className="table-title">{title}</div>
             {actions && (
-              <div className="actions-trigger text-nowrap">
-                {actions}
-              </div>
+              <div className="actions-trigger text-nowrap">{actions}</div>
             )}
           </div>
         </div>
@@ -164,6 +156,9 @@ const Table: React.FC<{
           {table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
+                const isActionsColumn =
+                  header.column.id === "_id" &&
+                  header.column.columnDef.header === "Ações"
                 return (
                   <th key={header.id} colSpan={header.colSpan} scope="col">
                     {header.isPlaceholder ? null : (
@@ -180,10 +175,12 @@ const Table: React.FC<{
                             header.column.columnDef.header,
                             header.getContext()
                           )}
-                          {{
-                            asc: " ⬆️",
-                            desc: " ⬇️"
-                          }[header.column.getIsSorted() as string] ?? " ➡️"}
+                          {!isActionsColumn &&
+                            ({
+                              asc: " ⬆️",
+                              desc: " ⬇️"
+                            }[header.column.getIsSorted() as string] ??
+                              " ➡️")}
                         </div>
                         {header.column.getCanFilter() && (
                           <Filter
@@ -201,11 +198,23 @@ const Table: React.FC<{
         <tbody>
           {table.getRowModel().rows.map((row) => (
             <tr key={row.id}>
-              {row.getVisibleCells().map((cell) => (
-                <td key={cell.id} data-th={cell.column.columnDef.header}>
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </td>
-              ))}
+              {row.getVisibleCells().map((cell) => {
+                // Verifica se a coluna é a de status
+                const isStatusColumn = cell.column.id === "status"
+
+                return (
+                  <td key={cell.id} data-th={cell.column.columnDef.header}>
+                    <span
+                      className={`text-base text-center ${isStatusColumn ? "font-bold" : ""}`}
+                    >
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </span>
+                  </td>
+                )
+              })}
             </tr>
           ))}
         </tbody>
@@ -221,9 +230,7 @@ const Table: React.FC<{
           <div className="pagination-per-page">
             <div className="br-select">
               <div className="br-input">
-                <label htmlFor="per-page-selection-random-90012">
-                  Exibir
-                </label>
+                <label htmlFor="per-page-selection-random-90012">Exibir</label>
                 <input
                   id="per-page-selection-random-90012"
                   type="text"
