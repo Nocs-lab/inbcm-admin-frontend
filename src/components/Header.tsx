@@ -65,7 +65,7 @@ const Header: React.FC = () => {
               </div>
             </div>
             <span className="br-divider vertical mx-half mx-sm-1"></span>
-            <div className="header-login">
+            <div className="header-login relative">
               <div>
                 <button
                   className="br-sign-in p-0"
