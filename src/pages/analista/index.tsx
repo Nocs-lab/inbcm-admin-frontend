@@ -88,7 +88,7 @@ export default function Declaracoes() {
   return (
     <DefaultLayout>
       <div className="flex items-center justify-between">
-        <h2>Minhas declarações</h2>
+        <h2>Declarações para analisar</h2>
       </div>
       <div
         className="br-table overflow-auto"
