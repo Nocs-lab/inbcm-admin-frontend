@@ -139,11 +139,16 @@ const CreateUser: React.FC = () => {
           <i className="fas fa-arrow-left" aria-hidden="true"></i>
           Voltar
         </Link>
-        <h2>Criar Usuário</h2>
+        <h2>Criar novo usuário</h2>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div className="p-2">
-            <p>Informações Pessoais</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <fieldset
+            className="rounded-lg p-3"
+            style={{ border: "2px solid #e0e0e0" }}
+          >
+            <legend className="text-lg font-extrabold px-3 m-0">
+              Dados pessoais
+            </legend>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-2">
               <Input
                 type="text"
                 label="Nome"
@@ -153,15 +158,20 @@ const CreateUser: React.FC = () => {
               />
               <Input
                 type="email"
-                label="Email"
+                label="E-mail"
                 placeholder="Digite seu email"
                 error={errors.email}
                 {...register("email")}
               />
             </div>
-          </div>
-          <div className="p-2">
-            <p>Detalhes de Acesso</p>
+          </fieldset>
+          <fieldset
+            className="rounded-lg p-3"
+            style={{ border: "2px solid #e0e0e0" }}
+          >
+            <legend className="text-lg font-extrabold px-3 m-0">
+              Controle de acesso
+            </legend>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Controller
                 name="profile"
@@ -209,14 +219,13 @@ const CreateUser: React.FC = () => {
               />
               <Input
                 type="password"
-                label="Confirmar Senha"
+                label="Confirmar senha"
                 placeholder="Digite sua senha novamente"
                 error={errors.confirmPassword}
                 {...register("confirmPassword")}
               />
             </div>
-          </div>
-
+          </fieldset>
           {/* Botões */}
           <div className="flex justify-end space-x-4">
             <Link to="/usuarios" className="br-button secondary">
