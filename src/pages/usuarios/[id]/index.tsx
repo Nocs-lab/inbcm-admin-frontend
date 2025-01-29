@@ -1,21 +1,69 @@
-import { useParams, useNavigate } from "react-router-dom"
+import React, { useEffect, useState, useCallback } from "react"
+import { useParams } from "react-router-dom"
 import DefaultLayout from "../../../layouts/default"
-import { useMutation, useSuspenseQueries } from "@tanstack/react-query"
+import {
+  useMutation,
+  useSuspenseQueries,
+  useQuery
+} from "@tanstack/react-query"
 import Input from "../../../components/Input"
+import { Select, Row, Col, Button, Modal } from "react-dsgov"
 import { z } from "zod"
-import { useForm } from "react-hook-form"
+import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import clsx from "clsx"
 import { Link } from "react-router-dom"
 import request from "../../../utils/request"
 import Table from "../../../components/Table"
 import toast from "react-hot-toast"
+import { debounce } from "lodash"
 
 const schema = z.object({
   email: z.string().min(1, "Este campo é obrigatório"),
-  nome: z.string().min(1, "Este campo é obrigatório")
+  nome: z.string().min(1, "Este campo é obrigatório"),
+  especialidadeAnalista: z.array(z.string()).optional(),
+  museus: z.array(z.string()).optional()
 })
 type FormData = z.infer<typeof schema>
+
+interface Museu {
+  _id: string
+  nome: string
+}
+
+interface Paginacao {
+  currentPage: number
+  totalPages: number
+  totalItems: number
+  itemsPerPage: number
+}
+
+interface RespostaMuseus {
+  museus: Museu[]
+  pagination: Paginacao
+}
+
+const fetchMuseus = async (
+  search: string,
+  page: number
+): Promise<RespostaMuseus> => {
+  const response = await request(
+    `/api/admin/museus?semVinculoUsuario=true&search=${search}&page=${page}`
+  )
+  if (!response.ok) throw new Error("Erro ao carregar museus")
+
+  const data = await response.json()
+
+  return {
+    museus: data.museus || [],
+    pagination: data.pagination || {
+      currentPage: 0,
+      totalPages: 0,
+      totalItems: 0,
+      itemsPerPage: 0
+    }
+  }
+}
 
 const userById = async (id: string) => {
   const response = await request(`/api/admin/users/${id}`)
@@ -32,6 +80,38 @@ const userById = async (id: string) => {
 }
 
 const EditUser: React.FC = () => {
+  const [selectedMuseus, setSelectedMuseus] = useState<string[]>([])
+  const [selectedMuseusNames, setSelectedMuseusNames] = useState<string[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [search, setSearch] = useState("")
+  const [page, setPage] = useState(1)
+
+  const [showModal, setShowModal] = useState(false)
+  const [museuIdToDelete, setUserIdToDelete] = useState<string>("")
+
+  const { data: museusData } = useQuery<RespostaMuseus>({
+    queryKey: ["museus", search, page],
+    queryFn: () => fetchMuseus(search, page),
+    enabled: search.length > 0
+  })
+
+  const museus = museusData?.museus || []
+
+  const debounceSearch = useCallback(
+    debounce((value: string) => {
+      setIsLoading(true)
+      setSearch(value)
+      setPage(1)
+    }, 500),
+    [setIsLoading, setSearch, setPage]
+  )
+
+  useEffect(() => {
+    if (museus.length > 0) {
+      setIsLoading(false)
+    }
+  }, [museus])
+
   const { id } = useParams<{ id: string }>()
   const [{ data: user }] = useSuspenseQueries({
     queries: [{ queryKey: ["user", id], queryFn: () => userById(id!) }]
@@ -40,6 +120,7 @@ const EditUser: React.FC = () => {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors, isSubmitting }
   } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -50,26 +131,64 @@ const EditUser: React.FC = () => {
     }
   })
 
-  const navigate = useNavigate()
-
   const { mutate } = useMutation({
-    mutationFn: async ({ email, nome }: FormData) => {
+    mutationFn: async ({
+      email,
+      nome,
+      especialidadeAnalista,
+      museus,
+      desvincularMuseus
+    }: FormData & { museus: string[] }) => {
+      console.log("Dados enviados para API:", {
+        email,
+        nome,
+        especialidadeAnalista,
+        museus
+      })
+
       const res = await request(`/api/admin/users/${id}`, {
         method: "PUT",
-        data: { email, nome }
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          nome,
+          especialidadeAnalista:
+            user.profile?.name === "analyst" ? especialidadeAnalista : [],
+          museus: user.profile?.name === "declarant" ? museus : [],
+          desvincularMuseus:
+            user.profile?.name === "declarant" ? desvincularMuseus : []
+        })
       })
+
+      if (!res.ok) {
+        const errorData = await res.json()
+        throw new Error(errorData.message || "Erro ao criar usuário")
+      }
+
       return await res.json()
     },
     onSuccess: () => {
-      navigate("/usuarios")
+      //window.location.reload()
       toast.success("Usuário atualizado com sucesso")
     },
     onError: () => {
       toast.error("Erro ao atualizar usuário")
     }
   })
-  const onSubmit = ({ email, nome }: FormData) => {
-    mutate({ email, nome })
+  const onSubmit = ({ email, nome, especialidadeAnalista }: FormData) => {
+    console.log("museus selecionados: ", selectedMuseus)
+
+    const museusIds =
+      user.profile?.name === "declarant" && Array.isArray(selectedMuseus)
+        ? selectedMuseus.map((item) => {
+            const partes = item.split(",")
+            return partes.length > 0 ? partes[0] : item
+          })
+        : []
+
+    console.log("museusIds: ", museusIds)
+
+    mutate({ email, nome, especialidadeAnalista, museus: museusIds })
   }
 
   if (!user) {
@@ -77,9 +196,47 @@ const EditUser: React.FC = () => {
   }
 
   const profileTranslations: Record<string, string> = {
-    admin: "Administrador",
-    analyst: "Analista",
-    declarant: "Declarante"
+    admin: "administrador",
+    analyst: "analista",
+    declarant: "declarante"
+  }
+
+  const profileName = user.profile?.name
+  const translatedProfile = profileTranslations[profileName] || profileName
+
+  const handleOpenModal = (userId: string) => {
+    setUserIdToDelete(userId)
+    setShowModal(true)
+  }
+
+  const handleCloseModal = () => {
+    setShowModal(false)
+    setUserIdToDelete("")
+  }
+
+  const handleDeleteMuseu = async () => {
+    if (!museuIdToDelete) return
+
+    try {
+      const res = await request(`/api/admin/users/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          desvincularMuseus: [museuIdToDelete]
+        })
+      })
+
+      if (!res.ok) {
+        const errorData = await res.json()
+        throw new Error(errorData.message || "Erro ao desassociar museu")
+      }
+
+      toast.success("Museu desassociado com sucesso")
+      setShowModal(false)
+    } catch (error) {
+      console.error("Erro ao desassociar museu:", error)
+      toast.error("Erro ao desassociar museu")
+    }
   }
 
   const museuColumns = [
@@ -106,20 +263,42 @@ const EditUser: React.FC = () => {
       header: "Administração",
       cell: (info: { row: { original: { esferaAdministraiva: string } } }) =>
         info.row.original.esferaAdministraiva || "Nome não disponível"
+    },
+    {
+      accessor: "_id",
+      header: "Desassociar",
+      cell: (info: { row: { original: { _id: string } } }) => (
+        <div className="flex justify-center gap-2">
+          <button
+            className="btn text-[#1351b4]"
+            onClick={() => handleOpenModal(info.row.original._id)}
+            aria-label="Excluir usuário"
+            title="Excluir usuário"
+          >
+            <i className="fa-solid fa-trash fa-fw pl-2"></i>
+          </button>
+        </div>
+      )
     }
   ]
 
   return (
     <DefaultLayout>
-      <Link to="/usuarios" className="text-lg">
-        <i className="fas fa-arrow-left" aria-hidden="true"></i>
-        Voltar
-      </Link>
-      <h2>Editar usuário</h2>
-      <div className="container mx-auto p-6 bg-white rounded-lg">
+      <div className="container mx-auto p-8">
+        <Link to="/usuarios" className="text-lg">
+          <i className="fas fa-arrow-left" aria-hidden="true"></i>
+          Voltar
+        </Link>
+        <h2>Editar usuário {translatedProfile}</h2>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div>
-            <div className="grid grid-cols-3 gap-2 w-full">
+          <fieldset
+            className="rounded-lg p-3"
+            style={{ border: "2px solid #e0e0e0" }}
+          >
+            <legend className="text-lg font-extrabold px-3 m-0">
+              Dados pessoais
+            </legend>
+            <div className="grid grid-cols-3 gap-2 w-full p-2">
               <Input
                 type="text"
                 label="Nome"
@@ -137,29 +316,155 @@ const EditUser: React.FC = () => {
                 className="w-full"
               />
               <Input
-                label="Perfil"
-                className=""
-                value={
-                  user.profile?.name
-                    ? profileTranslations[user.profile.name] ||
-                      user.profile.name
-                    : "Perfil não encontrado"
-                }
+                label="CPF"
+                className="w-full"
+                value={user.cpf}
                 rows={1}
                 readOnly
               />
             </div>
-            {user.profile?.name === "declarant" && (
+          </fieldset>
+          {user.profile?.name != "admin" && (
+            <fieldset
+              className="rounded-lg p-3"
+              style={{ border: "2px solid #e0e0e0" }}
+            >
+              <legend className="text-lg font-extrabold px-3 m-0">
+                Controle de acesso
+              </legend>
+              {user.profile?.name === "analyst" && (
+                <div className="grid grid-cols-3 gap-2 w-full p-2">
+                  <Controller
+                    name="especialidadeAnalista"
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        type="multiple"
+                        selectAllText=""
+                        placeholder="Selecione os tipos de especialidade"
+                        label="Tipo de especialidade"
+                        className="w-full"
+                        options={[
+                          { label: "Arquivístico", value: "arquivistico" },
+                          { label: "Museológico", value: "museologico" },
+                          { label: "Bibliográfico", value: "bibliografico" }
+                        ]}
+                        {...field}
+                      />
+                    )}
+                  />
+                </div>
+              )}
+              {user.profile?.name === "declarant" && (
+                <div className="grid grid-cols-3 gap-2 w-full p-2">
+                  <Row>
+                    <Col>
+                      <Controller
+                        control={control}
+                        name="museus"
+                        render={({ field }) => (
+                          <>
+                            <Select
+                              type="multiple"
+                              selectAllText={""}
+                              label="Museus"
+                              placeholder="Digite para buscar..."
+                              options={
+                                museus.length > 0
+                                  ? museus.map((m: Museu) => ({
+                                      label: m.nome,
+                                      value: `${m._id},${m.nome}`
+                                    }))
+                                  : []
+                              }
+                              className="!w-full"
+                              {...field}
+                              value={selectedMuseus}
+                              onInput={(e) => {
+                                const inputValue = (
+                                  e.target as HTMLInputElement
+                                ).value
+                                debounceSearch(inputValue)
+                              }}
+                              onChange={(selected: string[]) => {
+                                field.onChange(selected)
+
+                                const nomesMuseus = selected.map(
+                                  (item) => item.split(",")[1]
+                                )
+                                setSelectedMuseus(selected)
+                                setSelectedMuseusNames(nomesMuseus)
+                              }}
+                            />
+                            {isLoading && (
+                              <p className="text-sm text-gray-500 mt-2">
+                                Carregando museus...
+                              </p>
+                            )}
+                          </>
+                        )}
+                      />
+                    </Col>
+                  </Row>
+                </div>
+              )}
+              <div className="mt-4 w-full grid">
+                {user.profile?.name === "declarant" &&
+                  selectedMuseusNames.length > 0 && (
+                    <>
+                      <p className="text-sm text-gray-500 mb-2">
+                        {selectedMuseusNames.length} museu(s) selecionado(s):
+                      </p>
+                      <div className="flex flex-wrap gap-2 p-2">
+                        {selectedMuseusNames.map((name, index) => (
+                          <Button
+                            key={index}
+                            className="gap-2 flex items-center justify-between"
+                            primary
+                            inverted
+                          >
+                            <i
+                              className="fa-solid fa-xmark ml-2 cursor-pointer"
+                              onClick={() => {
+                                const updatedMuseus = selectedMuseus.filter(
+                                  (_, i) => i !== index
+                                )
+                                const updatedNames = selectedMuseusNames.filter(
+                                  (_, i) => i !== index
+                                )
+
+                                setSelectedMuseus(updatedMuseus)
+                                setSelectedMuseusNames(updatedNames)
+                              }}
+                            ></i>
+                            {name}
+                          </Button>
+                        ))}
+                      </div>
+                    </>
+                  )}
+              </div>
+            </fieldset>
+          )}
+
+          {user.profile?.name === "declarant" && (
+            <fieldset
+              className="rounded-lg p-3"
+              style={{ border: "2px solid #e0e0e0" }}
+            >
+              <legend className="text-lg font-extrabold px-3 m-0">
+                Museus Associados
+              </legend>
               <div className="mt-6">
-                <h2 className="text-lg font-semibold">Museus Associados</h2>
                 {user.museus && user.museus.length > 0 ? (
                   <Table columns={museuColumns} data={user.museus} />
                 ) : (
                   <p className="text-gray-500">Nenhum museu associado.</p>
                 )}
               </div>
-            )}
-          </div>
+            </fieldset>
+          )}
+
           <div className="flex space-x-4 justify-end">
             <Link to="/usuarios" className="br-button secondary mt-5">
               Voltar
@@ -176,6 +481,28 @@ const EditUser: React.FC = () => {
           </div>
         </form>
       </div>
+      {/* Modal de Confirmação */}
+      {showModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
+          <Modal
+            title="Desassociar museu?"
+            showCloseButton
+            onCloseButtonClick={() => handleCloseModal()}
+          >
+            <Modal.Body>
+              Você tem certeza que deseja desassociar este museu?
+            </Modal.Body>
+            <Modal.Footer justify-content="end">
+              <Button primary small m={2} onClick={handleDeleteMuseu}>
+                Confirmar
+              </Button>
+              <Button secondary small m={2} onClick={handleCloseModal}>
+                Cancelar
+              </Button>
+            </Modal.Footer>
+          </Modal>
+        </div>
+      )}
     </DefaultLayout>
   )
 }

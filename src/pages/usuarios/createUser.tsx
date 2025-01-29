@@ -17,6 +17,7 @@ const schema = z
   .object({
     email: z.string().min(1, "Este campo é obrigatório"),
     nome: z.string().min(1, "Este campo é obrigatório"),
+    cpf: z.string().min(1, "Este campo é obrigatório"),
     profile: z.string().min(1, "Este campo é obrigatório"),
     password: z.string().min(1, "Este campo é obrigatório"),
     confirmPassword: z.string().min(1, "Este campo é obrigatório"),
@@ -172,6 +173,7 @@ const CreateUser: React.FC = () => {
     email,
     nome,
     password,
+    cpf,
     profile,
     confirmPassword,
     especialidadeAnalista
@@ -184,6 +186,7 @@ const CreateUser: React.FC = () => {
       email,
       nome,
       password,
+      cpf,
       profile,
       confirmPassword,
       especialidadeAnalista,
@@ -227,20 +230,27 @@ const CreateUser: React.FC = () => {
             <legend className="text-lg font-extrabold px-3 m-0">
               Dados pessoais
             </legend>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-2">
+            <div className="grid grid-cols-3 gap-2 w-full p-2">
               <Input
                 type="text"
                 label="Nome"
-                placeholder="Digite seu nome"
+                placeholder="Digite o nome do usuário"
                 error={errors.nome}
                 {...register("nome")}
               />
               <Input
                 type="email"
                 label="E-mail"
-                placeholder="Digite seu email"
+                placeholder="Digite o email do usuário"
                 error={errors.email}
                 {...register("email")}
+              />
+              <Input
+                type="number"
+                label="CPF"
+                placeholder="Digite o cpf do usuário"
+                error={errors.cpf}
+                {...register("cpf")}
               />
             </div>
           </fieldset>
@@ -376,7 +386,7 @@ const CreateUser: React.FC = () => {
                 )}
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
                 type="password"
                 label="Senha"
@@ -391,7 +401,7 @@ const CreateUser: React.FC = () => {
                 error={errors.confirmPassword}
                 {...register("confirmPassword")}
               />
-            </div>
+            </div> */}
           </fieldset>
           <div className="flex justify-end space-x-4">
             <Link to="/usuarios" className="br-button secondary">

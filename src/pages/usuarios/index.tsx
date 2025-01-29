@@ -147,24 +147,6 @@ const Index: React.FC = () => {
         profileMapping[info.row.original.profile?.name ?? ""] || "-"
     }),
     columnHelper.accessor("_id", {
-      header: "Associar museus",
-      cell: (info: { row: { original: User } }) => {
-        const profileName = info.row.original.profile?.name || ""
-        return !["admin", "analyst"].includes(profileName) ? (
-          <Button
-            small
-            onClick={() =>
-              navigate(`/usuarios/associar/${info.row.original._id}`)
-            }
-          >
-            <i className="fa-solid fa-share p-2"></i>
-            Associar museus
-          </Button>
-        ) : null
-      },
-      enableColumnFilter: false
-    }),
-    columnHelper.accessor("_id", {
       header: "Ações",
       meta: {
         filterVariant: "select"
