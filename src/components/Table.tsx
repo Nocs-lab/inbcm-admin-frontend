@@ -15,6 +15,9 @@ import {
   flexRender,
   VisibilityState
 } from "@tanstack/react-table"
+import { FaCaretUp, FaCaretDown } from "react-icons/fa"
+import ReactPaginate from "react-paginate"
+import clsx from "clsx"
 
 declare module "@tanstack/react-table" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -61,6 +64,7 @@ function DebouncedInput({
       placeholder={placeholder}
       list={list}
       onChange={(e) => setValue(e.currentTarget.value)}
+      className={clsx(props.className, "p-1 border border-gray-700 text-xs")}
     />
   )
 }
@@ -122,6 +126,7 @@ const Table: React.FC<{
       columnFilters,
       columnVisibility: visibility
     },
+    autoResetPageIndex: false,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setVisibility,
     getCoreRowModel: getCoreRowModel(),
@@ -155,43 +160,36 @@ const Table: React.FC<{
         <thead>
           {table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id}>
-              {headerGroup.headers.map((header) => {
-                const isActionsColumn =
-                  header.column.id === "_id" &&
-                  header.column.columnDef.header === "Ações"
-                return (
-                  <th key={header.id} colSpan={header.colSpan} scope="col">
-                    {header.isPlaceholder ? null : (
-                      <>
-                        <div
-                          {...{
-                            className: header.column.getCanSort()
-                              ? "cursor-pointer select-none"
-                              : "",
-                            onClick: header.column.getToggleSortingHandler()
-                          }}
-                        >
-                          {flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                          {!isActionsColumn &&
-                            ({
-                              asc: " ⬆️",
-                              desc: " ⬇️"
-                            }[header.column.getIsSorted() as string] ??
-                              " ➡️")}
-                        </div>
-                        {header.column.getCanFilter() && (
-                          <Filter
-                            column={header.column as Column<unknown, unknown>}
-                          />
+              {headerGroup.headers.map((header) => (
+                <th
+                  key={header.id}
+                  colSpan={header.colSpan}
+                  scope="col"
+                  className="cursor-pointer select-none hover:active"
+                  onClick={() => header.column.getToggleSortingHandler()}
+                >
+                  {header.isPlaceholder ? null : (
+                    <>
+                      <div>
+                        {flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
                         )}
-                      </>
-                    )}
-                  </th>
-                )
-              })}
+                        {header.column.getCanSort() &&
+                          {
+                            asc: <FaCaretUp />,
+                            desc: <FaCaretDown />
+                          }[header.column.getIsSorted() as string]}
+                      </div>
+                      {header.column.getCanFilter() && (
+                        <Filter
+                          column={header.column as Column<unknown, unknown>}
+                        />
+                      )}
+                    </>
+                  )}
+                </th>
+              ))}
             </tr>
           ))}
         </thead>
@@ -230,57 +228,21 @@ const Table: React.FC<{
           <div className="pagination-per-page">
             <div className="br-select">
               <div className="br-input">
-                <label htmlFor="per-page-selection-random-90012">Exibir</label>
-                <input
-                  id="per-page-selection-random-90012"
-                  type="text"
-                  placeholder=" "
-                />
-                <button
-                  className="br-button"
-                  type="button"
-                  aria-label="Exibir lista"
-                  tabIndex={-1}
-                  data-trigger="data-trigger"
+                <label htmlFor="per-page">Itens por página</label>
+                <select
+                  className="bg-white rounded border border-gray-500 p-1"
+                  id="per-page"
+                  aria-label="Itens por página"
+                  value={table.getState().pagination.pageSize}
+                  onChange={(e) =>
+                    table.setPageSize(Number(e.currentTarget.value))
+                  }
                 >
-                  <i className="fas fa-angle-down" aria-hidden="true"></i>
-                </button>
-              </div>
-              <div className="br-list" tabIndex={0}>
-                <div className="br-item" tabIndex={-1}>
-                  <div className="br-radio">
-                    <input
-                      id="per-page-10-random-90012"
-                      type="radio"
-                      name="per-page-random-90012"
-                      value="per-page-10-random-90012"
-                      checked
-                    />
-                    <label htmlFor="per-page-10-random-90012">10</label>
-                  </div>
-                </div>
-                <div className="br-item" tabIndex={-1}>
-                  <div className="br-radio">
-                    <input
-                      id="per-page-20-random-90012"
-                      type="radio"
-                      name="per-page-random-90012"
-                      value="per-page-20-random-90012"
-                    />
-                    <label htmlFor="per-page-20-random-90012">20</label>
-                  </div>
-                </div>
-                <div className="br-item" tabIndex={-1}>
-                  <div className="br-radio">
-                    <input
-                      id="per-page-30-random-90012"
-                      type="radio"
-                      name="per-page-random-90012"
-                      value="per-page-30-random-90012"
-                    />
-                    <label htmlFor="per-page-30-random-90012">30</label>
-                  </div>
-                </div>
+                  <option value="10">10</option>
+                  <option value="20">20</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                </select>
               </div>
             </div>
           </div>
@@ -302,83 +264,27 @@ const Table: React.FC<{
             &nbsp;de&nbsp;<span className="total">{data.length}</span>
             &nbsp;itens
           </div>
-          <div className="pagination-go-to-page d-none d-sm-flex ml-auto">
-            <div className="br-select">
-              <div className="br-input">
-                <label htmlFor="go-to-selection-random-55067">Página</label>
-                <input
-                  id="go-to-selection-random-55067"
-                  type="text"
-                  placeholder=" "
-                />
-                <button
-                  className="br-button"
-                  type="button"
-                  aria-label="Exibir lista"
-                  tabIndex={-1}
-                  data-trigger="data-trigger"
-                >
-                  <i className="fas fa-angle-down" aria-hidden="true"></i>
-                </button>
-              </div>
-              <div className="br-list" tabIndex={0}>
-                <div className="br-item" tabIndex={-1}>
-                  <div className="br-radio">
-                    <input
-                      id="go-to-1-random-55067"
-                      type="radio"
-                      name="go-to-random-55067"
-                      value="go-to-1-random-55067"
-                      checked
-                    />
-                    <label htmlFor="go-to-1-random-55067">1</label>
-                  </div>
-                </div>
-                <div className="br-item" tabIndex={-1}>
-                  <div className="br-radio">
-                    <input
-                      id="go-to-2-random-55067"
-                      type="radio"
-                      name="go-to-random-55067"
-                      value="go-to-2-random-55067"
-                    />
-                    <label htmlFor="go-to-2-random-55067">2</label>
-                  </div>
-                </div>
-                <div className="br-item" tabIndex={-1}>
-                  <div className="br-radio">
-                    <input
-                      id="go-to-3-random-55067"
-                      type="radio"
-                      name="go-to-random-55067"
-                      value="go-to-3-random-55067"
-                    />
-                    <label htmlFor="go-to-3-random-55067">3</label>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <div className="pagination-go-to-page d-none d-sm-flex ml-auto"></div>
           <span className="br-divider d-none d-sm-block mx-3"></span>
           <div className="pagination-arrows ml-auto ml-sm-0">
-            <button
-              className="br-button circle"
-              type="button"
-              aria-label="Voltar página"
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
-            >
-              <i className="fas fa-angle-left" aria-hidden="true"></i>
-            </button>
-            <button
-              className="br-button circle"
-              type="button"
-              aria-label="Página seguinte"
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-            >
-              <i className="fas fa-angle-right" aria-hidden="true"></i>
-            </button>
+            <ReactPaginate
+              breakLinkClassName="br-button circle"
+              breakLabel="..."
+              nextLinkClassName="br-button circle"
+              nextLabel={
+                <i className="fas fa-angle-right" aria-hidden="true"></i>
+              }
+              onPageChange={({ selected }) => table.setPageIndex(selected)}
+              pageRangeDisplayed={5}
+              pageCount={table.getPageCount()}
+              previousLinkClassName="br-button circle"
+              activeClassName="disabled"
+              previousLabel={
+                <i className="fas fa-angle-left" aria-hidden="true"></i>
+              }
+              pageLinkClassName="br-button circle"
+              renderOnZeroPageCount={null}
+            />
           </div>
         </nav>
       </div>
