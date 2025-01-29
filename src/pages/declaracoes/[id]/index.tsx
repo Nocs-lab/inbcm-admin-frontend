@@ -1,9 +1,8 @@
 import { useParams } from "react-router"
-import DefaultLayout from "../../../layouts/default"
 import { useSuspenseQuery } from "@tanstack/react-query"
 import request from "../../../utils/request"
 import { format } from "date-fns"
-import { Link } from "react-router-dom"
+import { Link } from "react-router"
 
 const DeclaracaoPage: React.FC = () => {
   const params = useParams()
@@ -26,7 +25,7 @@ const DeclaracaoPage: React.FC = () => {
   })
 
   return (
-    <DefaultLayout>
+    <>
       <Link to={`/declaracoes`} className="text-lg">
         <i className="fas fa-arrow-left" aria-hidden="true"></i>
         Voltar
@@ -100,7 +99,7 @@ const DeclaracaoPage: React.FC = () => {
           </div>
         </nav>
       </div>
-    </DefaultLayout>
+    </>
   )
 }
 

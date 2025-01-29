@@ -4,11 +4,10 @@ import {
   useSuspenseQuery
 } from "@tanstack/react-query"
 import Table from "../../components/Table"
-import DefaultLayout from "../../layouts/default"
 import request from "../../utils/request"
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import { format } from "date-fns"
-import { Link } from "react-router-dom"
+import { Link } from "react-router"
 import { FaCalendar, FaEdit, FaPlus, FaTrash } from "react-icons/fa"
 import { useModal } from "../../utils/modal"
 import { Button, Modal } from "react-dsgov"
@@ -58,11 +57,7 @@ const ActionsCell: React.FC<{ id: string }> = ({ id }) => {
   }
 
   const { closeModal, openModal } = useModal((close) => (
-    <Modal
-      title="Deletar período?"
-      showCloseButton
-      onCloseButtonClick={() => close()}
-    >
+    <Modal title="Deletar período?" showCloseButton onCloseButtonClick={close}>
       <Modal.Body>Você tem certeza que deseja deletar este período?</Modal.Body>
       <Modal.Footer justify-content="end">
         <Button primary small m={2} onClick={handleDeleteUser}>
@@ -138,7 +133,7 @@ const Gestao: React.FC = () => {
   }))
 
   return (
-    <DefaultLayout>
+    <>
       <div className="flex justify-between items-center mb-4">
         <h2>Períodos de submissão</h2>
         <Link
@@ -151,7 +146,7 @@ const Gestao: React.FC = () => {
         </Link>
       </div>
       <Table columns={columns as ColumnDef<unknown>[]} data={data} />
-    </DefaultLayout>
+    </>
   )
 }
 

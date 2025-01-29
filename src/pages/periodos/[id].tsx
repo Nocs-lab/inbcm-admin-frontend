@@ -1,6 +1,5 @@
 import React from "react"
-import { useNavigate, useParams } from "react-router-dom"
-import DefaultLayout from "../../layouts/default"
+import { useNavigate, useParams } from "react-router"
 import {
   useMutation,
   useQueryClient,
@@ -11,7 +10,7 @@ import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import clsx from "clsx"
-import { Link } from "react-router-dom"
+import { Link } from "react-router"
 import toast from "react-hot-toast"
 import request from "../../utils/request"
 
@@ -115,7 +114,7 @@ const EditarPeriodo: React.FC = () => {
   }
 
   return (
-    <DefaultLayout>
+    <>
       <div className="container mx-auto p-8">
         <Link to="/periodos" className="text-lg">
           <i className="fas fa-arrow-left" aria-hidden="true"></i>
@@ -179,7 +178,7 @@ const EditarPeriodo: React.FC = () => {
           </div>
         </form>
       </div>
-    </DefaultLayout>
+    </>
   )
 }
 

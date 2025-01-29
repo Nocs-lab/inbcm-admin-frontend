@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react"
-import { useParams } from "react-router-dom"
-import DefaultLayout from "../../../../layouts/default"
+import { useParams } from "react-router"
 import {
   useMutation,
   useSuspenseQueries,
@@ -10,12 +9,13 @@ import {
 import { z } from "zod"
 import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Link } from "react-router-dom"
+import { Link } from "react-router"
 import request from "../../../../utils/request"
 import Table from "../../../../components/Table"
 import toast from "react-hot-toast"
 import { Select, Row, Col, Button } from "react-dsgov"
 import { debounce } from "lodash"
+import { useMemo } from "react"
 
 const schema = z.object({
   email: z.string().min(1, "Este campo é obrigatório"),
@@ -95,7 +95,7 @@ const AssociarPage: React.FC = () => {
     enabled: search.length > 0
   })
 
-  const museus = museusData?.museus || []
+  const museus = useMemo(() => museusData?.museus || [], [museusData])
 
   useForm<FormData>({
     resolver: zodResolver(schema),
@@ -154,11 +154,12 @@ const AssociarPage: React.FC = () => {
   }
 
   const debounceSearch = useCallback(
-    debounce((value: string) => {
-      setIsLoading(true)
-      setSearch(value)
-      setPage(1)
-    }, 500),
+    () =>
+      debounce((value: string) => {
+        setIsLoading(true)
+        setSearch(value)
+        setPage(1)
+      }, 500),
     [setIsLoading, setSearch, setPage]
   )
 
@@ -200,7 +201,7 @@ const AssociarPage: React.FC = () => {
   ]
 
   return (
-    <DefaultLayout>
+    <>
       <Link to="/usuarios" className="text-lg">
         <i className="fas fa-arrow-left" aria-hidden="true"></i>
         Voltar
@@ -327,7 +328,7 @@ const AssociarPage: React.FC = () => {
           )}
         </div>
       </div>
-    </DefaultLayout>
+    </>
   )
 }
 
