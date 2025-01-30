@@ -323,6 +323,7 @@ const EditUser: React.FC = () => {
                 value={user.cpf || "Este usuário não possui CPF cadastrado."}
                 rows={1}
                 readOnly
+                disabled
                 className="text-gray-500 italic opacity-50"
               />
             </div>

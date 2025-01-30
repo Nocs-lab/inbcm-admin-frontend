@@ -93,6 +93,14 @@ const PerfilPage = () => {
                 {...register("email")}
                 className="w-full"
               />
+              <Input
+                label="CPF"
+                value={user.cpf || "Este usuário não possui CPF cadastrado."}
+                rows={1}
+                readOnly
+                disabled
+                className="text-gray-500 italic opacity-50"
+              />
               {user?.profile?.name === "analyst" &&
                 user?.especialidade?.length > 0 && (
                   <Input
