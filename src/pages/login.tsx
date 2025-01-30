@@ -73,7 +73,7 @@ const LoginPage: React.FC = () => {
   const navigate = useNavigate()
 
   const onSubmit = async ({ email, password }: FormData) => {
-    mutate({ email, password })
+    mutate({ email: email.toLowerCase(), password })
   }
 
   return (
