@@ -233,21 +233,33 @@ const CreateUser: React.FC = () => {
             <div className="grid grid-cols-3 gap-2 w-full p-2">
               <Input
                 type="text"
-                label="Nome"
+                label={
+                  <span>
+                    Nome <span className="text-red-500">*</span>
+                  </span>
+                }
                 placeholder="Digite o nome do usuário"
                 error={errors.nome}
                 {...register("nome")}
               />
               <Input
                 type="email"
-                label="E-mail"
+                label={
+                  <span>
+                    E-mail <span className="text-red-500">*</span>
+                  </span>
+                }
                 placeholder="Digite o email do usuário"
                 error={errors.email}
                 {...register("email")}
               />
               <Input
                 type="number"
-                label="CPF"
+                label={
+                  <span>
+                    CPF <span className="text-red-500">*</span>
+                  </span>
+                }
                 placeholder="Digite o cpf do usuário"
                 error={errors.cpf}
                 {...register("cpf")}
@@ -269,7 +281,11 @@ const CreateUser: React.FC = () => {
                   <Select
                     id="select-simples"
                     placeholder="Selecione um perfil"
-                    label="Perfil"
+                    label={
+                      <span>
+                        Perfil <span className="text-red-500">*</span>
+                      </span>
+                    }
                     className="w-full"
                     options={profileOptions}
                     {...field}

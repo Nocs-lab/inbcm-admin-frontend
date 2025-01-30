@@ -7,7 +7,7 @@ import {
   useQuery
 } from "@tanstack/react-query"
 import Input from "../../../components/Input"
-import { Select, Row, Col, Button, Modal } from "react-dsgov"
+import { Select, Row, Col, Button, Modal, Checkbox } from "react-dsgov"
 import { z } from "zod"
 import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -127,7 +127,8 @@ const EditUser: React.FC = () => {
     mode: "onBlur",
     defaultValues: {
       email: user?.email,
-      nome: user?.nome
+      nome: user?.nome,
+      especialidadeAnalista: user?.especialidadeAnalista || []
     }
   })
 
@@ -139,25 +140,27 @@ const EditUser: React.FC = () => {
       museus,
       desvincularMuseus
     }: FormData & { museus: string[] }) => {
-      console.log("Dados enviados para API:", {
+      const payload: {
+        email: string
+        nome: string
+      } = {
         email,
-        nome,
-        especialidadeAnalista,
-        museus
-      })
+        nome
+      }
+
+      if (user.profile?.name === "analyst") {
+        payload.especialidadeAnalista = especialidadeAnalista
+      }
+
+      if (user.profile?.name === "declarant") {
+        payload.museus = museus
+        payload.desvincularMuseus = desvincularMuseus
+      }
 
       const res = await request(`/api/admin/users/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          nome,
-          especialidadeAnalista:
-            user.profile?.name === "analyst" ? especialidadeAnalista : [],
-          museus: user.profile?.name === "declarant" ? museus : [],
-          desvincularMuseus:
-            user.profile?.name === "declarant" ? desvincularMuseus : []
-        })
+        body: JSON.stringify(payload)
       })
 
       if (!res.ok) {
@@ -165,10 +168,11 @@ const EditUser: React.FC = () => {
         throw new Error(errorData.message || "Erro ao criar usuário")
       }
 
-      return await res.json()
+      const responseData = await res.json()
+      console.log("API Response:", responseData)
     },
     onSuccess: () => {
-      //window.location.reload()
+      window.location.reload()
       toast.success("Usuário atualizado com sucesso")
     },
     onError: () => {
@@ -176,8 +180,6 @@ const EditUser: React.FC = () => {
     }
   })
   const onSubmit = ({ email, nome, especialidadeAnalista }: FormData) => {
-    console.log("museus selecionados: ", selectedMuseus)
-
     const museusIds =
       user.profile?.name === "declarant" && Array.isArray(selectedMuseus)
         ? selectedMuseus.map((item) => {
@@ -186,7 +188,7 @@ const EditUser: React.FC = () => {
           })
         : []
 
-    console.log("museusIds: ", museusIds)
+    console.log("especialidadeAnalista submit:", especialidadeAnalista)
 
     mutate({ email, nome, especialidadeAnalista, museus: museusIds })
   }
@@ -232,6 +234,7 @@ const EditUser: React.FC = () => {
       }
 
       toast.success("Museu desassociado com sucesso")
+      window.location.reload()
       setShowModal(false)
     } catch (error) {
       console.error("Erro ao desassociar museu:", error)
@@ -317,10 +320,10 @@ const EditUser: React.FC = () => {
               />
               <Input
                 label="CPF"
-                className="w-full"
-                value={user.cpf}
+                value={user.cpf || "Este usuário não possui CPF cadastrado."}
                 rows={1}
                 readOnly
+                className="text-gray-500 italic opacity-50"
               />
             </div>
           </fieldset>
@@ -329,32 +332,55 @@ const EditUser: React.FC = () => {
               className="rounded-lg p-3"
               style={{ border: "2px solid #e0e0e0" }}
             >
-              <legend className="text-lg font-extrabold px-3 m-0">
-                Controle de acesso
-              </legend>
+              {user.profile?.name === "declarant" ? (
+                <legend className="text-lg font-extrabold px-3 m-0">
+                  Associar museus
+                </legend>
+              ) : user.profile?.name === "analyst" ? (
+                <legend className="text-lg font-extrabold px-3 m-0">
+                  Especialidades
+                </legend>
+              ) : null}
               {user.profile?.name === "analyst" && (
-                <div className="grid grid-cols-3 gap-2 w-full p-2">
-                  <Controller
-                    name="especialidadeAnalista"
-                    control={control}
-                    render={({ field }) => (
-                      <Select
-                        type="multiple"
-                        selectAllText=""
-                        placeholder="Selecione os tipos de especialidade"
-                        label="Tipo de especialidade"
-                        className="w-full"
-                        options={[
-                          { label: "Arquivístico", value: "arquivistico" },
-                          { label: "Museológico", value: "museologico" },
-                          { label: "Bibliográfico", value: "bibliografico" }
-                        ]}
-                        {...field}
-                      />
-                    )}
-                  />
-                </div>
+                <Controller
+                  control={control}
+                  name="especialidadeAnalista"
+                  render={({ field }) => (
+                    <div className="flex flex-col w-full items-center">
+                      <div className="flex justify-between w-3/4">
+                        {["arquivistico", "museologico", "bibliografico"].map(
+                          (option) => (
+                            <label
+                              key={option}
+                              className="flex items-center space-x-2"
+                            >
+                              <Checkbox
+                                checked={field.value?.includes(option)}
+                                onChange={(e) => {
+                                  const checked = (e.target as HTMLInputElement)
+                                    .checked
+                                  const newValue = checked
+                                    ? [...(field.value || []), option]
+                                    : field.value?.filter((v) => v !== option)
+                                  field.onChange(newValue)
+                                }}
+                              />
+                              <span className="text-gray-700 text-base">
+                                {option.charAt(0).toUpperCase() +
+                                  option.slice(1)}
+                              </span>
+                            </label>
+                          )
+                        )}
+                      </div>
+                      <p className="text-gray-500 text-sm italic mt-6 text-center">
+                        Selecione pelo menos uma especialidade.
+                      </p>
+                    </div>
+                  )}
+                />
               )}
+
               {user.profile?.name === "declarant" && (
                 <div className="grid grid-cols-3 gap-2 w-full p-2">
                   <Row>
