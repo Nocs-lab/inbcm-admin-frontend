@@ -4,13 +4,19 @@ import react from "@vitejs/plugin-react-swc"
 import UnoCSS from "unocss/vite"
 import Pages from "vite-plugin-pages"
 import basicSsl from "@vitejs/plugin-basic-ssl"
+import generateSitemap from "vite-plugin-pages-sitemap"
 
 export default defineConfig({
   plugins: [
     MillionLint.vite(),
     react(),
     UnoCSS(),
-    Pages({ extensions: ["tsx"], importMode: "async" }),
+    Pages({
+      extensions: ["tsx"],
+      importMode: "sync",
+      exclude: ["**/_*/**"],
+      onRoutesGenerated: (routes) => generateSitemap({ routes })
+    }),
     basicSsl()
   ],
   build: {

@@ -1,6 +1,5 @@
-import DefaultLayout from "../layouts/default"
 import Input from "../components/Input"
-import { Link } from "react-router-dom"
+import { Link } from "react-router"
 import { useSuspenseQuery, useMutation } from "@tanstack/react-query"
 import request from "../utils/request"
 import { useForm } from "react-hook-form"
@@ -68,7 +67,7 @@ const PerfilPage = () => {
   }
 
   return (
-    <DefaultLayout>
+    <>
       <Link to="/" className="text-lg">
         <i className="fas fa-arrow-left" aria-hidden="true"></i> Voltar
       </Link>
@@ -132,7 +131,7 @@ const PerfilPage = () => {
           </div>
         </form>
       </div>
-    </DefaultLayout>
+    </>
   )
 }
 

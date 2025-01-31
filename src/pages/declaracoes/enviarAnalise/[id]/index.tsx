@@ -1,6 +1,5 @@
-import DefaultLayout from "../../../../layouts/default"
 import { useSuspenseQuery, useMutation } from "@tanstack/react-query"
-import { useParams, Link, useNavigate } from "react-router-dom"
+import { useParams, Link, useNavigate } from "react-router"
 import { useState, useEffect } from "react"
 import request from "../../../../utils/request"
 import { Select, Row, Col, Button } from "react-dsgov"
@@ -107,7 +106,7 @@ const EnviarParaAnalise: React.FC = () => {
     }
   })
   return (
-    <DefaultLayout>
+    <>
       <Link to="/declaracoes" className="text-lg">
         <i className="fas fa-arrow-left" aria-hidden="true"></i>
         Voltar
@@ -209,7 +208,7 @@ const EnviarParaAnalise: React.FC = () => {
           </Button>
         </Row>
       </form>
-    </DefaultLayout>
+    </>
   )
 }
 

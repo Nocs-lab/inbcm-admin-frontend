@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react"
-import { useNavigate } from "react-router-dom"
-import DefaultLayout from "../../layouts/default"
+import { useNavigate } from "react-router"
 import { useMutation, useSuspenseQuery, useQuery } from "@tanstack/react-query"
 import Input from "../../components/Input"
 import { Select, Row, Col, Button } from "react-dsgov"
@@ -8,7 +7,7 @@ import { z } from "zod"
 import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import clsx from "clsx"
-import { Link } from "react-router-dom"
+import { Link } from "react-router"
 import request from "../../utils/request"
 import toast from "react-hot-toast"
 import { debounce } from "lodash"
@@ -215,7 +214,7 @@ const CreateUser: React.FC = () => {
   }, [selectedProfile, profiles])
 
   return (
-    <DefaultLayout>
+    <>
       <div className="container mx-auto p-8">
         <Link to="/usuarios" className="text-lg">
           <i className="fas fa-arrow-left" aria-hidden="true"></i>
@@ -434,7 +433,7 @@ const CreateUser: React.FC = () => {
           </div>
         </form>
       </div>
-    </DefaultLayout>
+    </>
   )
 }
 

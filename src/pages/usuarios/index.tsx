@@ -1,13 +1,12 @@
 import React, { useState } from "react"
-import { useNavigate } from "react-router-dom"
-import DefaultLayout from "../../layouts/default"
+import { useNavigate } from "react-router"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import request from "../../utils/request"
 import { Modal, Button } from "react-dsgov"
 import { type ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import toast from "react-hot-toast"
 import Table from "../../components/Table"
-import { Link } from "react-router-dom"
+import { Link } from "react-router"
 
 interface User {
   _id: string
@@ -182,7 +181,7 @@ const Index: React.FC = () => {
   ] as ColumnDef<User>[]
 
   return (
-    <DefaultLayout>
+    <>
       <div className="flex justify-between items-center mb-4">
         <h2>Listagem de usuários</h2>
         <Link to="/usuarios/createuser" className="btn text-xl p-3">
@@ -218,7 +217,7 @@ const Index: React.FC = () => {
           </Modal>
         </div>
       )}
-    </DefaultLayout>
+    </>
   )
 }
 
