@@ -16,9 +16,10 @@ import toast from "react-hot-toast"
 interface Ano {
   _id: string
   ano: number
-  dataFimRetificacao: Date
   dataFimSubmissao: Date
   dataInicioSubmissao: Date
+  dataInicioRetificacao: Date
+  dataFimRetificacao: Date
   metaDeclaracoesEnviadas: number
 }
 
@@ -99,6 +100,11 @@ const columns = [
     cell: (info) => format(info.getValue(), "dd/MM/yyyy HH:mm"),
     enableColumnFilter: false
   }),
+  columnHelper.accessor("dataInicioRetificacao", {
+    header: "Início Retificação",
+    cell: (info) => format(info.getValue(), "dd/MM/yyyy HH:mm"),
+    enableColumnFilter: false
+  }),
   columnHelper.accessor("dataFimRetificacao", {
     header: "Fim Retificação",
     cell: (info) => format(info.getValue(), "dd/MM/yyyy HH:mm"),
@@ -106,7 +112,7 @@ const columns = [
   }),
   columnHelper.accessor("metaDeclaracoesEnviadas", {
     header: "Meta",
-    cell: (info) => `${info.getValue()}%`,
+    cell: (info) => info.getValue(),
     enableColumnFilter: false,
     enableSorting: false
   }),
