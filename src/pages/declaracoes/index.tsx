@@ -114,10 +114,9 @@ const AcoesExcluirDeclaracao: React.FC<{
       window.location.reload()
       toast.success("Declaração recuperada com sucesso!")
     },
-    onError: (error: Error) => {
+    onError: () => {
       toast.error(
-        error.message ||
-          "Não é possível restaurar esta declaração porque há versões mais recentes."
+        "Não é possível recuperá-la porque o museu já enviou uma nova declaração."
       )
     }
   })
@@ -269,6 +268,9 @@ const columnHelper = createColumnHelper<{
   retificacao: boolean
   status: string
   dataCriacao: Date
+  dataEnvioAnalise: Date
+  dataFimAnalise: Date
+  dataExclusao: Date
   regiao: string
   museu_id: {
     _id: string
@@ -307,8 +309,39 @@ const columns = [
     }
   }),
   columnHelper.accessor("dataCriacao", {
-    cell: (info) => format(info.getValue(), "dd/MM/yyyy HH:mm"),
+    id: "recebidoEm",
+    cell: (info) => {
+      const value = info.getValue()
+      return value ? format(new Date(value), "dd/MM/yyyy HH:mm") : "N/A"
+    },
     header: "Recebido em",
+    enableColumnFilter: false
+  }),
+  columnHelper.accessor("dataEnvioAnalise", {
+    id: "enviadaEm",
+    cell: (info) => {
+      const value = info.getValue()
+      return value ? format(new Date(value), "dd/MM/yyyy HH:mm") : "N/A"
+    },
+    header: "Enviada em",
+    enableColumnFilter: false
+  }),
+  columnHelper.accessor("dataFimAnalise", {
+    id: "finalizadaEm",
+    cell: (info) => {
+      const value = info.getValue()
+      return value ? format(new Date(value), "dd/MM/yyyy HH:mm") : "N/A"
+    },
+    header: "Finalizada em",
+    enableColumnFilter: false
+  }),
+  columnHelper.accessor("dataExclusao", {
+    id: "excluidaEm",
+    cell: (info) => {
+      const value = info.getValue()
+      return value ? format(new Date(value), "dd/MM/yyyy HH:mm") : "N/A"
+    },
+    header: "Excluída em",
     enableColumnFilter: false
   }),
   columnHelper.accessor("museu_id.endereco.regiao", {
@@ -515,7 +548,11 @@ const DeclaracoesPage = () => {
     status: false,
     definirStatus: false,
     _id: true,
-    excluirDeclaracao: false
+    excluirDeclaracao: false,
+    recebidoEm: true, // Mostrar "Recebido em" por padrão
+    enviadaEm: false,
+    finalizadaEm: false,
+    excluidaEm: false
   })
 
   useEffect(() => {
@@ -528,12 +565,66 @@ const DeclaracoesPage = () => {
         excluirDeclaracao: false,
         analistasResponsaveisNome: false,
         definirStatus: false,
-        historico: false
+        historico: false,
+        recebidoEm: true, // Mostrar "Recebido em"
+        enviadaEm: false,
+        finalizadaEm: false,
+        excluidaEm: false
+      })
+    } else if (
+      columnFilters.some((f) => f.id === "status" && f.value === "Em análise")
+    ) {
+      setVisibility({
+        status: false,
+        enviarParaAnalise: false,
+        excluirDeclaracao: false,
+        definirStatus: true,
+        historico: false,
+        recebidoEm: false,
+        enviadaEm: true, // Mostrar "Enviada em"
+        finalizadaEm: false,
+        excluidaEm: false
+      })
+    } else if (
+      columnFilters.some(
+        (f) =>
+          f.id === "status" &&
+          (f.value === "Em conformidade" || f.value === "Não conformidade")
+      )
+    ) {
+      setVisibility({
+        status: false,
+        enviarParaAnalise: false,
+        excluirDeclaracao: false,
+        definirStatus: false,
+        historico: true,
+        recebidoEm: false,
+        enviadaEm: false,
+        finalizadaEm: true, // Mostrar "Finalizada em"
+        excluidaEm: false
+      })
+    } else if (
+      columnFilters.some((f) => f.id === "status" && f.value === "Excluída")
+    ) {
+      setVisibility({
+        status: false,
+        enviarParaAnalise: false,
+        excluirDeclaracao: true,
+        definirStatus: false,
+        historico: false,
+        recebidoEm: false,
+        enviadaEm: false,
+        finalizadaEm: false,
+        excluidaEm: true // Mostrar "Excluída em"
       })
     } else {
       setVisibility((prev) => ({
         ...prev,
-        analistasResponsaveisNome: true // Exiba a coluna Analistas para outros status
+        analistasResponsaveisNome: true,
+        recebidoEm: true, // Mostrar "Recebido em" para a aba "Todas"
+        enviadaEm: false,
+        finalizadaEm: false,
+        excluidaEm: false
       }))
     }
   }, [columnFilters])
@@ -586,7 +677,11 @@ const DeclaracoesPage = () => {
                     excluirDeclaracao: false,
                     definirStatus: false,
                     analistasResponsaveisNome: false,
-                    historico: false
+                    historico: false,
+                    recebidoEm: true,
+                    enviadaEm: false,
+                    finalizadaEm: false,
+                    excluidaEm: false
                   }))
                 }}
               >
@@ -618,7 +713,11 @@ const DeclaracoesPage = () => {
                     enviarParaAnalise: false,
                     excluirDeclaracao: false,
                     definirStatus: true,
-                    historico: false
+                    historico: false,
+                    recebidoEm: false,
+                    enviadaEm: true,
+                    finalizadaEm: false,
+                    excluidaEm: false
                   }))
                 }}
               >
@@ -650,7 +749,11 @@ const DeclaracoesPage = () => {
                     enviarParaAnalise: false,
                     excluirDeclaracao: false,
                     definirStatus: false,
-                    historico: true
+                    historico: true,
+                    recebidoEm: false,
+                    enviadaEm: false,
+                    finalizadaEm: true,
+                    excluidaEm: false
                   }))
                 }}
               >
@@ -682,7 +785,11 @@ const DeclaracoesPage = () => {
                     enviarParaAnalise: false,
                     excluirDeclaracao: false,
                     definirStatus: false,
-                    historico: true
+                    historico: true,
+                    recebidoEm: false,
+                    enviadaEm: false,
+                    finalizadaEm: true,
+                    excluidaEm: false
                   }))
                 }}
               >
@@ -714,7 +821,11 @@ const DeclaracoesPage = () => {
                     enviarParaAnalise: false,
                     excluirDeclaracao: true,
                     definirStatus: false,
-                    historico: false
+                    historico: false,
+                    recebidoEm: false,
+                    enviadaEm: false,
+                    finalizadaEm: false,
+                    excluidaEm: true
                   }))
                 }}
               >
