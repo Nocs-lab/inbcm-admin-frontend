@@ -1,5 +1,4 @@
 import { useSuspenseQueries } from "@tanstack/react-query"
-import DefaultLayout from "../../layouts/default"
 import request from "../../utils/request"
 import { Suspense } from "react"
 import Charts from "./_components/Charts"
@@ -80,7 +79,7 @@ const Museus: React.FC = () => {
   }
 
   return (
-    <DefaultLayout>
+    <>
       <h2>Museus</h2>
       <fieldset
         className="rounded-lg p-3 grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-4"
@@ -168,7 +167,7 @@ const Museus: React.FC = () => {
       >
         <Charts params={params} inicio={inicio} fim={fim} museu={museu} />
       </Suspense>
-    </DefaultLayout>
+    </>
   )
 }
 

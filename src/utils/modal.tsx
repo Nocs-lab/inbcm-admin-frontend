@@ -12,8 +12,6 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
   const [modal, setModal] = useState<React.ReactNode | null>(null)
   const [open, setOpen] = useState(false)
 
-  console.log(modal)
-
   return (
     <ModalContext.Provider value={{ modal, open, setModal, setOpen }}>
       {children}

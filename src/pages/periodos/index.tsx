@@ -4,11 +4,10 @@ import {
   useSuspenseQuery
 } from "@tanstack/react-query"
 import Table from "../../components/Table"
-import DefaultLayout from "../../layouts/default"
 import request from "../../utils/request"
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import { format } from "date-fns"
-import { Link } from "react-router-dom"
+import { Link } from "react-router"
 import { FaCalendar, FaEdit, FaPlus, FaTrash } from "react-icons/fa"
 import { useModal } from "../../utils/modal"
 import { Button, Modal } from "react-dsgov"
@@ -17,9 +16,10 @@ import toast from "react-hot-toast"
 interface Ano {
   _id: string
   ano: number
-  dataFimRetificacao: Date
   dataFimSubmissao: Date
   dataInicioSubmissao: Date
+  dataInicioRetificacao: Date
+  dataFimRetificacao: Date
   metaDeclaracoesEnviadas: number
 }
 
@@ -58,11 +58,7 @@ const ActionsCell: React.FC<{ id: string }> = ({ id }) => {
   }
 
   const { closeModal, openModal } = useModal((close) => (
-    <Modal
-      title="Deletar período?"
-      showCloseButton
-      onCloseButtonClick={() => close()}
-    >
+    <Modal title="Deletar período?" showCloseButton onCloseButtonClick={close}>
       <Modal.Body>Você tem certeza que deseja deletar este período?</Modal.Body>
       <Modal.Footer justify-content="end">
         <Button primary small m={2} onClick={handleDeleteUser}>
@@ -104,6 +100,11 @@ const columns = [
     cell: (info) => format(info.getValue(), "dd/MM/yyyy HH:mm"),
     enableColumnFilter: false
   }),
+  columnHelper.accessor("dataInicioRetificacao", {
+    header: "Início Retificação",
+    cell: (info) => format(info.getValue(), "dd/MM/yyyy HH:mm"),
+    enableColumnFilter: false
+  }),
   columnHelper.accessor("dataFimRetificacao", {
     header: "Fim Retificação",
     cell: (info) => format(info.getValue(), "dd/MM/yyyy HH:mm"),
@@ -111,7 +112,7 @@ const columns = [
   }),
   columnHelper.accessor("metaDeclaracoesEnviadas", {
     header: "Meta",
-    cell: (info) => `${info.getValue()}%`,
+    cell: (info) => info.getValue(),
     enableColumnFilter: false,
     enableSorting: false
   }),
@@ -138,7 +139,7 @@ const Gestao: React.FC = () => {
   }))
 
   return (
-    <DefaultLayout>
+    <>
       <div className="flex justify-between items-center mb-4">
         <h2>Períodos de submissão</h2>
         <Link
@@ -151,7 +152,7 @@ const Gestao: React.FC = () => {
         </Link>
       </div>
       <Table columns={columns as ColumnDef<unknown>[]} data={data} />
-    </DefaultLayout>
+    </>
   )
 }
 

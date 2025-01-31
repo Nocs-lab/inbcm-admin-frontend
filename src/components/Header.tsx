@@ -1,9 +1,10 @@
 import React, { useState } from "react"
-import { useNavigate, Link } from "react-router-dom"
+import { useNavigate, Link, NavLink } from "react-router"
 import { useSuspenseQuery } from "@tanstack/react-query"
 import logoImbramSimples from "../images/logo-ibram-simples.png"
 import request from "../utils/request"
 import useStore from "../utils/store"
+import clsx from "clsx"
 
 const Header: React.FC = () => {
   const navigate = useNavigate()
@@ -54,13 +55,18 @@ const Header: React.FC = () => {
                 {user.profile.name === "admin" &&
                   Object.entries(pathnameMap).map(
                     ([path, name]: [string, string]) => (
-                      <Link
+                      <NavLink
                         key={path}
-                        className="br-item block py-2 px-4 hover:bg-gray-100 text-gray-800"
+                        className={({ isActive }) =>
+                          clsx(
+                            "br-item block py-2 px-4",
+                            isActive && "underline"
+                          )
+                        }
                         to={path}
                       >
                         {name}
-                      </Link>
+                      </NavLink>
                     )
                   )}
               </div>

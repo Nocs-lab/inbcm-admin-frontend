@@ -1,5 +1,5 @@
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query"
-import { useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router"
 import {
   Column,
   ColumnFiltersState,
@@ -21,7 +21,6 @@ import clsx from "clsx"
 import { format } from "date-fns"
 import React, { useEffect, useMemo, useState } from "react"
 import { Button, Modal } from "react-dsgov"
-import DefaultLayout from "../../layouts/default"
 import request from "../../utils/request"
 import { stateRegions } from ".././../utils/regioes"
 import toast from "react-hot-toast"
@@ -558,7 +557,7 @@ const DeclaracoesPage = () => {
   })
 
   return (
-    <DefaultLayout>
+    <>
       <h2>Listagem de declarações</h2>
       <div className="br-tab small">
         <nav className="tab-nav">
@@ -1006,7 +1005,7 @@ const DeclaracoesPage = () => {
           </div>
         </div>
       )}
-    </DefaultLayout>
+    </>
   )
 }
 

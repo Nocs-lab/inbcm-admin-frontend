@@ -1,27 +1,21 @@
 import React from "react"
-import { useNavigate } from "react-router-dom"
-import DefaultLayout from "../../layouts/default"
+import { useNavigate } from "react-router"
 import { useMutation } from "@tanstack/react-query"
 import Input from "../../components/Input"
 import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import clsx from "clsx"
-import { Link } from "react-router-dom"
+import { Link } from "react-router"
 import toast from "react-hot-toast"
 import request from "../../utils/request"
 
 const schema = z.object({
   ano: z.string().min(1, "Este campo é obrigatório"),
-  dataInicioSubmissao: z.coerce
-    .date()
-    .min(
-      new Date(),
-      "A data de início de submissão deve ser maior que a data atual"
-    ),
-  dataFimSubmissao: z.coerce.date(),
-  dataInicioRetificacao: z.coerce.date(),
-  dataFimRetificacao: z.coerce.date(),
+  dataInicioSubmissao: z.string(),
+  dataFimSubmissao: z.string(),
+  dataInicioRetificacao: z.string(),
+  dataFimRetificacao: z.string(),
   metaDeclaracoesEnviadas: z
     .number()
     .min(0, "Este campo é obrigatório")
@@ -38,7 +32,7 @@ const CriarPeriodo: React.FC = () => {
     formState: { errors, isSubmitting, isValid }
   } = useForm<FormData>({
     resolver: zodResolver(schema),
-    mode: "onBlur",
+    mode: "onChange",
     defaultValues: {
       ano: new Date().getFullYear().toString(),
       metaDeclaracoesEnviadas: 100
@@ -92,7 +86,7 @@ const CriarPeriodo: React.FC = () => {
   }
 
   return (
-    <DefaultLayout>
+    <>
       <div className="container mx-auto p-8">
         <Link to="/periodos" className="text-lg">
           <i className="fas fa-arrow-left" aria-hidden="true"></i>
@@ -101,37 +95,37 @@ const CriarPeriodo: React.FC = () => {
         <h2>Criar novo período</h2>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <Input label="Ano" error={errors.ano} {...register("ano")} />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
-              type="date"
+              type="datetime-local"
               label="Início do período de submissão"
               error={errors.dataInicioSubmissao}
-              min={new Date().toISOString().split("T")[0]}
+              min={new Date().toISOString().substring(0, 16)}
               {...register("dataInicioSubmissao")}
             />
             <Input
-              type="date"
+              type="datetime-local"
               label="Fim do período de submissão"
               disabled={!inicioSubmissao}
-              min={inicioSubmissao ? inicioSubmissao.toString() : ""}
+              min={inicioSubmissao ? inicioSubmissao.substring(0, 16) : ""}
               error={errors.dataFimSubmissao}
               {...register("dataFimSubmissao")}
             />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
-              type="date"
+              type="datetime-local"
               label="Início do período de retificação"
               disabled={!inicioSubmissao}
               error={errors.dataInicioRetificacao}
-              min={inicioSubmissao ? inicioSubmissao.toString() : ""}
+              min={inicioSubmissao ? inicioSubmissao.substring(0, 16) : ""}
               {...register("dataInicioRetificacao")}
             />
             <Input
-              type="date"
+              type="datetime-local"
               label="Fim do período de retificação"
               disabled={!inicioRetificacao}
-              min={inicioRetificacao ? inicioRetificacao.toString() : ""}
+              min={inicioRetificacao ? inicioRetificacao.substring(0, 16) : ""}
               error={errors.dataFimRetificacao}
               {...register("dataFimRetificacao")}
             />
@@ -156,7 +150,7 @@ const CriarPeriodo: React.FC = () => {
           </div>
         </form>
       </div>
-    </DefaultLayout>
+    </>
   )
 }
 

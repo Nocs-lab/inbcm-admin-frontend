@@ -2,10 +2,9 @@ import { useSuspenseQueries, useMutation } from "@tanstack/react-query"
 import clsx from "clsx"
 import { format } from "date-fns"
 import { useState } from "react"
-import { useParams, Link, useNavigate } from "react-router-dom"
+import { useParams, Link, useNavigate } from "react-router"
 import { Select, Textarea, Row, Button, Modal } from "react-dsgov"
 import MismatchsModal from "../../../components/MismatchsModal"
-import DefaultLayout from "../../../layouts/default"
 import request from "../../../utils/request"
 import toast from "react-hot-toast"
 
@@ -398,7 +397,7 @@ export default function FinalizarAnalise() {
   }
 
   return (
-    <DefaultLayout>
+    <>
       <Link to="/analista" className="text-lg">
         <i className="fas fa-arrow-left" aria-hidden="true"></i>
         Voltar
@@ -542,6 +541,6 @@ export default function FinalizarAnalise() {
           </Modal>
         </div>
       )}
-    </DefaultLayout>
+    </>
   )
 }

@@ -1,9 +1,8 @@
 import { useSuspenseQuery } from "@tanstack/react-query"
 import { type ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import { format } from "date-fns"
-import { Link } from "react-router-dom"
+import { Link } from "react-router"
 import Table from "../../components/Table"
-import DefaultLayout from "../../layouts/default"
 import request from "../../utils/request"
 
 const columnHelper = createColumnHelper<{
@@ -86,7 +85,7 @@ export default function Declaracoes() {
   })
 
   return (
-    <DefaultLayout>
+    <>
       <div className="flex items-center justify-between">
         <h2>Declarações para analisar</h2>
       </div>
@@ -100,6 +99,6 @@ export default function Declaracoes() {
         <Table columns={columns as ColumnDef<unknown>[]} data={data} />
       </div>
       <div className="h-10" />
-    </DefaultLayout>
+    </>
   )
 }
