@@ -135,7 +135,6 @@ const CriarPeriodo: React.FC = () => {
             label="Meta de declarações enviadas"
             error={errors.metaDeclaracoesEnviadas}
             min={1}
-            max={100}
             step={1}
             {...register("metaDeclaracoesEnviadas", { valueAsNumber: true })}
           />

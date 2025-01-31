@@ -157,9 +157,8 @@ const EditarPeriodo: React.FC = () => {
             label="Meta de declarações enviadas"
             error={errors.metaDeclaracoesEnviadas}
             min={1}
-            max={100}
             step={1}
-            {...register("metaDeclaracoesEnviadas")}
+            {...register("metaDeclaracoesEnviadas", { valueAsNumber: true })}
           />
           <div className="flex justify-end space-x-4">
             <button
