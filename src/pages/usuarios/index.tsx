@@ -37,7 +37,12 @@ const fetchUsers = async (): Promise<User[]> => {
     }
   }
 
-  return await response.json()
+  const users = await response.json()
+
+  // Ordena a tabela pelo nome
+  return users.sort((a: User, b: User) =>
+    a.nome.localeCompare(b.nome, "pt-BR", { sensitivity: "base" })
+  )
 }
 
 const profileMapping: { [key: string]: string } = {
@@ -112,6 +117,7 @@ const Index: React.FC = () => {
       meta: {
         filterVariant: "text"
       },
+      enableSorting: true,
       cell: (info: { row: { original: { nome: string } } }) =>
         info.row.original.nome || "Nome não disponível"
     }),
