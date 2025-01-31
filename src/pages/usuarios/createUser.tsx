@@ -254,13 +254,13 @@ const CreateUser: React.FC = () => {
                 {...register("email")}
               />
               <Input
-                type="number"
+                type="text"
                 label={
                   <span>
                     CPF <span className="text-red-500">*</span>
                   </span>
                 }
-                placeholder="Digite o cpf do usuário"
+                placeholder="000.000.000-00"
                 error={errors.cpf}
                 {...register("cpf")}
               />
@@ -273,99 +273,101 @@ const CreateUser: React.FC = () => {
             <legend className="text-lg font-extrabold px-3 m-0">
               Controle de acesso
             </legend>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-2">
-              <Controller
-                name="profile"
-                control={control}
-                render={({ field }) => (
-                  <Select
-                    id="select-simples"
-                    placeholder="Selecione um perfil"
-                    label={
-                      <span>
-                        Perfil <span className="text-red-500">*</span>
-                      </span>
-                    }
-                    className="w-full"
-                    options={profileOptions}
-                    {...field}
-                  />
-                )}
-              />
-              {isAnalyst && (
+            <div className="flex flex-col w-full items-center">
+              <div className="flex justify-between w-3/4 gap-58">
                 <Controller
-                  name="especialidadeAnalista"
+                  name="profile"
                   control={control}
                   render={({ field }) => (
                     <Select
-                      type="multiple"
-                      selectAllText=""
-                      placeholder="Selecione os tipos de especialidade"
-                      label="Tipo de especialidade"
+                      id="select-simples"
+                      placeholder="Selecione um perfil"
+                      label={
+                        <span>
+                          Perfil <span className="text-red-500">*</span>
+                        </span>
+                      }
                       className="w-full"
-                      options={[
-                        { label: "Arquivístico", value: "arquivistico" },
-                        { label: "Museológico", value: "museologico" },
-                        { label: "Bibliográfico", value: "bibliografico" }
-                      ]}
+                      options={profileOptions}
                       {...field}
                     />
                   )}
                 />
-              )}
-              {isDeclarant && (
-                <div>
-                  <Row>
-                    <Col>
-                      <Controller
-                        control={control}
-                        name="museus"
-                        render={({ field }) => (
-                          <>
-                            <Select
-                              type="multiple"
-                              selectAllText={""}
-                              label="Museus"
-                              placeholder="Digite para buscar..."
-                              options={
-                                museus.length > 0
-                                  ? museus.map((m: Museu) => ({
-                                      label: m.nome,
-                                      value: `${m._id},${m.nome}`
-                                    }))
-                                  : []
-                              }
-                              className="!w-full"
-                              {...field}
-                              value={selectedMuseus}
-                              onInput={(e) => {
-                                const inputValue = (
-                                  e.target as HTMLInputElement
-                                ).value
-                                debounceSearch(inputValue)
-                              }}
-                              onChange={(selected: string[]) => {
-                                field.onChange(selected)
-
-                                const nomesMuseus = selected.map(
-                                  (item) => item.split(",")[1]
-                                )
-                                setSelectedMuseus(selected)
-                                setSelectedMuseusNames(nomesMuseus)
-                              }}
-                            />
-                            {isLoading && (
-                              <p className="text-sm text-gray-500 mt-2">
-                                Carregando museus...
-                              </p>
-                            )}
-                          </>
-                        )}
+                {isAnalyst && (
+                  <Controller
+                    name="especialidadeAnalista"
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        type="multiple"
+                        selectAllText=""
+                        placeholder="Selecione os tipos de especialidade"
+                        label="Tipo de especialidade"
+                        className="w-full"
+                        options={[
+                          { label: "Arquivístico", value: "arquivistico" },
+                          { label: "Museológico", value: "museologico" },
+                          { label: "Bibliográfico", value: "bibliografico" }
+                        ]}
+                        {...field}
                       />
-                    </Col>
-                  </Row>
-                </div>
-              )}
+                    )}
+                  />
+                )}
+                {isDeclarant && (
+                  <div className="w-full">
+                    <Row>
+                      <Col>
+                        <Controller
+                          control={control}
+                          name="museus"
+                          render={({ field }) => (
+                            <>
+                              <Select
+                                type="multiple"
+                                selectAllText={""}
+                                label="Museus"
+                                placeholder="Digite para buscar..."
+                                options={
+                                  museus.length > 0
+                                    ? museus.map((m: Museu) => ({
+                                        label: m.nome,
+                                        value: `${m._id},${m.nome}`
+                                      }))
+                                    : []
+                                }
+                                className="!w-full"
+                                {...field}
+                                value={selectedMuseus}
+                                onInput={(e) => {
+                                  const inputValue = (
+                                    e.target as HTMLInputElement
+                                  ).value
+                                  debounceSearch(inputValue)
+                                }}
+                                onChange={(selected: string[]) => {
+                                  field.onChange(selected)
+
+                                  const nomesMuseus = selected.map(
+                                    (item) => item.split(",")[1]
+                                  )
+                                  setSelectedMuseus(selected)
+                                  setSelectedMuseusNames(nomesMuseus)
+                                }}
+                              />
+                              {isLoading && (
+                                <p className="text-sm text-gray-500 mt-2">
+                                  Carregando museus...
+                                </p>
+                              )}
+                            </>
+                          )}
+                        />
+                      </Col>
+                    </Row>
+                  </div>
+                )}
+              </div>
               <div className="mt-4 w-full grid">
                 {isDeclarant && selectedMuseusNames.length > 0 && (
                   <>
@@ -402,7 +404,7 @@ const CreateUser: React.FC = () => {
                 )}
               </div>
             </div>
-            {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
                 type="password"
                 label="Senha"
@@ -417,7 +419,7 @@ const CreateUser: React.FC = () => {
                 error={errors.confirmPassword}
                 {...register("confirmPassword")}
               />
-            </div> */}
+            </div>
           </fieldset>
           <div className="flex justify-end space-x-4">
             <Link to="/usuarios" className="br-button secondary">
