@@ -115,10 +115,9 @@ const AcoesExcluirDeclaracao: React.FC<{
       window.location.reload()
       toast.success("Declaração recuperada com sucesso!")
     },
-    onError: (error: Error) => {
+    onError: () => {
       toast.error(
-        error.message ||
-          "Não é possível restaurar esta declaração porque há versões mais recentes."
+        "Não é possível recuperá-la porque o museu já enviou uma nova declaração."
       )
     }
   })
@@ -311,7 +310,7 @@ const columns = [
     }
   }),
   columnHelper.accessor("dataCriacao", {
-    id: "recebidoEm", // Adicionamos um ID para facilitar a referência
+    id: "recebidoEm",
     cell: (info) => {
       const value = info.getValue()
       return value ? format(new Date(value), "dd/MM/yyyy HH:mm") : "N/A"
@@ -320,7 +319,7 @@ const columns = [
     enableColumnFilter: false
   }),
   columnHelper.accessor("dataEnvioAnalise", {
-    id: "enviadaEm", // Adicionamos um ID para facilitar a referência
+    id: "enviadaEm",
     cell: (info) => {
       const value = info.getValue()
       return value ? format(new Date(value), "dd/MM/yyyy HH:mm") : "N/A"
@@ -329,7 +328,7 @@ const columns = [
     enableColumnFilter: false
   }),
   columnHelper.accessor("dataFimAnalise", {
-    id: "finalizadaEm", // Adicionamos um ID para facilitar a referência
+    id: "finalizadaEm",
     cell: (info) => {
       const value = info.getValue()
       return value ? format(new Date(value), "dd/MM/yyyy HH:mm") : "N/A"
@@ -338,7 +337,7 @@ const columns = [
     enableColumnFilter: false
   }),
   columnHelper.accessor("dataExclusao", {
-    id: "excluidaEm", // Adicionamos um ID para facilitar a referência
+    id: "excluidaEm",
     cell: (info) => {
       const value = info.getValue()
       return value ? format(new Date(value), "dd/MM/yyyy HH:mm") : "N/A"
