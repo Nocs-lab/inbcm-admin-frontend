@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from "react"
-import { useNavigate, Link } from "react-router-dom"
-import DefaultLayout from "../../layouts/default"
+import { useNavigate, Link } from "react-router"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import request from "../../utils/request"
 import { Modal, Button } from "react-dsgov"
@@ -216,8 +215,8 @@ const Index: React.FC = () => {
   }, [userData, activeTab])
 
   return (
-    <DefaultLayout>
-      <div className="flex justify-between items-center">
+    <>
+      <div className="flex justify-between items-center mb-4">
         <h2>Listagem de usuários</h2>
         <Link to="/usuarios/createuser" className="btn text-xl p-3">
           <i className="fa-solid fa-user-plus"></i> Novo
@@ -295,7 +294,7 @@ const Index: React.FC = () => {
           </Modal>
         </div>
       )}
-    </DefaultLayout>
+    </>
   )
 }
 

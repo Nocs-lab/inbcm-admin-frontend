@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react"
-import { useParams } from "react-router-dom"
-import DefaultLayout from "../../../layouts/default"
+import { useParams } from "react-router"
 import {
   useMutation,
   useSuspenseQueries,
@@ -13,7 +12,7 @@ import { z } from "zod"
 import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import clsx from "clsx"
-import { Link } from "react-router-dom"
+import { Link } from "react-router"
 import request from "../../../utils/request"
 import Table from "../../../components/Table"
 import toast from "react-hot-toast"
@@ -304,7 +303,7 @@ const EditUser: React.FC = () => {
   }
 
   return (
-    <DefaultLayout>
+    <>
       <div className="container mx-auto p-8">
         <Link to="/usuarios" className="text-lg">
           <i className="fas fa-arrow-left" aria-hidden="true"></i>
@@ -552,7 +551,7 @@ const EditUser: React.FC = () => {
           </Modal>
         </div>
       )}
-    </DefaultLayout>
+    </>
   )
 }
 

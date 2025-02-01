@@ -31,13 +31,17 @@ const LoginPage: React.FC = () => {
 
   const { mutate, isError } = useMutation({
     mutationFn: async ({ email, password }: FormData) => {
-      const res = await request("/api/admin/auth/login?admin=true", {
-        method: "POST",
-        data: {
-          email,
-          password
-        }
-      })
+      const res = await request(
+        "/api/admin/auth/login?admin=true",
+        {
+          method: "POST",
+          data: {
+            email,
+            password
+          }
+        },
+        false
+      )
 
       const message = await res.json()
 
@@ -59,10 +63,8 @@ const LoginPage: React.FC = () => {
     onError: (error) => {
       if (error instanceof Error) {
         setErrorMessage(error.message)
-      } else if (typeof error === "string") {
-        setErrorMessage(error)
       } else {
-        setErrorMessage("Usuário ou senha incorreta")
+        setErrorMessage("Ocorreu um erro desconhecido")
       }
       setShowError(true)
     }
