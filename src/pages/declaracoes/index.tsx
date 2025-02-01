@@ -113,11 +113,6 @@ const AcoesExcluirDeclaracao: React.FC<{
     onSuccess: () => {
       window.location.reload()
       toast.success("Declaração recuperada com sucesso!")
-    },
-    onError: () => {
-      toast.error(
-        "Não é possível recuperá-la porque o museu já enviou uma nova declaração."
-      )
     }
   })
 

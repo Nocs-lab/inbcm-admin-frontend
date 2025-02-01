@@ -167,9 +167,6 @@ const CreateUser: React.FC = () => {
     onSuccess: () => {
       navigate("/usuarios")
       toast.success("Usuário criado com sucesso")
-    },
-    onError: () => {
-      toast.error("Erro ao criar usuário")
     }
   })
 
