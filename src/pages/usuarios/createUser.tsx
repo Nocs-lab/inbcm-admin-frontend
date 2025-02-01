@@ -135,6 +135,7 @@ const CreateUser: React.FC = () => {
     mutationFn: async ({
       email,
       nome,
+      cpf,
       password,
       profile,
       especialidadeAnalista,
@@ -146,6 +147,7 @@ const CreateUser: React.FC = () => {
         body: JSON.stringify({
           email,
           nome,
+          cpf,
           profile,
           senha: password,
           especialidadeAnalista: isAnalyst ? especialidadeAnalista : [],
@@ -235,6 +237,17 @@ const CreateUser: React.FC = () => {
                 type="text"
                 label={
                   <span>
+                    CPF <span className="text-red-500">*</span>
+                  </span>
+                }
+                placeholder="000.000.000-00"
+                error={errors.cpf}
+                {...register("cpf")}
+              />
+              <Input
+                type="text"
+                label={
+                  <span>
                     Nome <span className="text-red-500">*</span>
                   </span>
                 }
@@ -252,17 +265,6 @@ const CreateUser: React.FC = () => {
                 placeholder="Digite o email do usuário"
                 error={errors.email}
                 {...register("email")}
-              />
-              <Input
-                type="text"
-                label={
-                  <span>
-                    CPF <span className="text-red-500">*</span>
-                  </span>
-                }
-                placeholder="000.000.000-00"
-                error={errors.cpf}
-                {...register("cpf")}
               />
             </div>
           </fieldset>
@@ -302,7 +304,12 @@ const CreateUser: React.FC = () => {
                         type="multiple"
                         selectAllText=""
                         placeholder="Selecione os tipos de especialidade"
-                        label="Tipo de especialidade"
+                        label={
+                          <span>
+                            Tipo de especialidade{" "}
+                            <span className="text-red-500">*</span>
+                          </span>
+                        }
                         className="w-full"
                         options={[
                           { label: "Arquivístico", value: "arquivistico" },
@@ -326,7 +333,12 @@ const CreateUser: React.FC = () => {
                               <Select
                                 type="multiple"
                                 selectAllText={""}
-                                label="Museus"
+                                label={
+                                  <span>
+                                    Museus{" "}
+                                    <span className="text-red-500">*</span>
+                                  </span>
+                                }
                                 placeholder="Digite para buscar..."
                                 options={
                                   museus.length > 0

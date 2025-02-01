@@ -111,7 +111,7 @@ const LoginPage: React.FC = () => {
           )}
           <Input
             type="email"
-            label="Email"
+            label="E-mail"
             placeholder="Digite seu email"
             error={errors.email}
             {...register("email")}

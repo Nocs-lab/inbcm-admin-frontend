@@ -6,6 +6,7 @@ import {
   useSuspenseQueries,
   useQuery
 } from "@tanstack/react-query"
+import { type ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import Input from "../../../components/Input"
 import { Select, Row, Col, Button, Modal, Checkbox } from "react-dsgov"
 import { z } from "zod"
@@ -29,6 +30,11 @@ type FormData = z.infer<typeof schema>
 interface Museu {
   _id: string
   nome: string
+  endereco: {
+    municipio: string
+    bairro: string
+  }
+  esferaAdministraiva: string
 }
 
 interface Paginacao {
@@ -168,8 +174,7 @@ const EditUser: React.FC = () => {
         throw new Error(errorData.message || "Erro ao criar usuário")
       }
 
-      const responseData = await res.json()
-      console.log("API Response:", responseData)
+      return res.json()
     },
     onSuccess: () => {
       window.location.reload()
@@ -187,8 +192,6 @@ const EditUser: React.FC = () => {
             return partes.length > 0 ? partes[0] : item
           })
         : []
-
-    console.log("especialidadeAnalista submit:", especialidadeAnalista)
 
     mutate({ email, nome, especialidadeAnalista, museus: museusIds })
   }
@@ -242,48 +245,63 @@ const EditUser: React.FC = () => {
     }
   }
 
-  const museuColumns = [
-    {
-      accessor: "nome",
+  const columnHelper = createColumnHelper<Museu>()
+
+  const columns = [
+    columnHelper.accessor("nome", {
       header: "Nome",
       cell: (info: { row: { original: { nome: string } } }) =>
-        info.row.original.nome || "Nome não disponível"
-    },
-    {
-      accessor: "municipio",
+        info.row.original.nome || "Nome não disponível",
+      meta: {
+        filterVariant: "text"
+      }
+    }),
+    columnHelper.accessor("municipio", {
       header: "Município",
       cell: (info: { row: { original: { municipio: string } } }) =>
-        info.row.original.endereco.municipio || "Nome não disponível"
-    },
-    {
-      accessor: "bairro",
+        info.row.original.endereco.municipio || "Nome não disponível",
+      meta: {
+        filterVariant: "text"
+      }
+    }),
+    columnHelper.accessor("bairro", {
       header: "Bairro",
       cell: (info: { row: { original: { bairro: string } } }) =>
-        info.row.original.endereco.bairro || "Nome não disponível"
-    },
-    {
-      accessor: "esferaAdministraiva",
+        info.row.original.endereco.bairro || "Nome não disponível",
+      meta: {
+        filterVariant: "text"
+      }
+    }),
+    columnHelper.accessor("esferaAdministraiva", {
       header: "Administração",
       cell: (info: { row: { original: { esferaAdministraiva: string } } }) =>
-        info.row.original.esferaAdministraiva || "Nome não disponível"
-    },
-    {
-      accessor: "_id",
-      header: "Desassociar",
-      cell: (info: { row: { original: { _id: string } } }) => (
-        <div className="flex justify-center gap-2">
+        info.row.original.esferaAdministraiva || "Nome não disponível",
+      meta: {
+        filterVariant: "text"
+      }
+    }),
+    columnHelper.accessor("_id", {
+      header: "Ações",
+      cell: (info) => (
+        <div className="flex justify-start gap-2">
           <button
             className="btn text-[#1351b4]"
             onClick={() => handleOpenModal(info.row.original._id)}
-            aria-label="Excluir usuário"
-            title="Excluir usuário"
+            aria-label="Desassociar museu"
+            title="Desassociar museu"
           >
             <i className="fa-solid fa-trash fa-fw pl-2"></i>
           </button>
         </div>
-      )
-    }
-  ]
+      ),
+      enableColumnFilter: false
+    })
+  ] as ColumnDef<Museu>[]
+
+  const formatCPF = (cpf: string): string => {
+    cpf = cpf.replace(/\D/g, "")
+    return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4")
+  }
 
   return (
     <DefaultLayout>
@@ -303,6 +321,18 @@ const EditUser: React.FC = () => {
             </legend>
             <div className="grid grid-cols-3 gap-2 w-full p-2">
               <Input
+                label="CPF"
+                value={
+                  user.cpf
+                    ? formatCPF(user.cpf)
+                    : "Este usuário não possui CPF cadastrado."
+                }
+                rows={1}
+                readOnly
+                disabled
+                className="text-gray-500 italic opacity-50"
+              />
+              <Input
                 type="text"
                 label="Nome"
                 placeholder="Digite o nome"
@@ -312,19 +342,11 @@ const EditUser: React.FC = () => {
               />
               <Input
                 type="email"
-                label="Email"
+                label="E-mail"
                 placeholder="Digite o email"
                 error={errors.email}
                 {...register("email")}
                 className="w-full"
-              />
-              <Input
-                label="CPF"
-                value={user.cpf || "Este usuário não possui CPF cadastrado."}
-                rows={1}
-                readOnly
-                disabled
-                className="text-gray-500 italic opacity-50"
               />
             </div>
           </fieldset>
@@ -480,11 +502,11 @@ const EditUser: React.FC = () => {
               style={{ border: "2px solid #e0e0e0" }}
             >
               <legend className="text-lg font-extrabold px-3 m-0">
-                Museus Associados
+                Museus associados
               </legend>
               <div className="mt-6">
                 {user.museus && user.museus.length > 0 ? (
-                  <Table columns={museuColumns} data={user.museus} />
+                  <Table columns={columns} data={user.museus} />
                 ) : (
                   <p className="text-gray-500">Nenhum museu associado.</p>
                 )}
