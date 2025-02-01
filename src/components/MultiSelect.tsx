@@ -125,9 +125,9 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
 
     const handleChangeValue = useCallback(
       (event: React.FormEvent<HTMLInputElement>) => {
-        setCurrentValue(event.currentTarget.value)
+        setCurrentValue((event.target as HTMLInputElement).value)
         setExpanded(false)
-        onChange(event.currentTarget.value)
+        onChange((event.target as HTMLInputElement).value)
       },
       [onChange, setCurrentValue, setExpanded]
     )
@@ -160,12 +160,14 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
             (oldValues: string | number | string[] | number[]) => {
               onChange(
                 (Array.isArray(oldValues) ? oldValues : []).filter(
-                  (val: string | number) => val !== event.currentTarget.value
+                  (val: string | number) =>
+                    val !== (event.target as HTMLInputElement).value
                 )
               )
               return Array.isArray(oldValues)
                 ? oldValues.filter(
-                    (val: string | number) => val !== event.currentTarget.value
+                    (val: string | number) =>
+                      val !== (event.target as HTMLInputElement).value
                   )
                 : oldValues
             }

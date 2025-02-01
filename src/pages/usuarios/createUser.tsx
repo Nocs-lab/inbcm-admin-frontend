@@ -80,6 +80,9 @@ const CreateUser: React.FC = () => {
   const [isDeclarant, setIsDeclarant] = useState(false)
   const [selectedMuseus, setSelectedMuseus] = useState<string[]>([])
   const [selectedMuseusNames, setSelectedMuseusNames] = useState<string[]>([])
+  const [selectedEspecialidades, setSelectedEspecialidades] = useState<
+    string[]
+  >([])
   const [isLoading, setIsLoading] = useState(false)
   const [search, setSearch] = useState("")
   const [page, setPage] = useState(1)
@@ -137,9 +140,9 @@ const CreateUser: React.FC = () => {
       cpf,
       password,
       profile,
-      especialidadeAnalista,
+      especialidades,
       museus
-    }: FormData & { museus: string[] }) => {
+    }: FormData & { museus: string[]; especialidades: string[] }) => {
       const res = await request("/api/admin/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -149,7 +152,7 @@ const CreateUser: React.FC = () => {
           cpf,
           profile,
           senha: password,
-          especialidadeAnalista: isAnalyst ? especialidadeAnalista : [],
+          especialidadeAnalista: isAnalyst ? especialidades : [],
           museus: isDeclarant ? museus : []
         })
       })
@@ -176,8 +179,7 @@ const CreateUser: React.FC = () => {
     password,
     cpf,
     profile,
-    confirmPassword,
-    especialidadeAnalista
+    confirmPassword
   }: FormData) => {
     const museusIds = isDeclarant
       ? selectedMuseus.map((item) => item.split(",")[0])
@@ -190,7 +192,7 @@ const CreateUser: React.FC = () => {
       cpf,
       profile,
       confirmPassword,
-      especialidadeAnalista,
+      especialidades: selectedEspecialidades,
       museus: museusIds
     })
   }
@@ -315,6 +317,11 @@ const CreateUser: React.FC = () => {
                           { label: "Bibliográfico", value: "bibliografico" }
                         ]}
                         {...field}
+                        value={selectedEspecialidades}
+                        onChange={(selected: string[]) => {
+                          field.onChange(selected)
+                          setSelectedEspecialidades(selected)
+                        }}
                       />
                     )}
                   />
