@@ -7,7 +7,7 @@ import {
 } from "@tanstack/react-query"
 import { type ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import Input from "../../../components/Input"
-import { Select, Row, Col, Button, Modal, Checkbox } from "react-dsgov"
+import { Row, Col, Button, Modal, Checkbox } from "react-dsgov"
 import { z } from "zod"
 import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -17,6 +17,7 @@ import request from "../../../utils/request"
 import Table from "../../../components/Table"
 import toast from "react-hot-toast"
 import { debounce } from "lodash"
+import Select from "../../../components/MultiSelect"
 
 const schema = z.object({
   email: z.string().min(1, "Este campo é obrigatório"),

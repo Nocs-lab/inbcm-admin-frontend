@@ -1,8 +1,8 @@
-import React, { useEffect, useState, useCallback } from "react"
+import React, { useEffect, useState } from "react"
 import { useNavigate } from "react-router"
 import { useMutation, useSuspenseQuery, useQuery } from "@tanstack/react-query"
 import Input from "../../components/Input"
-import { Select, Row, Col, Button } from "react-dsgov"
+import { Row, Col, Button } from "react-dsgov"
 import { z } from "zod"
 import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -11,6 +11,7 @@ import { Link } from "react-router"
 import request from "../../utils/request"
 import toast from "react-hot-toast"
 import { debounce } from "lodash"
+import Select from "../../components/MultiSelect"
 
 const schema = z
   .object({
@@ -92,15 +93,12 @@ const CreateUser: React.FC = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const museus = museusData?.museus || []
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const debounceSearch = useCallback(
-    debounce((value: string) => {
-      setIsLoading(true)
-      setSearch(value)
-      setPage(1)
-    }, 500),
-    [setIsLoading, setSearch, setPage]
-  )
+  const debounceSearch = debounce((value: string) => {
+    console.log(value)
+    setIsLoading(true)
+    setSearch(value)
+    setPage(1)
+  }, 500)
 
   useEffect(() => {
     if (museus.length > 0) {
@@ -283,7 +281,6 @@ const CreateUser: React.FC = () => {
                   control={control}
                   render={({ field }) => (
                     <Select
-                      id="select-simples"
                       placeholder="Selecione um perfil"
                       label={
                         <span>
@@ -353,7 +350,9 @@ const CreateUser: React.FC = () => {
                                 {...field}
                                 value={selectedMuseus}
                                 onInput={(e) => {
-                                  const inputValue = e.target?.value
+                                  const inputValue = (
+                                    e.target as HTMLInputElement
+                                  ).value
                                   debounceSearch(inputValue)
                                 }}
                                 onChange={(selected: string[]) => {
