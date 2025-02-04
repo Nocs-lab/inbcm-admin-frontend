@@ -100,7 +100,6 @@ const CriarPeriodo: React.FC = () => {
               type="datetime-local"
               label="Início do período de submissão"
               error={errors.dataInicioSubmissao}
-              min={new Date().toISOString().substring(0, 16)}
               {...register("dataInicioSubmissao")}
             />
             <Input
@@ -135,7 +134,6 @@ const CriarPeriodo: React.FC = () => {
             label="Meta de declarações enviadas"
             error={errors.metaDeclaracoesEnviadas}
             min={1}
-            max={100}
             step={1}
             {...register("metaDeclaracoesEnviadas", { valueAsNumber: true })}
           />
