@@ -48,7 +48,7 @@ const EditarPeriodo: React.FC = () => {
     register,
     handleSubmit,
     watch,
-    formState: { errors, isSubmitting, isValid }
+    formState: { errors, isSubmitting }
   } = useForm<FormData>({
     resolver: zodResolver(schema),
     mode: "onBlur",
@@ -122,7 +122,6 @@ const EditarPeriodo: React.FC = () => {
               type="datetime-local"
               label="Início do período de submissão"
               error={errors.dataInicioSubmissao}
-              min={new Date().toISOString().substring(0, 16)}
               {...register("dataInicioSubmissao")}
             />
             <Input
@@ -157,15 +156,13 @@ const EditarPeriodo: React.FC = () => {
             label="Meta de declarações enviadas"
             error={errors.metaDeclaracoesEnviadas}
             min={1}
-            max={100}
             step={1}
-            {...register("metaDeclaracoesEnviadas")}
+            {...register("metaDeclaracoesEnviadas", { valueAsNumber: true })}
           />
           <div className="flex justify-end space-x-4">
             <button
               className={clsx("br-button primary", isSubmitting && "loading")}
               type="submit"
-              disabled={!isValid}
             >
               Salvar
             </button>
