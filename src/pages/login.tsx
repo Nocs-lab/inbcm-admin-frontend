@@ -75,7 +75,7 @@ const LoginPage: React.FC = () => {
   const navigate = useNavigate()
 
   const onSubmit = async ({ email, password }: FormData) => {
-    mutate({ email, password })
+    mutate({ email: email.toLowerCase(), password })
   }
 
   return (
@@ -113,7 +113,7 @@ const LoginPage: React.FC = () => {
           )}
           <Input
             type="email"
-            label="Email"
+            label="E-mail"
             placeholder="Digite seu email"
             error={errors.email}
             {...register("email")}
