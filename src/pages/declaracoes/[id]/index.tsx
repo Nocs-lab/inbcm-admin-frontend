@@ -3,10 +3,12 @@ import { useSuspenseQuery } from "@tanstack/react-query"
 import request from "../../../utils/request"
 import { format } from "date-fns"
 import { Link } from "react-router"
+import useStore from "../../../utils/store"
 
 const DeclaracaoPage: React.FC = () => {
   const params = useParams()
   const id = params.id!
+  const { user } = useStore()
 
   const { data: timeline } = useSuspenseQuery({
     queryKey: ["timeline", id],
@@ -26,10 +28,14 @@ const DeclaracaoPage: React.FC = () => {
 
   return (
     <>
-      <Link to={`/declaracoes`} className="text-lg">
+      <Link
+        to={user?.perfil === "analyst" ? "/analista" : "/declaracoes"}
+        className="text-lg"
+      >
         <i className="fas fa-arrow-left" aria-hidden="true"></i>
         Voltar
       </Link>
+
       <h2>Histórico da Declaração</h2>
       <span className="br-tag mb-5">{declaracao.status}</span>
       <div className="flex gap-10 text-lg">
