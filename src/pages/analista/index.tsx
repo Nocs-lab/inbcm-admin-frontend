@@ -140,8 +140,48 @@ export default function Declaracoes() {
 
   const filteredDeclaracao = useMemo(() => {
     if (!data) return []
-    if (activeTab === "all") return data
-    return data.filter((data: Declaracao) => data.status === activeTab)
+
+    let filteredData = data
+
+    // Filtra os dados com base na aba ativa
+    if (activeTab !== "all") {
+      filteredData = data.filter(
+        (data: Declaracao) => data.status === activeTab
+      )
+    }
+
+    // Ordena os dados com base na aba ativa
+    switch (activeTab) {
+      case "Em análise":
+        // Ordena pela "Data de envio" (dataEnvioAnalise)
+        filteredData.sort((a, b) => {
+          const dateA = new Date(a.dataEnvioAnalise).getTime()
+          const dateB = new Date(b.dataEnvioAnalise).getTime()
+          return dateB - dateA
+        })
+        break
+      case "Em conformidade":
+      case "Não conformidade":
+        // Ordena pela "Data de conclusão" (dataFimAnalise)
+        filteredData.sort((a, b) => {
+          const dateA = new Date(a.dataFimAnalise).getTime()
+          const dateB = new Date(b.dataFimAnalise).getTime()
+          return dateB - dateA
+        })
+        break
+      case "all":
+        // Ordena pela "Data de envio" (dataEnvioAnalise)
+        filteredData.sort((a, b) => {
+          const dateA = new Date(a.dataEnvioAnalise).getTime()
+          const dateB = new Date(b.dataEnvioAnalise).getTime()
+          return dateB - dateA
+        })
+        break
+      default:
+        break
+    }
+
+    return filteredData
   }, [data, activeTab])
 
   return (
