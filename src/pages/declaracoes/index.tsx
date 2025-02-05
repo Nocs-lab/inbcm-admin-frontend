@@ -307,7 +307,9 @@ const columns = [
     id: "recebidoEm",
     cell: (info) => {
       const value = info.getValue()
-      return value ? format(new Date(value), "dd/MM/yyyy HH:mm") : "N/A"
+      return value
+        ? format(new Date(value), "dd/MM/yyyy HH:mm")
+        : "__ /__ /____ --:--"
     },
     header: "Recebido em",
     enableColumnFilter: false
@@ -316,7 +318,9 @@ const columns = [
     id: "enviadaEm",
     cell: (info) => {
       const value = info.getValue()
-      return value ? format(new Date(value), "dd/MM/yyyy HH:mm") : "N/A"
+      return value
+        ? format(new Date(value), "dd/MM/yyyy HH:mm")
+        : "__ /__ /____ --:--"
     },
     header: "Enviada em",
     enableColumnFilter: false
@@ -325,7 +329,9 @@ const columns = [
     id: "finalizadaEm",
     cell: (info) => {
       const value = info.getValue()
-      return value ? format(new Date(value), "dd/MM/yyyy HH:mm") : "N/A"
+      return value
+        ? format(new Date(value), "dd/MM/yyyy HH:mm")
+        : "__ /__ /____ --:--"
     },
     header: "Finalizada em",
     enableColumnFilter: false
@@ -334,7 +340,9 @@ const columns = [
     id: "excluidaEm",
     cell: (info) => {
       const value = info.getValue()
-      return value ? format(new Date(value), "dd/MM/yyyy HH:mm") : "N/A"
+      return value
+        ? format(new Date(value), "dd/MM/yyyy HH:mm")
+        : "__ /__ /____ --:--"
     },
     header: "Excluída em",
     enableColumnFilter: false
