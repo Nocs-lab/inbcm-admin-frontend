@@ -75,7 +75,7 @@ const AcoesEnviarParaAnalise: React.FC<{
           onClick={() => navigate(`/declaracoes/${row.original._id}`)}
           className="!font-thin analise"
         >
-          <i className="fa-solid fa-timeline p-2"></i>Histórico
+          <i className="fa-solid fa-eye p-2"></i>Exibir
         </Button>
       </div>
     </>

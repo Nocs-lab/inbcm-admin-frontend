@@ -54,6 +54,7 @@ const EditarPeriodo: React.FC = () => {
     mode: "onBlur",
     defaultValues: {
       ...data,
+      ano: data?.ano.toString(),
       dataInicioSubmissao: data?.dataInicioSubmissao.substring(0, 16),
       dataFimSubmissao: data?.dataFimSubmissao.substring(0, 16),
       dataInicioRetificacao: data?.dataInicioRetificacao.substring(0, 16),
@@ -116,7 +117,12 @@ const EditarPeriodo: React.FC = () => {
         </Link>
         <h2>Editar período</h2>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <Input label="Ano" error={errors.ano} {...register("ano")} />
+          <Input
+            type="number"
+            label="Ano"
+            error={errors.ano}
+            {...register("ano")}
+          />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
               type="datetime-local"
