@@ -7,6 +7,7 @@ import Table from "../../components/Table"
 import request from "../../utils/request"
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import { format } from "date-fns"
+import { ptBR } from "date-fns/locale"
 import { Link } from "react-router"
 import { FaCalendar, FaEdit, FaPlus, FaTrash } from "react-icons/fa"
 import { useModal } from "../../utils/modal"
@@ -21,9 +22,13 @@ interface Ano {
   dataInicioRetificacao: Date
   dataFimRetificacao: Date
   metaDeclaracoesEnviadas: number
+  declaracaoVinculada: boolean
 }
 
-const ActionsCell: React.FC<{ id: string }> = ({ id }) => {
+const ActionsCell: React.FC<{ id: string; declaracaoVinculada: boolean }> = ({
+  id,
+  declaracaoVinculada
+}) => {
   const queryClient = useQueryClient()
 
   const { mutateAsync } = useMutation({
@@ -45,9 +50,9 @@ const ActionsCell: React.FC<{ id: string }> = ({ id }) => {
     toast.promise(
       mutateAsync(),
       {
-        loading: "Deletando...",
-        success: "Período deletado com sucesso",
-        error: "Erro ao deletar período"
+        loading: "Apagando...",
+        success: "Período apagado com sucesso",
+        error: "Erro ao apgar período"
       },
       {
         style: {
@@ -58,8 +63,8 @@ const ActionsCell: React.FC<{ id: string }> = ({ id }) => {
   }
 
   const { closeModal, openModal } = useModal((close) => (
-    <Modal title="Deletar período?" showCloseButton onCloseButtonClick={close}>
-      <Modal.Body>Você tem certeza que deseja deletar este período?</Modal.Body>
+    <Modal title="Apagar período?" showCloseButton onCloseButtonClick={close}>
+      <Modal.Body>Você tem certeza que deseja apagar este período?</Modal.Body>
       <Modal.Footer justify-content="end">
         <Button primary small m={2} onClick={handleDeleteUser}>
           Confirmar
@@ -76,7 +81,11 @@ const ActionsCell: React.FC<{ id: string }> = ({ id }) => {
       <Link to={`/periodos/${id}`} className="btn btn-sm btn-primary">
         <FaEdit />
       </Link>
-      <button onClick={openModal} className="btn btn-sm text-[#1351b4]">
+      <button
+        onClick={openModal}
+        className="btn btn-sm text-[#1351b4]"
+        disabled={declaracaoVinculada}
+      >
         <FaTrash />
       </button>
     </div>
@@ -92,22 +101,26 @@ const columns = [
   }),
   columnHelper.accessor("dataInicioSubmissao", {
     header: "Início Submissão",
-    cell: (info) => format(info.getValue(), "dd/MM/yyyy HH:mm"),
+    cell: (info) =>
+      format(info.getValue(), "dd/MM/yyyy HH:mm", { locale: ptBR }),
     enableColumnFilter: false
   }),
   columnHelper.accessor("dataFimSubmissao", {
     header: "Fim Submissão",
-    cell: (info) => format(info.getValue(), "dd/MM/yyyy HH:mm"),
+    cell: (info) =>
+      format(info.getValue(), "dd/MM/yyyy HH:mm", { locale: ptBR }),
     enableColumnFilter: false
   }),
   columnHelper.accessor("dataInicioRetificacao", {
     header: "Início Retificação",
-    cell: (info) => format(info.getValue(), "dd/MM/yyyy HH:mm"),
+    cell: (info) =>
+      format(info.getValue(), "dd/MM/yyyy HH:mm", { locale: ptBR }),
     enableColumnFilter: false
   }),
   columnHelper.accessor("dataFimRetificacao", {
     header: "Fim Retificação",
-    cell: (info) => format(info.getValue(), "dd/MM/yyyy HH:mm"),
+    cell: (info) =>
+      format(info.getValue(), "dd/MM/yyyy HH:mm", { locale: ptBR }),
     enableColumnFilter: false
   }),
   columnHelper.accessor("metaDeclaracoesEnviadas", {
@@ -118,7 +131,12 @@ const columns = [
   }),
   columnHelper.accessor("_id", {
     header: "Ações",
-    cell: (info) => <ActionsCell id={info.getValue()} />,
+    cell: (info) => (
+      <ActionsCell
+        id={info.getValue()}
+        declaracaoVinculada={info.row.original.declaracaoVinculada}
+      />
+    ),
     enableColumnFilter: false,
     enableSorting: false
   })
@@ -137,6 +155,8 @@ const Gestao: React.FC = () => {
     ...item,
     ano: item.ano.toString()
   }))
+
+  console.log(data)
 
   return (
     <>
