@@ -148,7 +148,7 @@ const Gestao: React.FC = () => {
         >
           <FaCalendar />
           <FaPlus size={12} className="-ml-2 mb-1" />
-          Novo período
+          Novo
         </Link>
       </div>
       <Table columns={columns as ColumnDef<unknown>[]} data={data} />

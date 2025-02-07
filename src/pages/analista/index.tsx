@@ -74,7 +74,7 @@ export default function Declaracoes() {
     ...(activeTab !== "Em análise"
       ? [
           columnHelper.accessor("dataFimAnalise", {
-            header: "Data de Conclusão",
+            header: "Conclusão",
             cell: (info) => {
               const date = info.getValue()
               return date
@@ -187,7 +187,7 @@ export default function Declaracoes() {
   return (
     <>
       <div className="flex items-center justify-between">
-        <h2>Declarações para analisar</h2>
+        <h2>Listagem de declarações</h2>
       </div>
       <div className="br-tab small">
         <nav className="tab-nav">
@@ -201,7 +201,7 @@ export default function Declaracoes() {
             >
               <button type="button" onClick={() => setActiveTab("Em análise")}>
                 <span className="name">
-                  Em Análise ({declaracaoCounts.analise})
+                  Em análise ({declaracaoCounts.analise})
                 </span>
               </button>
             </li>
@@ -242,7 +242,7 @@ export default function Declaracoes() {
               title="Todos"
             >
               <button type="button" onClick={() => setActiveTab("all")}>
-                <span className="name">Todos ({declaracaoCounts.all})</span>
+                <span className="name">Todas ({declaracaoCounts.all})</span>
               </button>
             </li>
           </ul>
