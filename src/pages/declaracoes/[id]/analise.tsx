@@ -2,41 +2,15 @@ import { useSuspenseQueries } from "@tanstack/react-query"
 import clsx from "clsx"
 import { format } from "date-fns"
 import { useState } from "react"
-import { useNavigate, useParams, Link } from "react-router"
-import MismatchsModal from "../../../components/MismatchsModal"
-import TableItens from "../../../components/TableItens"
+import { useParams, Link } from "react-router"
 import { getColorStatus } from "../../../utils/colorStatus"
 import request from "../../../utils/request"
-import { Button, Modal } from "react-dsgov"
-import { useModal } from "../../../utils/modal"
+
+import { Textarea } from "react-dsgov"
 
 export default function DeclaracaoPage() {
   const params = useParams()
   const id = params.id!
-
-  const navigate = useNavigate()
-
-  const { openModal } = useModal((close) => (
-    <Modal
-      showCloseButton
-      title="Tela em desenvolvimento"
-      onCloseButtonClick={close}
-    >
-      <Modal.Body>
-        <div className="flex items-center space-x-2">
-          <i className="fas fa-exclamation-triangle text-danger fa-3x"></i>
-          <p className="normal-case text-center">
-            Essa tela ainda está em desenvolvimento.
-          </p>
-        </div>
-      </Modal.Body>
-      <Modal.Footer justify-content="center">
-        <Button primary small m={2} onClick={close}>
-          Voltar
-        </Button>
-      </Modal.Footer>
-    </Modal>
-  ))
 
   const [{ data }] = useSuspenseQueries({
     queries: [
@@ -49,8 +23,6 @@ export default function DeclaracaoPage() {
       }
     ]
   })
-
-  const [showModal, setShowModal] = useState(false)
 
   const getDefaultTab = () => {
     if (data.museologico?.status) {
@@ -70,68 +42,17 @@ export default function DeclaracaoPage() {
 
   return (
     <>
-      <Link to="/" className="text-lg">
+      <Link to={`/declaracoes/${data._id}`} className="text-lg">
         <i className="fas fa-arrow-left" aria-hidden="true"></i>
         Voltar
       </Link>
       <h2 className="mt-3 mb-0">
-        Declaração{" "}
+        Parecer técnico da declaração{" "}
         {data.retificacao ? `retificadora 0${data.versao - 1}` : "original"}
       </h2>
-      <span className="br-tag mb-5" style={getColorStatus(data.status)}>
+      <span className="br-tag" style={getColorStatus(data.status)}>
         {data.status}
       </span>
-      <div className="flex gap-4">
-        <a href={`/api/public/recibo/${id}`} className="text-xl">
-          <i className="fas fa-file-pdf" aria-hidden="true"></i> Recibo
-        </a>
-
-        {(data.museologico?.pendencias.length > 0 ||
-          data.bibliografico?.pendencias.length > 0 ||
-          data.arquivistico?.pendencias.length > 0) && (
-          <>
-            <a
-              className="text-xl"
-              href="#"
-              onClick={() => setShowModal(true)}
-              role="button"
-            >
-              <i className="fas fa-exclamation-triangle" aria-hidden="true"></i>{" "}
-              Relatório de pendências
-            </a>
-            <MismatchsModal
-              opened={showModal}
-              onClose={() => setShowModal(false)}
-              museologicoErrors={data.museologico?.pendencias ?? []}
-              bibliograficoErrors={data.bibliografico?.pendencias ?? []}
-              arquivisticoErrors={data.arquivistico?.pendencias ?? []}
-            />
-          </>
-        )}
-        {(data.museologico?.pendencias.length > 0 ||
-          data.bibliografico?.pendencias.length > 0 ||
-          data.arquivistico?.pendencias.length > 0) && (
-          <a className="text-xl" href="#" onClick={openModal} role="button">
-            <i
-              className="fas fa-file-circle-exclamation"
-              aria-hidden="true"
-            ></i>{" "}
-            Relatório de pendências
-          </a>
-        )}
-        <a
-          className="text-xl"
-          href="#"
-          onClick={() => navigate(`/declaracoes/${id}/timeline`)}
-        >
-          <i className="fas fa-timeline" aria-hidden="true"></i> Histórico
-        </a>
-        {data.status !== "Recebida" && (
-          <Link to={`/declaracoes/${id}/analise`} className="text-xl">
-            <i className="fas fa-chalkboard-user"></i> Parecer do analista
-          </Link>
-        )}
-      </div>
       <div className="flex gap-10 text-lg mt-5">
         <span>
           <span className="font-bold">Envio: </span>
@@ -235,11 +156,22 @@ export default function DeclaracaoPage() {
                     Baixar planilha
                   </a>
                 </div>
-                <TableItens
-                  acervo="museologico"
-                  ano={data.anoDeclaracao}
-                  museuId={data.museu_id._id}
-                />
+                {data.museologico.status !== "Recebida" && (
+                  <Textarea
+                    label="Parecer técnico sobre os bens museológicos"
+                    rows={4}
+                    className="w-full"
+                    style={{ minHeight: "100px" }}
+                    value={
+                      data.museologico.comentarios.length > 0
+                        ? data.museologico.comentarios[
+                            data.museologico.comentarios.length - 1
+                          ].mensagem
+                        : ""
+                    }
+                    disabled
+                  />
+                )}
               </div>
             )}
           {data.bibliografico?.status &&
@@ -267,11 +199,22 @@ export default function DeclaracaoPage() {
                     Baixar planilha
                   </a>
                 </div>
-                <TableItens
-                  acervo="bibliografico"
-                  ano={data.anoDeclaracao}
-                  museuId={data.museu_id._id}
-                />
+                {data.bibliografico.status !== "Recebida" && (
+                  <Textarea
+                    label="Parecer técnico sobre os bens bibliográficos"
+                    rows={4}
+                    className="w-full"
+                    style={{ minHeight: "100px" }}
+                    value={
+                      data.bibliografico.comentarios.length > 0
+                        ? data.bibliografico.comentarios[
+                            data.bibliografico.comentarios.length - 1
+                          ].mensagem
+                        : ""
+                    }
+                    disabled
+                  />
+                )}
               </div>
             )}
           {data.arquivistico?.status &&
@@ -299,11 +242,22 @@ export default function DeclaracaoPage() {
                     Baixar planilha
                   </a>
                 </div>
-                <TableItens
-                  acervo="arquivistico"
-                  ano={data.anoDeclaracao}
-                  museuId={data.museu_id._id}
-                />
+                {data.arquivistico.status !== "Recebida" && (
+                  <Textarea
+                    label="Parecer técnico sobre os bens arquivísticos"
+                    rows={4}
+                    className="w-full"
+                    style={{ minHeight: "100px" }}
+                    value={
+                      data.arquivistico.comentarios.length > 0
+                        ? data.arquivistico.comentarios[
+                            data.arquivistico.comentarios.length - 1
+                          ].mensagem
+                        : ""
+                    }
+                    disabled
+                  />
+                )}
               </div>
             )}
         </div>
