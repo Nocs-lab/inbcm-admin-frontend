@@ -81,9 +81,6 @@ const Index: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] })
       toast.success("Usuário desativado com sucesso!")
-    },
-    onError: () => {
-      toast.error("Erro ao desativar usuário")
     }
   })
 
