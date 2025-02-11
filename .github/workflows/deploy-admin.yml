@@ -46,7 +46,7 @@ jobs:
             ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_REPOSITORY }}:${{ github.event_name }}-${{ env.VITE_SHORT_SHA }}
             ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_REPOSITORY }}:latest
 
-# Environment update
+# Etapa de update
 
   updating_environment:   
     needs: push_to_registry
