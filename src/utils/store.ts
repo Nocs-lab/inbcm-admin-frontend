@@ -13,6 +13,7 @@ interface State {
 }
 
 export const useStore = create(
+  // @ts-expect-error bug
   persist<State>(
     (set) => ({
       user: null,

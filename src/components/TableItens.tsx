@@ -5,7 +5,7 @@ import {
   bibliografico,
   museologico
 } from "inbcm-xlsx-validator/schema"
-import useHttpClient from "../utils/request"
+import request from "../utils/request"
 import Table from "./Table"
 
 const columnHelper = createColumnHelper()
@@ -68,13 +68,11 @@ const TableItens: React.FC<{
   ano: string
   museuId: string
 }> = ({ acervo, ano, museuId }) => {
-  const request = useHttpClient()
-
   const { data } = useSuspenseQuery({
     queryKey: ["itens", acervo],
     queryFn: async () => {
       const res = await request(
-        `/api/admin/declaracoes/listar-itens/${museuId}/${ano}/${acervo}/`
+        `/api/public/declaracoes/listar-itens/${museuId}/${ano}/${acervo}/`
       )
 
       return await res.json()

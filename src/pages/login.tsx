@@ -7,7 +7,7 @@ import { useNavigate } from "react-router"
 import { z } from "zod"
 import Input from "../components/Input"
 import logoIbram from "../images/logo-ibram.png"
-import useHttpClient from "../utils/request"
+import request from "../utils/request"
 import useStore from "../utils/store"
 
 const schema = z.object({
@@ -17,8 +17,6 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>
 
 const LoginPage: React.FC = () => {
-  const request = useHttpClient()
-
   const {
     register,
     handleSubmit,
@@ -34,7 +32,7 @@ const LoginPage: React.FC = () => {
   const { mutate, isError } = useMutation({
     mutationFn: async ({ email, password }: FormData) => {
       const res = await request(
-        "/api/admin/auth/login",
+        "/api/admin/auth/login?admin=true",
         {
           method: "POST",
           data: {
@@ -65,10 +63,8 @@ const LoginPage: React.FC = () => {
     onError: (error) => {
       if (error instanceof Error) {
         setErrorMessage(error.message)
-      } else if (typeof error === "string") {
-        setErrorMessage(error)
       } else {
-        setErrorMessage("Usuário ou senha incorreta")
+        setErrorMessage("Ocorreu um erro desconhecido")
       }
       setShowError(true)
     }
@@ -79,7 +75,7 @@ const LoginPage: React.FC = () => {
   const navigate = useNavigate()
 
   const onSubmit = async ({ email, password }: FormData) => {
-    mutate({ email, password })
+    mutate({ email: email.toLowerCase(), password })
   }
 
   return (
@@ -100,7 +96,7 @@ const LoginPage: React.FC = () => {
                 aria-label={errorMessage ?? ""}
                 role="alert"
               >
-                <span className="message-title">Erro: </span>
+                <span className="message-title"> Erro: </span>
                 <span className="message-body">{errorMessage}</span>
               </div>
               <div className="close">

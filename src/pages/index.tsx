@@ -1,9 +1,8 @@
-import DefaultLayout from "../layouts/default"
 import Select from "../components/MultiSelect"
 import Charts from "./_components/Charts"
 import { Suspense, useEffect } from "react"
-import { useSuspenseQueries } from "@tanstack/react-query"
-import useHttpClient from "../utils/request"
+import { useSuspenseQuery } from "@tanstack/react-query"
+import request from "../utils/request"
 import { Controller, useForm } from "react-hook-form"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -53,8 +52,7 @@ const schema = z.object({
   fim: z.string(),
   regioes: z.array(z.string()),
   estados: z.array(z.string()),
-  municipios: z.array(z.string()),
-  museu: z.optional(z.string())
+  municipios: z.array(z.string())
 })
 
 type FormValues = z.infer<typeof schema>
@@ -62,48 +60,35 @@ type FormValues = z.infer<typeof schema>
 const IndexPage = () => {
   const currentYear = new Date().getFullYear() // Obtém o ano atual
   const anos = Array.from({ length: 10 }, (_, i) => currentYear - i) // Últimos 10 anos
-  const request = useHttpClient()
-  const [{ data: cidades }, { data: museus }] = useSuspenseQueries({
-    queries: [
-      {
-        queryKey: ["cidades"],
-        queryFn: async () => {
-          const res = await request("/api/admin/museus/listarCidades")
 
-          return await res.json()
-        }
-      },
-      {
-        queryKey: ["museus"],
-        queryFn: async () => {
-          const res = await request("/api/admin/museus/")
-
-          return await res.json()
-        }
-      }
-    ]
-  })
-
-  const { watch, control, setValue, reset } = useForm<FormValues>({
-    resolver: zodResolver(schema),
-    mode: "onBlur",
-    defaultValues: {
-      inicio: currentYear.toString(),
-      fim: currentYear.toString(),
-      regioes: [],
-      estados: [],
-      municipios: [],
-      museu: undefined
+  const { data: cidades } = useSuspenseQuery({
+    queryKey: ["cidades"],
+    queryFn: async () => {
+      const res = await request("/api/admin/museus/listarCidades")
+      return await res.json()
     }
   })
 
-  const [inicio, fim, regioes, estados, municipios, museu] = watch([
+  const { handleSubmit, watch, control, setValue, reset } = useForm<FormValues>(
+    {
+      resolver: zodResolver(schema),
+      mode: "onBlur",
+      defaultValues: {
+        inicio: currentYear.toString(),
+        fim: currentYear.toString(),
+        regioes: [],
+        estados: [],
+        municipios: []
+      }
+    }
+  )
+
+  const [inicio, fim, regioes, estados, municipios] = watch([
     "inicio",
     "fim",
     "regioes",
     "estados",
-    "municipios",
-    "museu"
+    "municipios"
   ])
 
   useEffect(() => {
@@ -118,7 +103,7 @@ const IndexPage = () => {
       )
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [regioes, estados])
+  }, [regioes])
 
   const estadosByRegiao = states.filter((uf) =>
     regioes
@@ -150,14 +135,10 @@ const IndexPage = () => {
     params.append("cidades", municipio)
   }
 
-  if (museu) {
-    params.append("museu", museu)
-  }
-
   return (
-    <DefaultLayout>
+    <>
       <h2>Painel analítico</h2>
-      <form>
+      <form onSubmit={handleSubmit((data) => console.log(data))}>
         <fieldset
           className="rounded-lg p-3"
           style={{ border: "2px solid #e0e0e0" }}
@@ -255,26 +236,6 @@ const IndexPage = () => {
                 />
               )}
             />
-            <Controller
-              control={control}
-              name="museu"
-              render={({ field }) => (
-                <Select
-                  label="Museu"
-                  options={
-                    museus.museus.map(
-                      (museu: { _id: string; nome: string }) => ({
-                        label: museu.nome,
-                        value: museu._id
-                      })
-                    ) ?? []
-                  }
-                  placeholder="Selecione um museu"
-                  className="w-full"
-                  {...field}
-                />
-              )}
-            />
           </div>
           <button
             type="reset"
@@ -302,10 +263,9 @@ const IndexPage = () => {
           regioes={regioes}
           inicio={inicio}
           fim={fim}
-          museu={museu}
         />
       </Suspense>
-    </DefaultLayout>
+    </>
   )
 }
 

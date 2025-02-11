@@ -1,19 +1,20 @@
 import React, { useState } from "react"
-import { useNavigate, Link } from "react-router-dom"
+import { useNavigate, Link, NavLink } from "react-router"
 import { useSuspenseQuery } from "@tanstack/react-query"
 import logoImbramSimples from "../images/logo-ibram-simples.png"
-import useHttpClient from "../utils/request"
+import request from "../utils/request"
 import useStore from "../utils/store"
+import clsx from "clsx"
 
 const Header: React.FC = () => {
   const navigate = useNavigate()
   const [userMenuOpen, setUserMenuOpen] = useState(false)
+
   const { setUser } = useStore()
-  const request = useHttpClient()
 
   const pathnameMap = {
     "/": "Painel analítico",
-    "/gestao": "Gestão",
+    "/periodos": "Períodos",
     "/declaracoes": "Declarações",
     "/usuarios": "Usuários"
   }
@@ -51,21 +52,27 @@ const Header: React.FC = () => {
                 <i className="fas fa-ellipsis-v" aria-hidden="true"></i>
               </button>
               <div className="br-list">
-                <div className="header">
-                  <div className="title">Acesso Rápido</div>
-                </div>
                 {user.profile.name === "admin" &&
                   Object.entries(pathnameMap).map(
                     ([path, name]: [string, string]) => (
-                      <Link key={path} className="br-item" to={path}>
+                      <NavLink
+                        key={path}
+                        className={({ isActive }) =>
+                          clsx(
+                            "br-item block py-2 px-4",
+                            isActive && "underline"
+                          )
+                        }
+                        to={path}
+                      >
                         {name}
-                      </Link>
+                      </NavLink>
                     )
                   )}
               </div>
             </div>
             <span className="br-divider vertical mx-half mx-sm-1"></span>
-            <div className="header-login">
+            <div className="header-login relative">
               <div>
                 <button
                   className="br-sign-in p-0"

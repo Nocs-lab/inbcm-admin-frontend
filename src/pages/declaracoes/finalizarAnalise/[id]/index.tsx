@@ -2,11 +2,10 @@ import { useSuspenseQueries, useMutation } from "@tanstack/react-query"
 import clsx from "clsx"
 import { format } from "date-fns"
 import { useState } from "react"
-import { useParams, Link, useNavigate } from "react-router-dom"
+import { useParams, Link, useNavigate } from "react-router"
 import { Select, Textarea, Row, Button, Modal } from "react-dsgov"
 import MismatchsModal from "../../../../components/MismatchsModal"
-import DefaultLayout from "../../../../layouts/default"
-import useHttpClient from "../../../../utils/request"
+import request from "../../../../utils/request"
 import toast from "react-hot-toast"
 
 type Payload =
@@ -18,7 +17,6 @@ export default function FinalizarAnalise() {
   const params = useParams()
   const id = params.id!
   const navigate = useNavigate()
-  const request = useHttpClient()
 
   const [{ data }] = useSuspenseQueries({
     queries: [
@@ -222,7 +220,7 @@ export default function FinalizarAnalise() {
                     className="fa-solid fa-file-signature"
                     aria-hidden="true"
                   ></i>{" "}
-                  Assinar declaração
+                  Atribuir para mim
                 </a>
               </div>
             )}
@@ -327,7 +325,7 @@ export default function FinalizarAnalise() {
                     className="fa-solid fa-file-signature"
                     aria-hidden="true"
                   ></i>{" "}
-                  Assinar declaração
+                  Atribuir para mim
                 </a>
               </div>
             )}
@@ -413,7 +411,7 @@ export default function FinalizarAnalise() {
           </div>
           <div className="flex items-center justify-between">
             <span>
-              <span className="font-bold text-lg">Analista arquivístico:</span>
+              <span className="font-bold text-lg">Analista arquivístico: </span>
               {data.arquivistico.analistasResponsaveisNome}
             </span>
             {data.arquivistico.status === "Recebida" && (
@@ -431,7 +429,7 @@ export default function FinalizarAnalise() {
                     className="fa-solid fa-file-signature"
                     aria-hidden="true"
                   ></i>{" "}
-                  Assinar declaração
+                  Atribuir para mim
                 </a>
               </div>
             )}
@@ -512,7 +510,7 @@ export default function FinalizarAnalise() {
   }
 
   return (
-    <DefaultLayout>
+    <>
       <Link to="/declaracoes" className="text-lg">
         <i className="fas fa-arrow-left" aria-hidden="true"></i>
         Voltar
@@ -533,15 +531,6 @@ export default function FinalizarAnalise() {
               <i className="fas fa-exclamation-triangle" aria-hidden="true"></i>{" "}
               Pendências
             </a>
-            <a
-              className="text-xl"
-              href="#"
-              onClick={() => navigate(`/declaracoes/enviarAnalise/${id}`)}
-              role="button"
-            >
-              <i className="fa-solid fa-clipboard-user" aria-hidden="true"></i>{" "}
-              Alterar analista
-            </a>
             <MismatchsModal
               opened={showModal}
               onClose={() => setShowModal(false)}
@@ -551,6 +540,15 @@ export default function FinalizarAnalise() {
             />
           </>
         )}
+        <a
+          className="text-xl"
+          href="#"
+          onClick={() => navigate(`/declaracoes/enviarAnalise/${id}`)}
+          role="button"
+        >
+          <i className="fa-solid fa-clipboard-user" aria-hidden="true"></i>{" "}
+          Alterar analista
+        </a>
       </div>
       <div className="flex gap-10 text-lg mt-5">
         <span>
@@ -689,6 +687,6 @@ export default function FinalizarAnalise() {
           </Modal>
         </div>
       )}
-    </DefaultLayout>
+    </>
   )
 }

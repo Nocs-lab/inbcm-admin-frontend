@@ -1,108 +1,313 @@
-import { useParams } from "react-router"
-import DefaultLayout from "../../../layouts/default"
-import { useSuspenseQuery } from "@tanstack/react-query"
-import useHttpClient from "../../../utils/request"
+import { useSuspenseQueries } from "@tanstack/react-query"
+import clsx from "clsx"
 import { format } from "date-fns"
-import { Link } from "react-router-dom"
+import { useState } from "react"
+import { useNavigate, useParams, Link } from "react-router"
+import MismatchsModal from "../../../components/MismatchsModal"
+import TableItens from "../../../components/TableItens"
+import { getColorStatus } from "../../../utils/colorStatus"
+import request from "../../../utils/request"
+import { Button, Modal } from "react-dsgov"
+import { useModal } from "../../../utils/modal"
 
-const DeclaracaoPage: React.FC = () => {
+export default function DeclaracaoPage() {
   const params = useParams()
   const id = params.id!
-  const request = useHttpClient()
 
-  const { data: timeline } = useSuspenseQuery({
-    queryKey: ["timeline", id],
-    queryFn: async () => {
-      const response = await request(`/api/admin/timeline/${id}`)
-      return response.json()
-    }
+  const navigate = useNavigate()
+
+  const { openModal } = useModal((close) => (
+    <Modal
+      showCloseButton
+      title="Tela em desenvolvimento"
+      onCloseButtonClick={close}
+    >
+      <Modal.Body>
+        <div className="flex items-center space-x-2">
+          <i className="fas fa-exclamation-triangle text-danger fa-3x"></i>
+          <p className="normal-case text-center">
+            Essa tela ainda está em desenvolvimento.
+          </p>
+        </div>
+      </Modal.Body>
+      <Modal.Footer justify-content="center">
+        <Button primary small m={2} onClick={close}>
+          Voltar
+        </Button>
+      </Modal.Footer>
+    </Modal>
+  ))
+
+  const [{ data }] = useSuspenseQueries({
+    queries: [
+      {
+        queryKey: ["declaracao", id],
+        queryFn: async () => {
+          const response = await request(`/api/public/declaracoes/${id}`)
+          return response.json()
+        }
+      }
+    ]
   })
 
-  const { data: declaracao } = useSuspenseQuery({
-    queryKey: ["declaracoes", id],
-    queryFn: async () => {
-      const response = await request(`/api/admin/declaracoes/${id}`)
-      return response.json()
+  const [showModal, setShowModal] = useState(false)
+
+  const getDefaultTab = () => {
+    if (data.museologico?.status) {
+      return "museologico"
+    } else if (data.bibliografico?.status) {
+      return "bibliografico"
+    } else if (data.arquivistico?.status) {
+      return "arquivistico"
+    } else {
+      return "museologico"
     }
-  })
+  }
+
+  const [currentTab, setCurrentTab] = useState<
+    "museologico" | "bibliografico" | "arquivistico" | "timeline"
+  >(getDefaultTab())
 
   return (
-    <DefaultLayout>
-      <Link to={`/declaracoes`} className="text-lg">
+    <>
+      <Link to="/" className="text-lg">
         <i className="fas fa-arrow-left" aria-hidden="true"></i>
         Voltar
       </Link>
-      <h2>Histórico da Declaração</h2>
-      <span className="br-tag mb-5">{declaracao.status}</span>
-      <div className="flex gap-10 text-lg">
+      <h2 className="mt-3 mb-0">
+        Declaração{" "}
+        {data.retificacao ? `retificadora 0${data.versao - 1}` : "original"}
+      </h2>
+      <span className="br-tag mb-5" style={getColorStatus(data.status)}>
+        {data.status}
+      </span>
+      <div className="flex gap-4">
+        <a href={`/api/public/recibo/${id}`} className="text-xl">
+          <i className="fas fa-file-pdf" aria-hidden="true"></i> Recibo
+        </a>
+
+        {(data.museologico?.pendencias.length > 0 ||
+          data.bibliografico?.pendencias.length > 0 ||
+          data.arquivistico?.pendencias.length > 0) && (
+          <>
+            <a
+              className="text-xl"
+              href="#"
+              onClick={() => setShowModal(true)}
+              role="button"
+            >
+              <i className="fas fa-exclamation-triangle" aria-hidden="true"></i>{" "}
+              Relatório de pendências
+            </a>
+            <MismatchsModal
+              opened={showModal}
+              onClose={() => setShowModal(false)}
+              museologicoErrors={data.museologico?.pendencias ?? []}
+              bibliograficoErrors={data.bibliografico?.pendencias ?? []}
+              arquivisticoErrors={data.arquivistico?.pendencias ?? []}
+            />
+          </>
+        )}
+        {(data.museologico?.pendencias.length > 0 ||
+          data.bibliografico?.pendencias.length > 0 ||
+          data.arquivistico?.pendencias.length > 0) && (
+          <a className="text-xl" href="#" onClick={openModal} role="button">
+            <i
+              className="fas fa-file-circle-exclamation"
+              aria-hidden="true"
+            ></i>{" "}
+            Relatório de pendências
+          </a>
+        )}
+        <a
+          className="text-xl"
+          href="#"
+          onClick={() => navigate(`/declaracoes/${id}/timeline`)}
+        >
+          <i className="fas fa-timeline" aria-hidden="true"></i> Histórico
+        </a>
+        {data.status !== "Recebida" && (
+          <Link to={`/declaracoes/${id}/analise`} className="text-xl">
+            <i className="fas fa-chalkboard-user"></i> Parecer do analista
+          </Link>
+        )}
+      </div>
+      <div className="flex gap-10 text-lg mt-5">
+        <span>
+          <span className="font-bold">Envio: </span>
+          {format(data.dataCriacao, "dd/MM/yyyy HH:mm")}
+        </span>
         <span>
           <span className="font-bold">Ano: </span>
-          {declaracao.anoDeclaracao}
+          {data.anoDeclaracao}
         </span>
         <span>
           <span className="font-bold">Museu: </span>
-          {declaracao.museu_id.nome}
+          {data.museu_id.nome}
         </span>
       </div>
-      <div className="col-auto mx-5">
-        <nav
-          className="br-step vertical"
-          data-initial="1"
-          data-label="right"
-          role="none"
-        >
-          <div
-            className="step-progress"
-            role="listbox"
-            aria-orientation="vertical"
-            aria-label="Lista de Opções"
-          >
-            {[...timeline]
-              .reverse()
-              .map(
-                (item: {
-                  dataEvento: Date
-                  nomeEvento: string
-                  autorEvento: string
-                  analistaResponsavel: string[]
-                }) => {
-                  // Função para formatar os analistas
-                  const formatAnalistas = (analistas: string[]) => {
-                    if (analistas.length === 0) return ""
-                    if (analistas.length === 1) return analistas[0]
-                    const allButLast = analistas.slice(0, -1).join(", ")
-                    const last = analistas[analistas.length - 1]
-                    return `${allButLast} e ${last}`
-                  }
-
-                  return (
-                    <button
-                      key={item.dataEvento.toISOString() + item.nomeEvento}
-                      className="step-progress-btn"
-                      role="option"
-                      aria-posinset={3}
-                      aria-setsize={3}
-                      type="button"
-                    >
-                      <span className="step-info text-left">
-                        {item.nomeEvento}{" "}
-                        {formatAnalistas(item.analistaResponsavel)}
-                        <br />
-                        Em {format(
-                          item.dataEvento,
-                          "dd/MM/yyyy 'às' HH:mm"
-                        )}{" "}
-                        por {item.autorEvento}
-                      </span>
-                    </button>
-                  )
-                }
+      <div className="br-tab mt-10" data-counter="true">
+        <nav className="tab-nav">
+          <ul>
+            {data.museologico?.status &&
+              data.museologico.status !== "Não enviada" && (
+                <li
+                  className={clsx(
+                    "tab-item",
+                    currentTab === "museologico" && "is-active"
+                  )}
+                  title="Acervo museológico"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setCurrentTab("museologico")}
+                  >
+                    <span className="name">
+                      Acervo museológico ({data.museologico?.quantidadeItens})
+                    </span>
+                  </button>
+                </li>
               )}
-          </div>
+            {data.bibliografico?.status &&
+              data.bibliografico.status !== "Não enviada" && (
+                <li
+                  className={clsx(
+                    "tab-item",
+                    currentTab === "bibliografico" && "is-active"
+                  )}
+                  title="Acervo bibliográfico"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setCurrentTab("bibliografico")}
+                  >
+                    <span className="name">
+                      Acervo bibliográfico (
+                      {data.bibliografico?.quantidadeItens})
+                    </span>
+                  </button>
+                </li>
+              )}
+            {data.arquivistico?.status &&
+              data.arquivistico.status !== "Não enviada" && (
+                <li
+                  className={clsx(
+                    "tab-item",
+                    currentTab === "arquivistico" && "is-active"
+                  )}
+                  title="Arcevo arquivístico"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setCurrentTab("arquivistico")}
+                  >
+                    <span className="name">
+                      Acervo arquivístico ({data.arquivistico?.quantidadeItens})
+                    </span>
+                  </button>
+                </li>
+              )}
+          </ul>
         </nav>
+        <div className="tab-content">
+          {data.museologico?.status &&
+            data.museologico.status !== "Não enviada" && (
+              <div
+                className={clsx(
+                  "tab-panel",
+                  currentTab === "museologico" && "active"
+                )}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="mb-3 flex items-center justify-start gap-1">
+                    <span
+                      className="br-tag"
+                      style={getColorStatus(data.museologico?.status)}
+                    >
+                      {data.museologico?.status}
+                    </span>
+                  </span>
+                  <a
+                    href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao}/museologico`}
+                    className="mb-2"
+                  >
+                    <i className="fas fa-download" aria-hidden="true"></i>{" "}
+                    Baixar planilha
+                  </a>
+                </div>
+                <TableItens
+                  acervo="museologico"
+                  ano={data.anoDeclaracao}
+                  museuId={data.museu_id._id}
+                />
+              </div>
+            )}
+          {data.bibliografico?.status &&
+            data.bibliografico.status !== "Não enviada" && (
+              <div
+                className={clsx(
+                  "tab-panel",
+                  currentTab === "bibliografico" && "active"
+                )}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="mb-3 flex items-center justify-start gap-1">
+                    <span
+                      className="br-tag"
+                      style={getColorStatus(data.bibliografico?.status)}
+                    >
+                      {data.bibliografico?.status}
+                    </span>
+                  </span>
+                  <a
+                    href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao}/bibliografico`}
+                    className="mb-2"
+                  >
+                    <i className="fas fa-download" aria-hidden="true"></i>{" "}
+                    Baixar planilha
+                  </a>
+                </div>
+                <TableItens
+                  acervo="bibliografico"
+                  ano={data.anoDeclaracao}
+                  museuId={data.museu_id._id}
+                />
+              </div>
+            )}
+          {data.arquivistico?.status &&
+            data.arquivistico.status !== "Não enviada" && (
+              <div
+                className={clsx(
+                  "tab-panel",
+                  currentTab === "arquivistico" && "active"
+                )}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="mb-3 flex items-center justify-start gap-1">
+                    <span
+                      className="br-tag"
+                      style={getColorStatus(data.arquivistico?.status)}
+                    >
+                      {data.arquivistico?.status}
+                    </span>
+                  </span>
+                  <a
+                    href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao}/arquivistico`}
+                    className="mb-2"
+                  >
+                    <i className="fas fa-download" aria-hidden="true"></i>{" "}
+                    Baixar planilha
+                  </a>
+                </div>
+                <TableItens
+                  acervo="arquivistico"
+                  ano={data.anoDeclaracao}
+                  museuId={data.museu_id._id}
+                />
+              </div>
+            )}
+        </div>
       </div>
-    </DefaultLayout>
+    </>
   )
 }
-
-export default DeclaracaoPage
