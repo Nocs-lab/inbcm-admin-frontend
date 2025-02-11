@@ -45,3 +45,29 @@ jobs:
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_REPOSITORY }}:${{ github.event_name }}-${{ env.VITE_SHORT_SHA }}
             ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_REPOSITORY }}:latest
+
+# Etapa de update
+
+  updating_environment:   
+    needs: push_to_registry
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v3
+      
+      - name: Create file .env
+        run: echo "${{ secrets.ENVS_UPDATE }}" > .env
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+
+      - name: Instalar o Playwright e o Chromium
+        run: |
+          pip install playwright
+          playwright install chromium
+          pip install python-dotenv
+
+      - name: Executar script de atualização
+        run: python ./src/scripts/updatePortainer.py
