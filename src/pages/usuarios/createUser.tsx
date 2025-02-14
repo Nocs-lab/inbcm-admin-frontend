@@ -13,11 +13,16 @@ import toast from "react-hot-toast"
 import { debounce } from "lodash"
 import Select from "../../components/MultiSelect"
 
+const cpfRegex = /^\d{3}\.\d{3}\.\d{3}-\d{2}$/
+
 const schema = z
   .object({
     email: z.string().min(1, "Este campo é obrigatório"),
     nome: z.string().min(1, "Este campo é obrigatório"),
-    cpf: z.string().min(1, "Este campo é obrigatório"),
+    cpf: z
+      .string()
+      .min(1, "Este campo é obrigatório")
+      .regex(cpfRegex, "CPF deve estar no formato XXX.XXX.XXX-XX"),
     profile: z.string().min(1, "Este campo é obrigatório"),
     password: z.string().min(1, "Este campo é obrigatório"),
     confirmPassword: z.string().min(1, "Este campo é obrigatório"),
