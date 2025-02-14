@@ -98,6 +98,26 @@ const Index: React.FC = () => {
     }
   })
 
+  const approvalMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      const response = await request(`/api/admin/users/${userId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ situacao: 1 })
+      })
+      if (!response.ok) {
+        throw new Error("Failed to approve user")
+      }
+      return response.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] })
+      toast.success("Usuário aprovado com sucesso!")
+    }
+  })
+
   const handleOpenModalDelete = (userId: string) => {
     setUserIdToDelete(userId)
     setShowModalDelete(true)
@@ -134,10 +154,11 @@ const Index: React.FC = () => {
 
   const handleApprovalUser = async () => {
     try {
-      await mutation.mutateAsync(userIdToApproval)
+      await approvalMutation.mutateAsync(userIdToApproval)
       setShowModalApproval(false)
     } catch (error) {
-      console.error("Erro ao desativar usuário:", error)
+      console.error("Erro ao aprovar usuário:", error)
+      toast.error("Erro ao aprovar usuário")
     }
   }
 
