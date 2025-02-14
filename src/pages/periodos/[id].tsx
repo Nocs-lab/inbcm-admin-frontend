@@ -15,15 +15,12 @@ import toast from "react-hot-toast"
 import request from "../../utils/request"
 
 const schema = z.object({
-  ano: z.string().min(1, "Este campo é obrigatório"),
+  ano: z.number(),
   dataInicioSubmissao: z.string(),
   dataFimSubmissao: z.string(),
   dataInicioRetificacao: z.string(),
   dataFimRetificacao: z.string(),
-  metaDeclaracoesEnviadas: z
-    .number()
-    .min(0, "Este campo é obrigatório")
-    .max(100, "Este campo é obrigatório")
+  metaDeclaracoesEnviadas: z.number()
 })
 
 type FormData = z.infer<typeof schema>
@@ -54,7 +51,6 @@ const EditarPeriodo: React.FC = () => {
     mode: "onBlur",
     defaultValues: {
       ...data,
-      ano: data?.ano.toString(),
       dataInicioSubmissao: data?.dataInicioSubmissao.substring(0, 16),
       dataFimSubmissao: data?.dataFimSubmissao.substring(0, 16),
       dataInicioRetificacao: data?.dataInicioRetificacao.substring(0, 16),
@@ -121,7 +117,7 @@ const EditarPeriodo: React.FC = () => {
             type="number"
             label="Ano"
             error={errors.ano}
-            {...register("ano")}
+            {...register("ano", { valueAsNumber: true })}
           />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
