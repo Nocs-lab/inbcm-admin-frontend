@@ -43,7 +43,7 @@ export default function DeclaracaoPage() {
       {
         queryKey: ["declaracao", id],
         queryFn: async () => {
-          const response = await request(`/api/public/declaracoes/${id}`)
+          const response = await request(`/api/admin/declaracoes/${id}`)
           return response.json()
         }
       }
