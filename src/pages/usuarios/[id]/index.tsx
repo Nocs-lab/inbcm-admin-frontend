@@ -23,6 +23,7 @@ const schema = z.object({
   email: z.string().min(1, "Este campo é obrigatório"),
   nome: z.string().min(1, "Este campo é obrigatório"),
   especialidadeAnalista: z.array(z.string()).optional(),
+  situacao: z.number().optional(),
   museus: z.array(z.string()).optional()
 })
 type FormData = z.infer<typeof schema>
@@ -134,7 +135,8 @@ const EditUser: React.FC = () => {
     defaultValues: {
       email: user?.email,
       nome: user?.nome,
-      especialidadeAnalista: user?.especialidadeAnalista || []
+      especialidadeAnalista: user?.especialidadeAnalista || [],
+      situacao: user?.situacao
     }
   })
 
@@ -144,14 +146,19 @@ const EditUser: React.FC = () => {
       nome,
       especialidadeAnalista,
       museus,
+      situacao,
       desvincularMuseus
     }: FormData & { museus: string[] }) => {
       const payload: {
         email: string
         nome: string
+        especialidadeAnalista?: string[]
+        museus?: string[]
+        situacao?: number
       } = {
         email,
-        nome
+        nome,
+        situacao
       }
 
       if (user.profile?.name === "analyst") {
@@ -184,7 +191,12 @@ const EditUser: React.FC = () => {
       toast.error("Erro ao atualizar usuário")
     }
   })
-  const onSubmit = ({ email, nome, especialidadeAnalista }: FormData) => {
+  const onSubmit = ({
+    email,
+    nome,
+    especialidadeAnalista,
+    situacao
+  }: FormData) => {
     const museusIds =
       user.profile?.name === "declarant" && Array.isArray(selectedMuseus)
         ? selectedMuseus.map((item) => {
@@ -193,7 +205,7 @@ const EditUser: React.FC = () => {
           })
         : []
 
-    mutate({ email, nome, especialidadeAnalista, museus: museusIds })
+    mutate({ email, nome, especialidadeAnalista, museus: museusIds, situacao })
   }
 
   if (!user) {
@@ -208,6 +220,11 @@ const EditUser: React.FC = () => {
 
   const profileName = user.profile?.name
   const translatedProfile = profileTranslations[profileName] || profileName
+
+  const situacaoOptions = [
+    { label: "Ativo", value: 1 },
+    { label: "Inativo", value: 2 }
+  ]
 
   const handleOpenModal = (userId: string) => {
     setUserIdToDelete(userId)
@@ -316,9 +333,7 @@ const EditUser: React.FC = () => {
             className="rounded-lg p-3"
             style={{ border: "2px solid #e0e0e0" }}
           >
-            <legend className="text-lg font-extrabold px-3 m-0">
-              Dados pessoais
-            </legend>
+            <legend className="text-lg font-extrabold px-3 m-0">Dados</legend>
             <div className="grid grid-cols-3 gap-2 w-full p-2">
               <Input
                 label="CPF"
@@ -348,6 +363,40 @@ const EditUser: React.FC = () => {
                 {...register("email")}
                 className="w-full"
               />
+              <div className="mt-2">
+                <label>Situação do usuário</label>
+                <Controller
+                  control={control}
+                  name="situacao"
+                  defaultValue={user?.situacao}
+                  render={({ field }) => (
+                    <div className="flex flex-col w-full items-center pt-4">
+                      <div className="flex justify-between w-3/4">
+                        {situacaoOptions.map((option) => (
+                          <label
+                            key={option.value}
+                            className="flex items-center space-x-2"
+                          >
+                            <Checkbox
+                              checked={field.value === option.value}
+                              onChange={(e) => {
+                                const checked = (e.target as HTMLInputElement)
+                                  .checked
+                                if (checked) {
+                                  field.onChange(option.value)
+                                }
+                              }}
+                            />
+                            <span className="text-gray-700 text-base">
+                              {option.label}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                />
+              </div>
             </div>
           </fieldset>
           {user.profile?.name != "admin" && (
