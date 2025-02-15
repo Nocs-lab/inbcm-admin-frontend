@@ -72,7 +72,7 @@ const TableItens: React.FC<{
     queryKey: ["itens", acervo],
     queryFn: async () => {
       const res = await request(
-        `/api/public/declaracoes/listar-itens/${museuId}/${ano}/${acervo}/`
+        `/api/admin/declaracoes/listar-itens/${museuId}/${ano}/${acervo}/`
       )
 
       return await res.json()
