@@ -21,7 +21,7 @@ with sync_playwright() as p:
     sleep(2)
     pagina.goto(page_stacks)
     sleep(2)
-    pagina.locator('a:has-text("inbcm-dev")').click()
+    pagina.locator('a:has-text("inbcm_dev")').click()
     sleep(2)
     pagina.locator('a:has-text("Editor")').click()
     sleep(2)
