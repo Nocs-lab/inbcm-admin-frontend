@@ -54,6 +54,14 @@ jobs:
     steps:
       - name: Checkout do código
         uses: actions/checkout@v3
+
+      - name: Set Docker repository name for main branch
+        if: github.ref == 'refs/heads/main'
+        run: echo "SCRIPT_UPDATE=updatePortainerMain.py" >> $GITHUB_ENV
+
+      - name: Set Docker repository name for development branch
+        if: github.ref == 'refs/heads/development'
+        run: echo "SCRIPT_UPDATE=updatePortainerDev.py" >> $GITHUB_ENV
       
       - name: Create file .env
         run: echo "${{ secrets.ENVS_UPDATE }}" > .env
@@ -70,4 +78,4 @@ jobs:
           pip install python-dotenv
 
       - name: Executar script de atualização
-        run: python ./src/scripts/updatePortainer.py
+        run: python ./src/scripts/${{ env.SCRIPT_UPDATE }}
