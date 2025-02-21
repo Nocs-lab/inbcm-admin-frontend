@@ -1,4 +1,3 @@
-import DefaultLayout from "../layouts/default"
 import Select from "../components/MultiSelect"
 import Charts from "./_components/Charts"
 import { Suspense, useEffect } from "react"
@@ -103,6 +102,7 @@ const IndexPage = () => {
         )
       )
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [regioes])
 
   const estadosByRegiao = states.filter((uf) =>
@@ -136,7 +136,7 @@ const IndexPage = () => {
   }
 
   return (
-    <DefaultLayout>
+    <>
       <h2>Painel analítico</h2>
       <form onSubmit={handleSubmit((data) => console.log(data))}>
         <fieldset
@@ -265,7 +265,7 @@ const IndexPage = () => {
           fim={fim}
         />
       </Suspense>
-    </DefaultLayout>
+    </>
   )
 }
 

@@ -1,6 +1,5 @@
-import DefaultLayout from "../layouts/default"
 import Input from "../components/Input"
-import { Link } from "react-router-dom"
+import { Link } from "react-router"
 import { useSuspenseQuery, useMutation } from "@tanstack/react-query"
 import request from "../utils/request"
 import { useForm } from "react-hook-form"
@@ -11,7 +10,7 @@ import { Suspense } from "react"
 
 // Esquema de validação Zod
 const schema = z.object({
-  email: z.string().min(1, "Este campo é obrigatório").email("Email inválido"),
+  email: z.string().min(1, "Este campo é obrigatório").email("E-mail inválido"),
   nome: z.string().min(1, "Este campo é obrigatório")
 })
 
@@ -67,16 +66,33 @@ const PerfilPage = () => {
     mutate({ email, nome })
   }
 
+  const formatCPF = (cpf: string): string => {
+    cpf = cpf.replace(/\D/g, "")
+    return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4")
+  }
+
   return (
-    <DefaultLayout>
+    <>
       <Link to="/" className="text-lg">
         <i className="fas fa-arrow-left" aria-hidden="true"></i> Voltar
       </Link>
-      <h2>Perfil</h2>
+      <h2>Editar meu perfil</h2>
       <div className="container mx-auto p-6 bg-white rounded-lg">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div>
             <div className="grid grid-cols-3 gap-2 w-full">
+              <Input
+                label="CPF"
+                value={
+                  user.cpf
+                    ? formatCPF(user.cpf)
+                    : "Este usuário não possui CPF cadastrado."
+                }
+                rows={1}
+                readOnly
+                disabled
+                className="text-gray-500 italic opacity-50"
+              />
               <Input
                 type="text"
                 label="Nome"
@@ -87,7 +103,7 @@ const PerfilPage = () => {
               />
               <Input
                 type="email"
-                label="Email"
+                label="E-mail"
                 placeholder="Digite o email"
                 error={errors.email}
                 {...register("email")}
@@ -124,7 +140,7 @@ const PerfilPage = () => {
           </div>
         </form>
       </div>
-    </DefaultLayout>
+    </>
   )
 }
 

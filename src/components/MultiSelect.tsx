@@ -22,7 +22,7 @@ interface SelectProps
   extends React.HTMLAttributes<HTMLSelectElement>,
     IMtProps {
   /** Label do Select. */
-  label?: string
+  label?: React.ReactNode
   /** ID do Select. */
   id?: string
   /** Valor do select. Pode ser um valor único ou um array, se for select múltiplo. */
@@ -65,7 +65,6 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
     ref
   ) => {
     const fid = useUniqueId(id, "select_____")
-    // @ts-expect-error - useMtProps não possui tipagem
     const mtProps = useMtProps(props)
     const spreadProps = useSpreadProps(props)
     const [displayValue, setDisplayValue] = useState("")
@@ -126,23 +125,28 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
 
     const handleChangeValue = useCallback(
       (event: React.FormEvent<HTMLInputElement>) => {
-        setCurrentValue(event.currentTarget.value)
+        setCurrentValue((event.target as HTMLInputElement).value)
         setExpanded(false)
-        onChange(event.currentTarget.value)
+        onChange((event.target as HTMLInputElement).value)
       },
       [onChange, setCurrentValue, setExpanded]
     )
 
     const handleChangeValueMultiple = useCallback(
       (event: React.FormEvent<HTMLInputElement>) => {
-        if (event.currentTarget.checked) {
+        if ((event.target as HTMLInputElement).checked) {
           setCurrentValue(
             (oldValues: string | number | string[] | number[]) => {
               if (
                 Array.isArray(oldValues) &&
-                oldValues.indexOf(event.currentTarget.value as never) === -1
+                oldValues.indexOf(
+                  (event.target as HTMLInputElement).value as never
+                ) === -1
               ) {
-                const newValues = [...oldValues, event.currentTarget.value]
+                const newValues = [
+                  ...oldValues,
+                  (event.target as HTMLInputElement).value
+                ]
                 onChange(newValues)
                 return newValues as string[]
               }
@@ -156,12 +160,14 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
             (oldValues: string | number | string[] | number[]) => {
               onChange(
                 (Array.isArray(oldValues) ? oldValues : []).filter(
-                  (val: string | number) => val !== event.currentTarget.value
+                  (val: string | number) =>
+                    val !== (event.target as HTMLInputElement).value
                 )
               )
               return Array.isArray(oldValues)
                 ? oldValues.filter(
-                    (val: string | number) => val !== event.currentTarget.value
+                    (val: string | number) =>
+                      val !== (event.target as HTMLInputElement).value
                   )
                 : oldValues
             }

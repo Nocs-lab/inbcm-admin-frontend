@@ -1,28 +1,34 @@
-import React, { useState } from "react"
-import { useNavigate } from "react-router-dom"
-import DefaultLayout from "../../layouts/default"
+import React, { useState, useMemo } from "react"
+import { useNavigate, Link } from "react-router"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import request from "../../utils/request"
 import { Modal, Button } from "react-dsgov"
 import { type ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import toast from "react-hot-toast"
 import Table from "../../components/Table"
-import { Link } from "react-router-dom"
+import clsx from "clsx"
 
 interface User {
   _id: string
   nome: string
   email: string
+  cpf?: string
   profile?: {
     name: string
   }
-  ativo: boolean
+  situacao: number
   museus: Museu[]
+  especialidadeAnalista?: string[]
 }
 
 interface Museu {
   _id: string
   nome: string
+}
+
+const formatCPF = (cpf: string): string => {
+  if (!cpf) return "" // Caso o CPF seja undefined ou vazio
+  return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4")
 }
 
 const fetchUsers = async (): Promise<User[]> => {
@@ -37,13 +43,23 @@ const fetchUsers = async (): Promise<User[]> => {
     }
   }
 
-  return await response.json()
+  const users = await response.json()
+
+  return users.sort((a: User, b: User) =>
+    a.nome.localeCompare(b.nome, "pt-BR", { sensitivity: "base" })
+  )
 }
 
 const profileMapping: { [key: string]: string } = {
   admin: "Administrador",
   declarant: "Declarante",
   analyst: "Analista"
+}
+
+const situacaoMapping: { [key: number]: string } = {
+  0: "Para aprovar",
+  1: "Ativo",
+  2: "Inativo"
 }
 
 const Index: React.FC = () => {
@@ -55,8 +71,13 @@ const Index: React.FC = () => {
     queryFn: fetchUsers
   })
 
-  const [showModal, setShowModal] = useState(false)
+  const [showModalDelete, setShowModalDelete] = useState(false)
+  const [showModalApproval, setShowModalApproval] = useState(false)
   const [userIdToDelete, setUserIdToDelete] = useState<string>("")
+  const [userIdToApproval, setUserIdToApproval] = useState<string>("")
+  const [activeTab, setActiveTab] = useState<
+    "admin" | "declarant" | "analyst" | "all" | "pending"
+  >("declarant")
 
   const mutation = useMutation({
     mutationFn: async (userId: string) => {
@@ -74,147 +95,330 @@ const Index: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] })
       toast.success("Usuário desativado com sucesso!")
-    },
-    onError: () => {
-      toast.error("Erro ao desativar usuário")
     }
   })
 
-  const handleOpenModal = (userId: string) => {
+  const approvalMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      const response = await request(`/api/admin/users/${userId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ situacao: 1 })
+      })
+      if (!response.ok) {
+        throw new Error("Failed to approve user")
+      }
+      return response.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] })
+      toast.success("Usuário aprovado com sucesso!")
+    }
+  })
+
+  const handleOpenModalDelete = (userId: string) => {
     setUserIdToDelete(userId)
-    setShowModal(true)
+    setShowModalDelete(true)
   }
 
-  const handleCloseModal = () => {
-    setShowModal(false)
+  const handleCloseModalDelete = () => {
+    setShowModalDelete(false)
     setUserIdToDelete("")
   }
 
   const handleDeleteUser = async () => {
     try {
       await mutation.mutateAsync(userIdToDelete)
-      setShowModal(false)
+      setShowModalDelete(false)
     } catch (error) {
       console.error("Erro ao desativar usuário:", error)
     }
   }
 
-  const columnHelper = createColumnHelper<{
-    nome: string
-    email: string
-    museus: Museu[]
-    profile?: { name: string }
-  }>()
+  const userToApprove = useMemo(() => {
+    if (!userData || !userIdToApproval) return null
+    return userData.find((user) => user._id === userIdToApproval)
+  }, [userData, userIdToApproval])
 
-  const museuColumns = [
+  const handleOpenModalApproval = (userId: string) => {
+    setUserIdToApproval(userId)
+    setShowModalApproval(true)
+  }
+
+  const handleCloseModalApproval = () => {
+    setShowModalApproval(false)
+    setUserIdToApproval("")
+  }
+
+  const handleApprovalUser = async () => {
+    try {
+      await approvalMutation.mutateAsync(userIdToApproval)
+      setShowModalApproval(false)
+    } catch (error) {
+      console.error("Erro ao aprovar usuário:", error)
+      toast.error("Erro ao aprovar usuário")
+    }
+  }
+
+  const columnHelper = createColumnHelper<User>()
+
+  const columns = [
+    ...(activeTab === "pending"
+      ? [
+          columnHelper.accessor("cpf", {
+            header: "CPF",
+            cell: (info) => formatCPF(info.getValue() || ""),
+            meta: {
+              filterVariant: "text"
+            }
+          })
+        ]
+      : []),
     columnHelper.accessor("nome", {
       header: "Nome",
+      cell: (info) => info.getValue(),
       meta: {
         filterVariant: "text"
-      },
-      cell: (info: { row: { original: { nome: string } } }) =>
-        info.row.original.nome || "Nome não disponível"
-    }),
-    columnHelper.accessor("email", {
-      header: "Email",
-      meta: {
-        filterVariant: "text"
-      },
-      cell: (info: { row: { original: { email: string } } }) =>
-        info.row.original.email || "Email não disponível"
-    }),
-    columnHelper.accessor("museus", {
-      header: "Museus",
-      meta: {
-        filterVariant: "text"
-      },
-      cell: (info: { row: { original: { museus: Museu[] } } }) => {
-        const museus = info.row.original.museus || []
-        return (
-          museus
-            .slice(0, 2)
-            .map((museu) => museu.nome)
-            .join(", ") + (museus.length > 2 ? " ..." : "")
-        )
       }
     }),
-    columnHelper.accessor("profile.name", {
-      header: "Perfil",
+    columnHelper.accessor("email", {
+      header: "E-mail",
+      cell: (info) => info.getValue(),
       meta: {
         filterVariant: "text"
-      },
-      cell: (info: { row: { original: { profile?: { name: string } } } }) =>
-        profileMapping[info.row.original.profile?.name ?? ""] || "-"
+      }
     }),
-    columnHelper.accessor("_id", {
-      header: "Associar museus",
-      cell: (info: { row: { original: User } }) => {
-        const profileName = info.row.original.profile?.name || ""
-        return !["admin", "analyst"].includes(profileName) ? (
-          <Button
-            small
-            onClick={() =>
-              navigate(`/usuarios/associar/${info.row.original._id}`)
+    ...(activeTab === "declarant" || activeTab === "pending"
+      ? [
+          columnHelper.accessor("museus", {
+            header: "Museus",
+            cell: (info) => {
+              const museus = info.getValue()
+              return museus.length > 0
+                ? museus.map((museu) => museu.nome).join(", ")
+                : "Nenhum museu"
+            },
+            meta: {
+              filterVariant: "text"
             }
-          >
-            <i className="fa-solid fa-share p-2"></i>
-            Associar museus
-          </Button>
-        ) : null
+          })
+        ]
+      : []),
+    ...(activeTab === "analyst"
+      ? [
+          columnHelper.accessor("especialidadeAnalista", {
+            header: "Especialidade",
+            cell: (info) => {
+              const especialidades = info.getValue()
+              return especialidades
+                ? especialidades.join(", ")
+                : "Nenhuma especialidade"
+            },
+            meta: {
+              filterVariant: "text"
+            }
+          })
+        ]
+      : []),
+    ...(activeTab === "all"
+      ? [
+          columnHelper.accessor("profile", {
+            header: "Perfil",
+            cell: (info) => {
+              const profileName = info.getValue()?.name
+              return profileName ? profileMapping[profileName] : "Não informado"
+            },
+            meta: {
+              filterVariant: "text"
+            }
+          })
+        ]
+      : []),
+    columnHelper.accessor("situacao", {
+      header: "Situação",
+      cell: (info) => {
+        const situacaoName = info.getValue()?.toString()
+        return situacaoName
+          ? situacaoMapping[Number(situacaoName)]
+          : "Não informado"
       },
-      enableColumnFilter: false
-    }),
-    columnHelper.accessor("_id", {
-      header: "Ações",
       meta: {
-        filterVariant: "select"
-      },
-      cell: (info: { row: { original: { _id: string } } }) => (
-        <div className="flex justify-center gap-2">
-          <button
-            className="btn text-[#1351b4]"
-            onClick={() => navigate(`/usuarios/${info.row.original._id}`)}
-            aria-label="Editar usuário"
-            title="Editar usuário"
-          >
-            <i className="fa-solid fa-pen-to-square pr-2"></i>
-          </button>
-          <button
-            className="btn text-[#1351b4]"
-            onClick={() => handleOpenModal(info.row.original._id)}
-            aria-label="Excluir usuário"
-            title="Excluir usuário"
-          >
-            <i className="fa-solid fa-trash fa-fw pl-2"></i>
-          </button>
-        </div>
-      ),
-      enableColumnFilter: false
-    })
+        filterVariant: "text"
+      }
+    }),
+    ...(activeTab !== "pending"
+      ? [
+          columnHelper.accessor("_id", {
+            header: "Ações",
+            cell: (info) => {
+              const user = info.row.original // Acessa os dados completos do usuário
+              const isDisabled = user.situacao === 2 // Verifica se a situação é 2
+
+              return (
+                <div className="flex justify-start gap-2">
+                  <button
+                    className="btn text-[#1351b4]"
+                    onClick={() => navigate(`/usuarios/${info.getValue()}`)}
+                    aria-label="Editar usuário"
+                    title="Editar usuário"
+                  >
+                    <i className="fa-solid fa-pen-to-square pr-2"></i>
+                  </button>
+                  <button
+                    className={clsx(
+                      "btn text-[#1351b4]",
+                      isDisabled && "opacity-50 cursor-not-allowed"
+                    )}
+                    onClick={() => {
+                      if (!isDisabled) handleOpenModalDelete(info.getValue())
+                    }}
+                    aria-label="Excluir usuário"
+                    title={
+                      isDisabled ? "Usuário já desativado" : "Excluir usuário"
+                    }
+                    disabled={isDisabled}
+                  >
+                    <i className="fa-solid fa-trash fa-fw pl-2"></i>
+                  </button>
+                </div>
+              )
+            },
+            enableColumnFilter: false
+          })
+        ]
+      : []),
+    ...(activeTab === "pending"
+      ? [
+          columnHelper.accessor("_id", {
+            header: "Ações",
+            cell: (info) => (
+              <div className="flex justify-start gap-2">
+                <button
+                  className="btn text-[#1351b4]"
+                  onClick={() => handleOpenModalApproval(info.getValue())}
+                  aria-label="Aprovar usuário"
+                  title="Aprovar usuário"
+                >
+                  <i className="fa-solid fa-user-check fa-fw pl-2"></i>
+                </button>
+              </div>
+            ),
+            enableColumnFilter: false
+          })
+        ]
+      : [])
   ] as ColumnDef<User>[]
 
+  const userCounts = useMemo(() => {
+    if (!userData)
+      return { admin: 0, declarant: 0, analyst: 0, all: 0, pending: 0 }
+
+    return {
+      admin: userData.filter((user) => user.profile?.name === "admin").length,
+      declarant: userData.filter(
+        (user) => user.profile?.name === "declarant" && user.situacao != 0
+      ).length,
+      analyst: userData.filter((user) => user.profile?.name === "analyst")
+        .length,
+      all: userData.length,
+      pending: userData.filter((user) => user.situacao === 0).length
+    }
+  }, [userData])
+
+  const filteredUsers = useMemo(() => {
+    if (!userData) return []
+
+    switch (activeTab) {
+      case "all":
+        return userData
+      case "pending":
+        return userData.filter((user) => user.situacao === 0)
+      default:
+        return userData.filter(
+          (user) =>
+            user.profile?.name === activeTab &&
+            (user.situacao === 1 || user.situacao === 2)
+        )
+    }
+  }, [userData, activeTab])
+
   return (
-    <DefaultLayout>
+    <>
       <div className="flex justify-between items-center mb-4">
         <h2>Listagem de usuários</h2>
         <Link to="/usuarios/createuser" className="btn text-xl p-3">
-          <i className="fa-solid fa-user-plus"></i> Novo usuário
+          <i className="fa-solid fa-user-plus"></i> Novo
         </Link>
       </div>
-      <div className="overflow-x-auto">
-        <Table
-          columns={museuColumns as ColumnDef<unknown>[]}
-          data={userData || []}
-        />
+
+      <div className="br-tab small">
+        <nav className="tab-nav">
+          <ul>
+            <li
+              className={clsx("tab-item", activeTab === "pending" && "active")}
+              title="Aguardando aprovação"
+            >
+              <button type="button" onClick={() => setActiveTab("pending")}>
+                <span className="name">
+                  Aguardando aprovação ({userCounts.pending})
+                </span>
+              </button>
+            </li>
+            <li
+              className={clsx(
+                "tab-item",
+                activeTab === "declarant" && "active"
+              )}
+              title="Declarantes"
+            >
+              <button type="button" onClick={() => setActiveTab("declarant")}>
+                <span className="name">
+                  Declarantes ({userCounts.declarant})
+                </span>
+              </button>
+            </li>
+            <li
+              className={clsx("tab-item", activeTab === "analyst" && "active")}
+              title="Analistas"
+            >
+              <button type="button" onClick={() => setActiveTab("analyst")}>
+                <span className="name">Analistas ({userCounts.analyst})</span>
+              </button>
+            </li>
+            <li
+              className={clsx("tab-item", activeTab === "admin" && "active")}
+              title="Administradores"
+            >
+              <button type="button" onClick={() => setActiveTab("admin")}>
+                <span className="name">
+                  Administradores ({userCounts.admin})
+                </span>
+              </button>
+            </li>
+            <li
+              className={clsx("tab-item", activeTab === "all" && "active")}
+              title="Todos"
+            >
+              <button type="button" onClick={() => setActiveTab("all")}>
+                <span className="name">Todos ({userCounts.all})</span>
+              </button>
+            </li>
+          </ul>
+        </nav>
       </div>
 
-      {/* Modal de Confirmação */}
-      {showModal && (
+      <div className="overflow-x-auto">
+        <Table columns={columns} data={filteredUsers} />
+      </div>
+
+      {showModalDelete && (
         <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
           <Modal
             title="Desativar usuário?"
             showCloseButton
-            onCloseButtonClick={() => handleCloseModal()}
+            onCloseButtonClick={() => handleCloseModalDelete()}
           >
             <Modal.Body>
               Você tem certeza que deseja desativar este usuário?
@@ -223,14 +427,45 @@ const Index: React.FC = () => {
               <Button primary small m={2} onClick={handleDeleteUser}>
                 Confirmar
               </Button>
-              <Button secondary small m={2} onClick={handleCloseModal}>
+              <Button secondary small m={2} onClick={handleCloseModalDelete}>
                 Cancelar
               </Button>
             </Modal.Footer>
           </Modal>
         </div>
       )}
-    </DefaultLayout>
+      {showModalApproval && userToApprove && (
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
+          <Modal
+            title="Aprovar usuário?"
+            showCloseButton
+            onCloseButtonClick={() => handleCloseModalApproval()}
+          >
+            <Modal.Body>
+              <p>
+                Deseja realmente autorizar o acesso do usuário{" "}
+                <strong>{userToApprove.nome}</strong> para enviar declarações
+                do(s) museu(s){" "}
+                <strong>
+                  {userToApprove.museus.length > 0
+                    ? userToApprove.museus.map((museu) => museu.nome).join(", ")
+                    : "Nenhum museu"}
+                </strong>
+                ?
+              </p>
+            </Modal.Body>
+            <Modal.Footer justify-content="end">
+              <Button primary small m={2} onClick={handleApprovalUser}>
+                Confirmar
+              </Button>
+              <Button secondary small m={2} onClick={handleCloseModalApproval}>
+                Cancelar
+              </Button>
+            </Modal.Footer>
+          </Modal>
+        </div>
+      )}
+    </>
   )
 }
 
