@@ -170,8 +170,9 @@ const Index: React.FC = () => {
           columnHelper.accessor("cpf", {
             header: "CPF",
             cell: (info) => formatCPF(info.getValue() || ""),
+            enableColumnFilter: true,
             meta: {
-              filterVariant: "text"
+              filterVariant: "select"
             }
           })
         ]
@@ -179,27 +180,26 @@ const Index: React.FC = () => {
     columnHelper.accessor("nome", {
       header: "Nome",
       cell: (info) => info.getValue(),
+      enableColumnFilter: true,
       meta: {
-        filterVariant: "text"
+        filterVariant: "select"
       }
     }),
     columnHelper.accessor("email", {
       header: "E-mail",
       cell: (info) => info.getValue(),
+      enableColumnFilter: true,
       meta: {
-        filterVariant: "text"
+        filterVariant: "select"
       }
     }),
     ...(activeTab === "declarant" || activeTab === "pending"
       ? [
           columnHelper.accessor("museus", {
             header: "Museus",
-            cell: (info) => {
-              const museus = info.getValue()
-              return museus.length > 0
-                ? museus.map((museu) => museu.nome).join(", ")
-                : "Nenhum museu"
-            },
+            accessorFn: (row) => row.museus.map((m) => m.nome).join(", "),
+            cell: (info) => info.getValue(),
+            enableColumnFilter: true,
             meta: {
               filterVariant: "text"
             }
@@ -210,12 +210,9 @@ const Index: React.FC = () => {
       ? [
           columnHelper.accessor("especialidadeAnalista", {
             header: "Especialidade",
-            cell: (info) => {
-              const especialidades = info.getValue()
-              return especialidades
-                ? especialidades.join(", ")
-                : "Nenhuma especialidade"
-            },
+            accessorFn: (row) => row.especialidadeAnalista?.join(", ") || "",
+            cell: (info) => info.getValue(),
+            enableColumnFilter: true,
             meta: {
               filterVariant: "text"
             }
@@ -226,10 +223,9 @@ const Index: React.FC = () => {
       ? [
           columnHelper.accessor("profile", {
             header: "Perfil",
-            cell: (info) => {
-              const profileName = info.getValue()?.name
-              return profileName ? profileMapping[profileName] : "Não informado"
-            },
+            accessorFn: (row) => profileMapping[row.profile?.name] || "",
+            cell: (info) => info.getValue(),
+            enableColumnFilter: true,
             meta: {
               filterVariant: "text"
             }
@@ -244,8 +240,9 @@ const Index: React.FC = () => {
           ? situacaoMapping[Number(situacaoName)]
           : "Não informado"
       },
+      enableColumnFilter: true,
       meta: {
-        filterVariant: "text"
+        filterVariant: "select"
       }
     }),
     ...(activeTab !== "pending"
