@@ -262,6 +262,7 @@ const columnHelper = createColumnHelper<{
   anoDeclaracao: string
   retificacao: boolean
   status: string
+  responsavelEnvioNome: string
   dataCriacao: Date
   dataEnvioAnalise: Date
   dataFimAnalise: Date
@@ -302,6 +303,25 @@ const columns = [
     meta: {
       filterVariant: "select"
     }
+  }),
+  columnHelper.accessor(
+    (row) => {
+      const tiposAcervo = []
+      if (row.arquivistico) tiposAcervo.push("A")
+      if (row.bibliografico) tiposAcervo.push("B")
+      if (row.museologico) tiposAcervo.push("M")
+      return tiposAcervo.join(", ")
+    },
+    {
+      header: "Acervo",
+      meta: {
+        filterVariant: "select"
+      }
+    }
+  ),
+  columnHelper.accessor("responsavelEnvioNome", {
+    cell: (info) => info.getValue(),
+    header: "Declarante"
   }),
   columnHelper.accessor("dataCriacao", {
     id: "recebidoEm",
