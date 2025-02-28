@@ -125,19 +125,20 @@ const EnviarParaAnalise: React.FC = () => {
   const getNomesAnalistas = () => {
     const nomesUnicos = new Set<string>()
 
-    if (analistaSelecionado.museologico) {
+    // Verifica se o tipo de analista está presente na declaração
+    if (declaracao?.museologico && analistaSelecionado.museologico) {
       const analista = analistas.museologico.find(
         (a) => a._id === analistaSelecionado.museologico
       )
       if (analista) nomesUnicos.add(analista.nome)
     }
-    if (analistaSelecionado.bibliografico) {
+    if (declaracao?.bibliografico && analistaSelecionado.bibliografico) {
       const analista = analistas.bibliografico.find(
         (a) => a._id === analistaSelecionado.bibliografico
       )
       if (analista) nomesUnicos.add(analista.nome)
     }
-    if (analistaSelecionado.arquivistico) {
+    if (declaracao?.arquivistico && analistaSelecionado.arquivistico) {
       const analista = analistas.arquivistico.find(
         (a) => a._id === analistaSelecionado.arquivistico
       )
