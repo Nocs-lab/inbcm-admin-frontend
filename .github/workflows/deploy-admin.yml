@@ -17,6 +17,9 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v3
 
+      - name: Create file .env
+        run: echo "${{ secrets.ENVS_UPDATE }}" > .env
+
       - name: Set Docker repository name for main branch
         if: github.ref == 'refs/heads/main'
         run: echo "DOCKER_REPOSITORY=inbcm-admin-main" >> $GITHUB_ENV
