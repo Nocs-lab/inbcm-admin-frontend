@@ -2,7 +2,7 @@ import { useSuspenseQuery, useMutation } from "@tanstack/react-query"
 import { useParams, Link, useNavigate } from "react-router"
 import { useState, useEffect } from "react"
 import request from "../../../../utils/request"
-import { Select, Row, Col, Button } from "react-dsgov"
+import { Select, Row, Col, Button, Modal } from "react-dsgov"
 import { format } from "date-fns"
 import toast from "react-hot-toast"
 
@@ -10,6 +10,8 @@ const EnviarParaAnalise: React.FC = () => {
   const params = useParams()
   const id = params.id!
   const navigate = useNavigate()
+
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   const { data: declaracao } = useSuspenseQuery({
     queryKey: ["declaracoes", id],
@@ -105,6 +107,51 @@ const EnviarParaAnalise: React.FC = () => {
       toast.error(error.message || "Erro ao enviar a declaração para análise")
     }
   })
+
+  const handleConfirmarEnvio = () => {
+    setIsModalOpen(true)
+  }
+
+  const handleModalConfirm = () => {
+    setIsModalOpen(false)
+    enviarAnalise()
+  }
+
+  const handleModalCancel = () => {
+    setIsModalOpen(false)
+  }
+
+  // Função para obter os nomes dos analistas selecionados
+  const getNomesAnalistas = () => {
+    const nomesUnicos = new Set<string>()
+
+    // Verifica se o tipo de analista está presente na declaração
+    if (declaracao?.museologico && analistaSelecionado.museologico) {
+      const analista = analistas.museologico.find(
+        (a) => a._id === analistaSelecionado.museologico
+      )
+      if (analista) nomesUnicos.add(analista.nome)
+    }
+    if (declaracao?.bibliografico && analistaSelecionado.bibliografico) {
+      const analista = analistas.bibliografico.find(
+        (a) => a._id === analistaSelecionado.bibliografico
+      )
+      if (analista) nomesUnicos.add(analista.nome)
+    }
+    if (declaracao?.arquivistico && analistaSelecionado.arquivistico) {
+      const analista = analistas.arquivistico.find(
+        (a) => a._id === analistaSelecionado.arquivistico
+      )
+      if (analista) nomesUnicos.add(analista.nome)
+    }
+
+    const nomesArray = Array.from(nomesUnicos)
+
+    if (nomesArray.length === 0) return ""
+    if (nomesArray.length === 1) return nomesArray[0]
+    return `${nomesArray.slice(0, -1).join(", ")} e ${nomesArray[nomesArray.length - 1]}`
+  }
+
   return (
     <>
       <Link to="/declaracoes" className="text-lg">
@@ -130,7 +177,7 @@ const EnviarParaAnalise: React.FC = () => {
       <form
         onSubmit={(e) => {
           e.preventDefault()
-          enviarAnalise()
+          handleConfirmarEnvio()
         }}
       >
         <Row>
@@ -208,6 +255,33 @@ const EnviarParaAnalise: React.FC = () => {
           </Button>
         </Row>
       </form>
+      {/* Modal de Confirmação */}
+      {isModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
+          <Modal
+            title="Confirmar envio para análise"
+            showCloseButton
+            onCloseButtonClick={handleModalCancel}
+          >
+            <Modal.Body>
+              Deseja, realmente, enviar a declaração do ano{" "}
+              <b>{declaracao.anoDeclaracao}</b> do museu{" "}
+              <b>{declaracao.museu_id.nome}</b> para o(s) analista(s){" "}
+              <b>{getNomesAnalistas()}</b>?
+            </Modal.Body>
+            <Modal.Footer justify-content="end">
+              <div className="flex gap-2">
+                <Button secondary small onClick={handleModalCancel}>
+                  Cancelar
+                </Button>
+                <Button primary small onClick={handleModalConfirm}>
+                  Confirmar
+                </Button>
+              </div>
+            </Modal.Footer>
+          </Modal>
+        </div>
+      )}
     </>
   )
 }
