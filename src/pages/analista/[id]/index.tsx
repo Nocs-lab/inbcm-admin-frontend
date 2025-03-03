@@ -1,4 +1,4 @@
-import { useSuspenseQueries, useMutation } from "@tanstack/react-query"
+import { useMutation, useSuspenseQuery } from "@tanstack/react-query"
 import clsx from "clsx"
 import { format } from "date-fns"
 import { useState } from "react"
@@ -18,16 +18,12 @@ export default function FinalizarAnalise() {
   const id = params.id!
   const navigate = useNavigate()
 
-  const [{ data }] = useSuspenseQueries({
-    queries: [
-      {
-        queryKey: ["declaracao", id],
-        queryFn: async () => {
-          const response = await request(`/api/admin/declaracoes/${id}`)
-          return response.json()
-        }
-      }
-    ]
+  const { data } = useSuspenseQuery({
+    queryKey: ["declaracao", id],
+    queryFn: async () => {
+      const response = await request(`/api/admin/declaracoes/${id}`)
+      return response.json()
+    }
   })
 
   const [showModal, setShowModal] = useState(false)
@@ -58,7 +54,7 @@ export default function FinalizarAnalise() {
   const [statusArquivistico, setStatusArquivistico] = useState("")
   const [commentArquivistico, setCommentArquivistico] = useState("")
 
-  const { mutate: atualizarStatus, isLoading: isUpdating } = useMutation({
+  const { mutate: atualizarStatus, isPending: isUpdating } = useMutation({
     mutationFn: async (payload) => {
       const response = await fetch(
         `/api/admin/declaracoes/atualizarStatus/${id}`,

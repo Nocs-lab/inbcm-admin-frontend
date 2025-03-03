@@ -13,7 +13,6 @@ export default defineConfig({
     UnoCSS(),
     Pages({
       extensions: ["tsx"],
-      importMode: "sync",
       exclude: ["**/_*/**"],
       onRoutesGenerated: (routes) => generateSitemap({ routes })
     }),
