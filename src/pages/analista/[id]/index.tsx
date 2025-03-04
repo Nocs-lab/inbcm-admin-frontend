@@ -159,7 +159,7 @@ export default function FinalizarAnalise() {
             <span className="br-tag mb-5">{data.museologico.status}</span>
             {data.museologico.status != "Recebida" && (
               <a
-                href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao}/museologico`}
+                href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao._id}/museologico`}
                 className="mb-2"
               >
                 <i className="fas fa-download" aria-hidden="true"></i> Baixar
@@ -183,7 +183,7 @@ export default function FinalizarAnalise() {
                 value={statusMuseologico}
               />
               <a
-                href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao}/museologico`}
+                href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao._id}/museologico`}
                 className="mb-2"
               >
                 <i className="fas fa-download" aria-hidden="true"></i> Baixar
@@ -237,7 +237,7 @@ export default function FinalizarAnalise() {
             <span className="br-tag mb-5">{data.bibliografico.status}</span>
             {data.bibliografico.status != "Recebida" && (
               <a
-                href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao}/bibliografico`}
+                href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao._id}/bibliografico`}
                 className="mb-2"
               >
                 <i className="fas fa-download" aria-hidden="true"></i> Baixar
@@ -261,7 +261,7 @@ export default function FinalizarAnalise() {
                 value={statusBibliografico}
               />
               <a
-                href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao}/bibliografico`}
+                href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao._id}/bibliografico`}
                 className="mb-2"
               >
                 <i className="fas fa-download" aria-hidden="true"></i> Baixar
@@ -316,7 +316,7 @@ export default function FinalizarAnalise() {
             <span className="br-tag mb-5">{data.arquivistico.status}</span>
             {data.arquivistico.status != "Recebida" && (
               <a
-                href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao}/arquivistico`}
+                href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao._id}/arquivistico`}
                 className="mb-2"
               >
                 <i className="fas fa-download" aria-hidden="true"></i> Baixar
@@ -340,7 +340,7 @@ export default function FinalizarAnalise() {
                 value={statusArquivistico}
               />
               <a
-                href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao}/arquivistico`}
+                href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao._id}/arquivistico`}
                 className="mb-2"
               >
                 <i className="fas fa-download" aria-hidden="true"></i> Baixar
@@ -431,7 +431,7 @@ export default function FinalizarAnalise() {
         </span>
         <span>
           <span className="font-bold">Ano: </span>
-          {data.anoDeclaracao}
+          {data.anoDeclaracao.ano}
         </span>
         <span>
           <span className="font-bold">Museu: </span>

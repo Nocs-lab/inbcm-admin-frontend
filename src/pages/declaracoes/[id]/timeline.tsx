@@ -38,7 +38,7 @@ const DeclaracaoPage: React.FC = () => {
       <div className="flex gap-10 text-lg">
         <span>
           <span className="font-bold">Ano: </span>
-          {declaracao.anoDeclaracao}
+          {declaracao.anoDeclaracao.ano}
         </span>
         <span>
           <span className="font-bold">Museu: </span>

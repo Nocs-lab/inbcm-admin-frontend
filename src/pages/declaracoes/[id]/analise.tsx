@@ -60,7 +60,7 @@ export default function DeclaracaoPage() {
         </span>
         <span>
           <span className="font-bold">Ano: </span>
-          {data.anoDeclaracao}
+          {data.anoDeclaracao.ano}
         </span>
         <span>
           <span className="font-bold">Museu: </span>
@@ -149,7 +149,7 @@ export default function DeclaracaoPage() {
                     </span>
                   </span>
                   <a
-                    href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao}/museologico`}
+                    href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao._id}/museologico`}
                     className="mb-2"
                   >
                     <i className="fas fa-download" aria-hidden="true"></i>{" "}
@@ -192,7 +192,7 @@ export default function DeclaracaoPage() {
                     </span>
                   </span>
                   <a
-                    href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao}/bibliografico`}
+                    href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao._id}/bibliografico`}
                     className="mb-2"
                   >
                     <i className="fas fa-download" aria-hidden="true"></i>{" "}
@@ -235,7 +235,7 @@ export default function DeclaracaoPage() {
                     </span>
                   </span>
                   <a
-                    href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao}/arquivistico`}
+                    href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao._id}/arquivistico`}
                     className="mb-2"
                   >
                     <i className="fas fa-download" aria-hidden="true"></i>{" "}
