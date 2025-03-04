@@ -1,4 +1,4 @@
-import { useSuspenseQueries, useMutation } from "@tanstack/react-query"
+import { useMutation, useSuspenseQuery } from "@tanstack/react-query"
 import clsx from "clsx"
 import { format } from "date-fns"
 import { useState } from "react"
@@ -18,16 +18,12 @@ export default function FinalizarAnalise() {
   const id = params.id!
   const navigate = useNavigate()
 
-  const [{ data }] = useSuspenseQueries({
-    queries: [
-      {
-        queryKey: ["declaracao", id],
-        queryFn: async () => {
-          const response = await request(`/api/admin/declaracoes/${id}`)
-          return response.json()
-        }
-      }
-    ]
+  const { data } = useSuspenseQuery({
+    queryKey: ["declaracao", id],
+    queryFn: async () => {
+      const response = await request(`/api/admin/declaracoes/${id}`)
+      return response.json()
+    }
   })
 
   const [showModal, setShowModal] = useState(false)
@@ -226,7 +222,7 @@ export default function FinalizarAnalise() {
             )}
             {data.museologico.status != "Recebida" && (
               <a
-                href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao}/museologico`}
+                href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao._id}/museologico`}
                 className="mb-2"
               >
                 <i className="fas fa-download" aria-hidden="true"></i> Baixar
@@ -250,7 +246,7 @@ export default function FinalizarAnalise() {
                 value={statusMuseologico}
               />
               <a
-                href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao}/museologico`}
+                href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao._id}/museologico`}
                 className="mb-2"
               >
                 <i className="fas fa-download" aria-hidden="true"></i> Baixar
@@ -355,7 +351,7 @@ export default function FinalizarAnalise() {
                 value={statusBibliografico}
               />
               <a
-                href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao}/bibliografico`}
+                href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao._id}/bibliografico`}
                 className="mb-2"
               >
                 <i className="fas fa-download" aria-hidden="true"></i> Baixar
@@ -435,7 +431,7 @@ export default function FinalizarAnalise() {
             )}
             {data.arquivistico.status != "Recebida" && (
               <a
-                href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao}/arquivistico`}
+                href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao._id}/arquivistico`}
                 className="mb-2"
               >
                 <i className="fas fa-download" aria-hidden="true"></i> Baixar
@@ -458,7 +454,7 @@ export default function FinalizarAnalise() {
                 value={statusArquivistico}
               />
               <a
-                href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao}/arquivistico`}
+                href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao._id}/arquivistico`}
                 className="mb-2"
               >
                 <i className="fas fa-download" aria-hidden="true"></i> Baixar
@@ -557,7 +553,7 @@ export default function FinalizarAnalise() {
         </span>
         <span>
           <span className="font-bold">Ano: </span>
-          {data.anoDeclaracao}
+          {data.anoDeclaracao.ano}
         </span>
         <span>
           <span className="font-bold">Museu: </span>

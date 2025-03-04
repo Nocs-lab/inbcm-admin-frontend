@@ -167,7 +167,7 @@ const EnviarParaAnalise: React.FC = () => {
         </span>
         <span>
           <span className="font-bold">Ano: </span>
-          {declaracao.anoDeclaracao}
+          {declaracao.anoDeclaracao.ano}
         </span>
         <span>
           <span className="font-bold">Museu: </span>
@@ -265,7 +265,7 @@ const EnviarParaAnalise: React.FC = () => {
           >
             <Modal.Body>
               Deseja, realmente, enviar a declaração do ano{" "}
-              <b>{declaracao.anoDeclaracao}</b> do museu{" "}
+              <b>{declaracao.anoDeclaracao.ano}</b> do museu{" "}
               <b>{declaracao.museu_id.nome}</b> para o(s) analista(s){" "}
               <b>{getNomesAnalistas()}</b>?
             </Modal.Body>
