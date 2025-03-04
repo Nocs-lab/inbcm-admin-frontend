@@ -18,7 +18,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Create file .env
-        run: echo "${{ secrets.ENVS_UPDATE }}" > .env
+        run: echo "${{ secrets.ENVS }}" > .env
 
       - name: Set Docker repository name for main branch
         if: github.ref == 'refs/heads/main'
