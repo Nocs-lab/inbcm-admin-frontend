@@ -38,7 +38,9 @@ const AcoesEnviarParaAnalise: React.FC<{
     arquivistico: unknown
     bibliografico: unknown
     _id: string
-    anoDeclaracao: string
+    anoDeclaracao: {
+      ano: number
+    }
     retificacao: boolean
     status: string
     dataCriacao: Date
@@ -259,7 +261,9 @@ const AcoesBotaoHistorico: React.FC<{
 
 const columnHelper = createColumnHelper<{
   _id: string
-  anoDeclaracao: string
+  anoDeclaracao: {
+    ano: number
+  }
   retificacao: boolean
   status: string
   responsavelEnvioNome: string
@@ -290,7 +294,7 @@ const columnHelper = createColumnHelper<{
 }>()
 
 const columns = [
-  columnHelper.accessor("anoDeclaracao", {
+  columnHelper.accessor("anoDeclaracao.ano", {
     cell: (info) => info.getValue(),
     header: "Ano",
     meta: {
