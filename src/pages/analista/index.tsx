@@ -14,7 +14,9 @@ interface Declaracao {
   responsavelEnvioNome: string
   dataEnvioAnalise: Date
   dataFimAnalise: Date
-  anoDeclaracao: string
+  anoDeclaracao: {
+    ano: number
+  }
   retificacao: boolean
   museu_id: {
     _id: string
@@ -107,7 +109,7 @@ export default function Declaracoes() {
           })
         ]
       : []),
-    columnHelper.accessor("anoDeclaracao", {
+    columnHelper.accessor("anoDeclaracao.ano", {
       header: "Ano",
       meta: {
         filterVariant: "select"
