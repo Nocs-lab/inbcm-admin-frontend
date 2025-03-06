@@ -3,7 +3,7 @@ import clsx from "clsx"
 import { format } from "date-fns"
 import { useState } from "react"
 import { useParams, Link, useNavigate } from "react-router"
-import { Select, Textarea, Row, Button, Modal } from "react-dsgov"
+import { Select, Textarea, Row, Button, Modal, Upload } from "react-dsgov"
 import MismatchsModal from "../../../../components/MismatchsModal"
 import request from "../../../../utils/request"
 import toast from "react-hot-toast"
@@ -233,18 +233,30 @@ export default function FinalizarAnalise() {
 
           {data.museologico.status === "Recebida" && (
             <div className="flex items-center justify-between">
-              <Select
-                id="select-status-museologico"
-                label="Situação do acervo museológico"
-                placeholder="Selecione um parecer"
-                className="w-1/2"
-                options={[
-                  { label: "Em conformidade", value: "Em conformidade" },
-                  { label: "Não conformidade", value: "Não conformidade" }
-                ]}
-                onChange={(value: string) => setStatusMuseologico(value)}
-                value={statusMuseologico}
-              />
+              <div className="grid grid-cols-2 gap-4">
+                <Select
+                  id="select-status-museologico"
+                  label="Situação do acervo museológico"
+                  placeholder="Selecione um parecer"
+                  className="w-full"
+                  options={[
+                    { label: "Em conformidade", value: "Em conformidade" },
+                    { label: "Não conformidade", value: "Não conformidade" }
+                  ]}
+                  onChange={(value: string) => setStatusMuseologico(value)}
+                  value={statusMuseologico}
+                />
+                <Upload
+                  label="Arquivo complementar"
+                  className="w-full"
+                  uploadTimeout={() => {
+                    return new Promise((resolve) => {
+                      // Aqui incluir a lógica de upload
+                      return setTimeout(resolve, 3000)
+                    })
+                  }}
+                />
+              </div>
               <a
                 href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao._id}/museologico`}
                 className="mb-2"
@@ -338,18 +350,30 @@ export default function FinalizarAnalise() {
 
           {data.bibliografico.status === "Recebida" && (
             <div className="flex items-center justify-between">
-              <Select
-                id="select-status-bibliografico"
-                label="Situação do acervo bibliográfico"
-                placeholder="Selecione um parecer"
-                className="w-1/2"
-                options={[
-                  { label: "Em conformidade", value: "Em conformidade" },
-                  { label: "Não conformidade", value: "Não conformidade" }
-                ]}
-                onChange={(value) => setStatusBibliografico(value)}
-                value={statusBibliografico}
-              />
+              <div className="grid grid-cols-2 gap-4">
+                <Select
+                  id="select-status-bibliografico"
+                  label="Situação do acervo bibliográfico"
+                  placeholder="Selecione um parecer"
+                  className="w-full"
+                  options={[
+                    { label: "Em conformidade", value: "Em conformidade" },
+                    { label: "Não conformidade", value: "Não conformidade" }
+                  ]}
+                  onChange={(value) => setStatusBibliografico(value)}
+                  value={statusBibliografico}
+                />
+                <Upload
+                  label="Arquivo complementar"
+                  className="w-full"
+                  uploadTimeout={() => {
+                    return new Promise((resolve) => {
+                      // Aqui incluir a lógica de upload
+                      return setTimeout(resolve, 3000)
+                    })
+                  }}
+                />
+              </div>
               <a
                 href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao._id}/bibliografico`}
                 className="mb-2"
@@ -441,18 +465,30 @@ export default function FinalizarAnalise() {
           </div>
           {data.arquivistico.status === "Recebida" && (
             <div className="flex items-center justify-between">
-              <Select
-                id="select-status-arquivistico"
-                label="Situação do acervo arquivístico"
-                placeholder="Selecione um parecer"
-                className="w-1/2"
-                options={[
-                  { label: "Em conformidade", value: "Em conformidade" },
-                  { label: "Não conformidade", value: "Não conformidade" }
-                ]}
-                onChange={(value) => setStatusArquivistico(value)}
-                value={statusArquivistico}
-              />
+              <div className="grid grid-cols-2 gap-4">
+                <Select
+                  id="select-status-arquivistico"
+                  label="Situação do acervo arquivístico"
+                  placeholder="Selecione um parecer"
+                  className="w-full"
+                  options={[
+                    { label: "Em conformidade", value: "Em conformidade" },
+                    { label: "Não conformidade", value: "Não conformidade" }
+                  ]}
+                  onChange={(value) => setStatusArquivistico(value)}
+                  value={statusArquivistico}
+                />
+                <Upload
+                  label="Arquivo complementar"
+                  className="w-full"
+                  uploadTimeout={() => {
+                    return new Promise((resolve) => {
+                      // Aqui incluir a lógica de upload
+                      return setTimeout(resolve, 3000)
+                    })
+                  }}
+                />
+              </div>
               <a
                 href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao._id}/arquivistico`}
                 className="mb-2"
