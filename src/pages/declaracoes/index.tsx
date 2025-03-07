@@ -34,9 +34,9 @@ declare module "@tanstack/react-table" {
 
 const AcoesEnviarParaAnalise: React.FC<{
   row: TableRow<{
-    museologico: unknown
-    arquivistico: unknown
-    bibliografico: unknown
+    museologico?: unknown
+    arquivistico?: unknown
+    bibliografico?: unknown
     _id: string
     anoDeclaracao: {
       ano: number
@@ -87,7 +87,9 @@ const AcoesEnviarParaAnalise: React.FC<{
 const AcoesExcluirDeclaracao: React.FC<{
   row: TableRow<{
     _id: string
-    anoDeclaracao: string
+    anoDeclaracao: {
+      ano: number
+    }
     retificacao: boolean
     status: string
     dataCriacao: Date
@@ -181,7 +183,9 @@ const AcoesDefinirStatus: React.FC<{
     arquivistico: unknown
     bibliografico: unknown
     _id: string
-    anoDeclaracao: string
+    anoDeclaracao: {
+      ano: number
+    }
     retificacao: boolean
     status: string
     dataCriacao: Date
@@ -227,7 +231,9 @@ const AcoesDefinirStatus: React.FC<{
 const AcoesBotaoHistorico: React.FC<{
   row: TableRow<{
     _id: string
-    anoDeclaracao: string
+    anoDeclaracao: {
+      ano: number
+    }
     retificacao: boolean
     status: string
     dataCriacao: Date
