@@ -48,7 +48,9 @@ export default function FinalizarAnalise() {
   const [confirmTipo, setConfirmTipo] = useState("")
   const [modalAssinar, setModalAssinar] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [file, setFile] = useState<File | null>(null)
+  const [fileMuseologico, setFileMuseologico] = useState<File | null>(null)
+  const [fileBibliografico, setFileBibliografico] = useState<File | null>(null)
+  const [fileArquivistico, setFileArquivistico] = useState<File | null>(null)
 
   const { mutate: assinarDeclaracao } = useMutation({
     mutationFn: async ({ tipo }: { tipo: string }) => {
@@ -145,17 +147,26 @@ export default function FinalizarAnalise() {
   }
 
   const handleUploadFile = async () => {
-    if (!file) {
+    let fileToUpload: File | null = null
+
+    if (currentTab === "museologico") {
+      fileToUpload = fileMuseologico
+    } else if (currentTab === "bibliografico") {
+      fileToUpload = fileBibliografico
+    } else if (currentTab === "arquivistico") {
+      fileToUpload = fileArquivistico
+    }
+
+    if (!fileToUpload) {
       toast.error("Nenhum arquivo selecionado.")
       return
     }
 
     try {
-      // Valida o arquivo com o esquema Zod
-      fileSchema.parse(file)
+      fileSchema.parse(fileToUpload)
     } catch (error) {
       if (error instanceof z.ZodError) {
-        toast.error(error.errors[0].message) // Exibe a mensagem de erro do Zod
+        toast.error(error.errors[0].message)
       } else {
         toast.error("Erro ao validar o arquivo.")
       }
@@ -163,7 +174,7 @@ export default function FinalizarAnalise() {
     }
 
     const formData = new FormData()
-    formData.append(confirmTipo, file)
+    formData.append(confirmTipo, fileToUpload)
 
     try {
       const response = await fetch(
@@ -209,7 +220,11 @@ export default function FinalizarAnalise() {
         throw new Error(error.message || "Erro ao confirmar a análise.")
       }
 
-      if (file) {
+      if (
+        (currentTab === "museologico" && fileMuseologico) ||
+        (currentTab === "bibliografico" && fileBibliografico) ||
+        (currentTab === "arquivistico" && fileArquivistico)
+      ) {
         await handleUploadFile()
       }
 
@@ -348,9 +363,9 @@ export default function FinalizarAnalise() {
                   value={statusMuseologico}
                 />
                 <Upload
-                  value={file}
+                  value={fileMuseologico}
                   onChange={(file) => {
-                    setFile(file)
+                    setFileMuseologico(file)
                   }}
                   accept=".pdf,.doc,.docx,.txt"
                 />
@@ -476,8 +491,8 @@ export default function FinalizarAnalise() {
                   value={statusBibliografico}
                 />
                 <Upload
-                  value={file}
-                  onChange={(file) => setFile(file)}
+                  value={fileBibliografico}
+                  onChange={(file) => setFileBibliografico(file)}
                   accept=".pdf,.doc,.docx,.txt"
                 />
               </div>
@@ -600,8 +615,8 @@ export default function FinalizarAnalise() {
                   value={statusArquivistico}
                 />
                 <Upload
-                  value={file}
-                  onChange={(file) => setFile(file)}
+                  value={fileArquivistico}
+                  onChange={(file) => setFileArquivistico(file)}
                   accept=".pdf,.doc,.docx,.txt"
                 />
               </div>
@@ -822,9 +837,22 @@ export default function FinalizarAnalise() {
             <Modal.Body>
               Tem certeza de que deseja confimar a análise da declaração{" "}
               <b>{confirmTipo}</b>?
-              {file && (
+              {fileMuseologico && (
                 <p>
-                  Arquivo selecionado: <b>{file.name}</b>
+                  • Arquivo museológico selecionado:{"·"}
+                  <b>{fileMuseologico.name}</b>
+                </p>
+              )}
+              {fileBibliografico && (
+                <p>
+                  • Arquivo bibliográfico selecionado:{"·"}
+                  <b>{fileBibliografico.name}</b>
+                </p>
+              )}
+              {fileArquivistico && (
+                <p>
+                  • Arquivo arquivístico selecionado:{"·"}
+                  <b>{fileArquivistico.name}</b>
                 </p>
               )}
             </Modal.Body>
