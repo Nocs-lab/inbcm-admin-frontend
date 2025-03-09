@@ -72,17 +72,20 @@ const EnviarParaAnalise: React.FC = () => {
 
   const { mutate: enviarAnalise, isPending } = useMutation({
     mutationFn: async () => {
-      // Filtrar apenas os analistas que estão presentes na declaração
+      // Filtrar apenas os analistas que estão presentes na declaração e com status "Recebida"
       const analistasSelecionados = {
-        ...(declaracao?.museologico && {
-          museologico: [analistaSelecionado.museologico].filter(Boolean)
-        }),
-        ...(declaracao?.bibliografico && {
-          bibliografico: [analistaSelecionado.bibliografico].filter(Boolean)
-        }),
-        ...(declaracao?.arquivistico && {
-          arquivistico: [analistaSelecionado.arquivistico].filter(Boolean)
-        })
+        ...(declaracao?.museologico &&
+          declaracao?.museologico.status === "Recebida" && {
+            museologico: [analistaSelecionado.museologico].filter(Boolean)
+          }),
+        ...(declaracao?.bibliografico &&
+          declaracao?.bibliografico.status === "Recebida" && {
+            bibliografico: [analistaSelecionado.bibliografico].filter(Boolean)
+          }),
+        ...(declaracao?.arquivistico &&
+          declaracao?.arquivistico.status === "Recebida" && {
+            arquivistico: [analistaSelecionado.arquivistico].filter(Boolean)
+          })
       }
 
       const response = await request(`/api/admin/declaracoes/${id}/analises`, {
@@ -125,20 +128,32 @@ const EnviarParaAnalise: React.FC = () => {
   const getNomesAnalistas = () => {
     const nomesUnicos = new Set<string>()
 
-    // Verifica se o tipo de analista está presente na declaração
-    if (declaracao?.museologico && analistaSelecionado.museologico) {
+    // Verifica se o tipo de analista está presente na declaração e com status "Recebida"
+    if (
+      declaracao?.museologico &&
+      declaracao?.museologico.status === "Recebida" &&
+      analistaSelecionado.museologico
+    ) {
       const analista = analistas.museologico.find(
         (a) => a._id === analistaSelecionado.museologico
       )
       if (analista) nomesUnicos.add(analista.nome)
     }
-    if (declaracao?.bibliografico && analistaSelecionado.bibliografico) {
+    if (
+      declaracao?.bibliografico &&
+      declaracao?.bibliografico.status === "Recebida" &&
+      analistaSelecionado.bibliografico
+    ) {
       const analista = analistas.bibliografico.find(
         (a) => a._id === analistaSelecionado.bibliografico
       )
       if (analista) nomesUnicos.add(analista.nome)
     }
-    if (declaracao?.arquivistico && analistaSelecionado.arquivistico) {
+    if (
+      declaracao?.arquivistico &&
+      declaracao?.arquivistico.status === "Recebida" &&
+      analistaSelecionado.arquivistico
+    ) {
       const analista = analistas.arquivistico.find(
         (a) => a._id === analistaSelecionado.arquivistico
       )
