@@ -3,10 +3,24 @@ import clsx from "clsx"
 import { format } from "date-fns"
 import { useState } from "react"
 import { useParams, Link, useNavigate } from "react-router"
-import { Select, Textarea, Row, Button, Modal, Upload } from "react-dsgov"
+import { Select, Textarea, Row, Button, Modal } from "react-dsgov"
 import MismatchsModal from "../../../../components/MismatchsModal"
 import request from "../../../../utils/request"
 import toast from "react-hot-toast"
+import Upload from "../../../../components/Upload"
+import { z } from "zod"
+import useStore from "../../../../utils/store"
+
+const fileSchema = z.instanceof(File).refine(
+  (file) => {
+    const allowedExtensions = [".docx", ".doc", ".txt", ".pdf"]
+    const fileExtension = file.name.split(".").pop()?.toLowerCase()
+    return fileExtension && allowedExtensions.includes(`.${fileExtension}`)
+  },
+  {
+    message: "O arquivo deve ser do tipo .docx, .doc, .txt ou .pdf."
+  }
+)
 
 type Payload =
   | { statusBens: { museologico: { status: string; comentario: string } } }
@@ -17,6 +31,8 @@ export default function FinalizarAnalise() {
   const params = useParams()
   const id = params.id!
   const navigate = useNavigate()
+  const { user } = useStore()
+  const userNome = user?.name || ""
 
   const { data } = useSuspenseQuery({
     queryKey: ["declaracao", id],
@@ -31,6 +47,10 @@ export default function FinalizarAnalise() {
   const [confirmPayload, setConfirmPayload] = useState(null)
   const [confirmTipo, setConfirmTipo] = useState("")
   const [modalAssinar, setModalAssinar] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [fileMuseologico, setFileMuseologico] = useState<File | null>(null)
+  const [fileBibliografico, setFileBibliografico] = useState<File | null>(null)
+  const [fileArquivistico, setFileArquivistico] = useState<File | null>(null)
 
   const { mutate: assinarDeclaracao } = useMutation({
     mutationFn: async ({ tipo }: { tipo: string }) => {
@@ -92,6 +112,7 @@ export default function FinalizarAnalise() {
   const [statusArquivistico, setStatusArquivistico] = useState("")
   const [commentArquivistico, setCommentArquivistico] = useState("")
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { mutate: atualizarStatus, isLoading: isUpdating } = useMutation({
     mutationFn: async (payload) => {
       const response = await fetch(
@@ -125,14 +146,96 @@ export default function FinalizarAnalise() {
     setModalConfirmar(true)
   }
 
-  const handleConfirmarAnalise = () => {
+  const handleUploadFile = async () => {
+    let fileToUpload: File | null = null
+
+    if (currentTab === "museologico") {
+      fileToUpload = fileMuseologico
+    } else if (currentTab === "bibliografico") {
+      fileToUpload = fileBibliografico
+    } else if (currentTab === "arquivistico") {
+      fileToUpload = fileArquivistico
+    }
+
+    if (!fileToUpload) {
+      toast.error("Nenhum arquivo selecionado.")
+      return
+    }
+
+    try {
+      fileSchema.parse(fileToUpload)
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast.error(error.errors[0].message)
+      } else {
+        toast.error("Erro ao validar o arquivo.")
+      }
+      return
+    }
+
+    const formData = new FormData()
+    formData.append(confirmTipo, fileToUpload)
+
+    try {
+      const response = await fetch(
+        `/api/public/declaracoes/upload/analise/${id}/${confirmTipo}`,
+        {
+          method: "POST",
+          body: formData
+        }
+      )
+
+      if (!response.ok) {
+        throw new Error("Erro ao enviar o arquivo.")
+      }
+
+      toast.success("Arquivo enviado com sucesso!")
+    } catch (error) {
+      toast.error("Erro ao enviar o arquivo.")
+    }
+  }
+
+  const handleConfirmarAnalise = async () => {
     if (!confirmPayload || !confirmTipo) {
       toast.error("Erro interno. Tente novamente.")
       return
     }
 
-    atualizarStatus(confirmPayload)
-    setModalConfirmar(false) // Fecha o modal após a confirmação
+    setIsLoading(true)
+
+    try {
+      const response = await fetch(
+        `/api/admin/declaracoes/atualizarStatus/${id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(confirmPayload)
+        }
+      )
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.message || "Erro ao confirmar a análise.")
+      }
+
+      if (
+        (currentTab === "museologico" && fileMuseologico) ||
+        (currentTab === "bibliografico" && fileBibliografico) ||
+        (currentTab === "arquivistico" && fileArquivistico)
+      ) {
+        await handleUploadFile()
+      }
+
+      toast.success("Análise confirmada com sucesso!")
+      setModalConfirmar(false)
+      window.location.reload()
+    } catch (error) {
+      toast.error("Erro ao enviar a análise.")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleSaveMuseologico = () => {
@@ -201,24 +304,38 @@ export default function FinalizarAnalise() {
               <span className="font-bold text-lg">Analista museológico: </span>
               {data.museologico.analistasResponsaveisNome}
             </span>
-            {data.museologico.status === "Recebida" && (
-              <div className="flex gap-10">
-                <a
-                  className="text-xl"
-                  href="#"
-                  onClick={() => {
-                    setTipoDeclaracao("museologico")
-                    setModalAssinar(true)
-                  }}
-                  role="button"
-                >
-                  <i
-                    className="fa-solid fa-file-signature"
-                    aria-hidden="true"
-                  ></i>{" "}
-                  Atribuir para mim
-                </a>
-              </div>
+            {data.museologico.status === "Recebida" &&
+              !data.museologico.analistasResponsaveisNome.includes(
+                userNome
+              ) && (
+                <div className="flex gap-10">
+                  <a
+                    className="text-xl"
+                    href="#"
+                    onClick={() => {
+                      setTipoDeclaracao("museologico")
+                      setModalAssinar(true)
+                    }}
+                    role="button"
+                  >
+                    <i
+                      className="fa-solid fa-file-signature"
+                      aria-hidden="true"
+                    ></i>{" "}
+                    Atribuir para mim
+                  </a>
+                </div>
+              )}
+          </div>
+          <div className="flex justify-end gap-10">
+            {data.museologico.analiseUrl && (
+              <a
+                href={`/api/public/declaracoes/download/analise/${data._id}/museologico`}
+                className="mb-2"
+              >
+                <i className="fas fa-download" aria-hidden="true"></i> Baixar
+                comentários técnicos
+              </a>
             )}
             {data.museologico.status != "Recebida" && (
               <a
@@ -230,7 +347,6 @@ export default function FinalizarAnalise() {
               </a>
             )}
           </div>
-
           {data.museologico.status === "Recebida" && (
             <div className="flex items-center justify-between">
               <div className="grid grid-cols-2 gap-4">
@@ -247,14 +363,11 @@ export default function FinalizarAnalise() {
                   value={statusMuseologico}
                 />
                 <Upload
-                  label="Arquivo complementar"
-                  className="w-full"
-                  uploadTimeout={() => {
-                    return new Promise((resolve) => {
-                      // Aqui incluir a lógica de upload
-                      return setTimeout(resolve, 3000)
-                    })
+                  value={fileMuseologico}
+                  onChange={(file) => {
+                    setFileMuseologico(file)
                   }}
+                  accept=".pdf,.doc,.docx,.txt"
                 />
               </div>
               <a
@@ -318,24 +431,38 @@ export default function FinalizarAnalise() {
               </span>
               {data.bibliografico.analistasResponsaveisNome}
             </span>
-            {data.bibliografico.status === "Recebida" && (
-              <div className="flex gap-10">
-                <a
-                  className="text-xl"
-                  href="#"
-                  onClick={() => {
-                    setTipoDeclaracao("bibliografico")
-                    setModalAssinar(true)
-                  }}
-                  role="button"
-                >
-                  <i
-                    className="fa-solid fa-file-signature"
-                    aria-hidden="true"
-                  ></i>{" "}
-                  Atribuir para mim
-                </a>
-              </div>
+            {data.bibliografico.status === "Recebida" &&
+              !data.bibliografico.analistasResponsaveisNome.includes(
+                userNome
+              ) && (
+                <div className="flex gap-10">
+                  <a
+                    className="text-xl"
+                    href="#"
+                    onClick={() => {
+                      setTipoDeclaracao("bibliografico")
+                      setModalAssinar(true)
+                    }}
+                    role="button"
+                  >
+                    <i
+                      className="fa-solid fa-file-signature"
+                      aria-hidden="true"
+                    ></i>{" "}
+                    Atribuir para mim
+                  </a>
+                </div>
+              )}
+          </div>
+          <div className="flex justify-end gap-10">
+            {data.bibliografico.analiseUrl && (
+              <a
+                href={`/api/public/declaracoes/download/analise/${data._id}/bibliografico`}
+                className="mb-2"
+              >
+                <i className="fas fa-download" aria-hidden="true"></i> Baixar
+                comentários técnicos
+              </a>
             )}
             {data.bibliografico.status != "Recebida" && (
               <a
@@ -364,14 +491,9 @@ export default function FinalizarAnalise() {
                   value={statusBibliografico}
                 />
                 <Upload
-                  label="Arquivo complementar"
-                  className="w-full"
-                  uploadTimeout={() => {
-                    return new Promise((resolve) => {
-                      // Aqui incluir a lógica de upload
-                      return setTimeout(resolve, 3000)
-                    })
-                  }}
+                  value={fileBibliografico}
+                  onChange={(file) => setFileBibliografico(file)}
+                  accept=".pdf,.doc,.docx,.txt"
                 />
               </div>
               <a
@@ -434,24 +556,38 @@ export default function FinalizarAnalise() {
               <span className="font-bold text-lg">Analista arquivístico: </span>
               {data.arquivistico.analistasResponsaveisNome}
             </span>
-            {data.arquivistico.status === "Recebida" && (
-              <div className="flex gap-10">
-                <a
-                  className="text-xl"
-                  href="#"
-                  onClick={() => {
-                    setTipoDeclaracao("arquivistico")
-                    setModalAssinar(true)
-                  }}
-                  role="button"
-                >
-                  <i
-                    className="fa-solid fa-file-signature"
-                    aria-hidden="true"
-                  ></i>{" "}
-                  Atribuir para mim
-                </a>
-              </div>
+            {data.arquivistico.status === "Recebida" &&
+              !data.arquivistico.analistasResponsaveisNome.includes(
+                userNome
+              ) && (
+                <div className="flex gap-10">
+                  <a
+                    className="text-xl"
+                    href="#"
+                    onClick={() => {
+                      setTipoDeclaracao("arquivistico")
+                      setModalAssinar(true)
+                    }}
+                    role="button"
+                  >
+                    <i
+                      className="fa-solid fa-file-signature"
+                      aria-hidden="true"
+                    ></i>{" "}
+                    Atribuir para mim
+                  </a>
+                </div>
+              )}
+          </div>
+          <div className="flex justify-end gap-10">
+            {data.arquivistico.analiseUrl && (
+              <a
+                href={`/api/public/declaracoes/download/analise/${data._id}/arquivistico`}
+                className="mb-2"
+              >
+                <i className="fas fa-download" aria-hidden="true"></i> Baixar
+                comentários técnicos
+              </a>
             )}
             {data.arquivistico.status != "Recebida" && (
               <a
@@ -479,14 +615,9 @@ export default function FinalizarAnalise() {
                   value={statusArquivistico}
                 />
                 <Upload
-                  label="Arquivo complementar"
-                  className="w-full"
-                  uploadTimeout={() => {
-                    return new Promise((resolve) => {
-                      // Aqui incluir a lógica de upload
-                      return setTimeout(resolve, 3000)
-                    })
-                  }}
+                  value={fileArquivistico}
+                  onChange={(file) => setFileArquivistico(file)}
+                  accept=".pdf,.doc,.docx,.txt"
                 />
               </div>
               <a
@@ -572,15 +703,20 @@ export default function FinalizarAnalise() {
             />
           </>
         )}
-        <a
-          className="text-xl"
-          href="#"
-          onClick={() => navigate(`/declaracoes/enviarAnalise/${id}`)}
-          role="button"
-        >
-          <i className="fa-solid fa-clipboard-user" aria-hidden="true"></i>{" "}
-          Alterar analista
-        </a>
+        {data.status === "Recebida" || data.status === "Em análise" ? (
+          <a
+            className="text-xl"
+            onClick={() => navigate(`/declaracoes/enviarAnalise/${id}`)}
+          >
+            <i className="fa-solid fa-clipboard-user" aria-hidden="true"></i>{" "}
+            Alterar analista
+          </a>
+        ) : (
+          <span className="text-xl text-gray-500 cursor-not-allowed">
+            <i className="fa-solid fa-clipboard-user" aria-hidden="true"></i>{" "}
+            Alterar analista
+          </span>
+        )}
       </div>
       <div className="flex gap-10 text-lg mt-5">
         <span>
@@ -701,6 +837,24 @@ export default function FinalizarAnalise() {
             <Modal.Body>
               Tem certeza de que deseja confimar a análise da declaração{" "}
               <b>{confirmTipo}</b>?
+              {fileMuseologico && (
+                <p>
+                  • Arquivo museológico selecionado:{"·"}
+                  <b>{fileMuseologico.name}</b>
+                </p>
+              )}
+              {fileBibliografico && (
+                <p>
+                  • Arquivo bibliográfico selecionado:{"·"}
+                  <b>{fileBibliografico.name}</b>
+                </p>
+              )}
+              {fileArquivistico && (
+                <p>
+                  • Arquivo arquivístico selecionado:{"·"}
+                  <b>{fileArquivistico.name}</b>
+                </p>
+              )}
             </Modal.Body>
             <Modal.Footer justify-content="end">
               <div className="flex gap-2">
@@ -711,8 +865,13 @@ export default function FinalizarAnalise() {
                 >
                   Cancelar
                 </Button>
-                <Button primary small onClick={handleConfirmarAnalise}>
-                  Confirmar
+                <Button
+                  primary
+                  small
+                  onClick={handleConfirmarAnalise}
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Salvando..." : "Confirmar"}
                 </Button>
               </div>
             </Modal.Footer>
