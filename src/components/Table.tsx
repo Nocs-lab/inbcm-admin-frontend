@@ -77,16 +77,40 @@ function Filter({ column }: { column: Column<unknown, unknown> }) {
     () => Array.from(uniqueValues.keys()).sort(),
     [uniqueValues]
   )
+  const optionMapping = (value: string) => {
+    switch (value.toString()) {
+      case "0":
+        return "Para aprovar"
+      case "1":
+        return "Ativo"
+      case "2":
+        return "Inativo"
+      case "3":
+        return "Não aprovado"
+      case "admin":
+        return "Administrador"
+      case "analyst":
+        return "Analista"
+      case "declarant":
+        return "Declarante"
+      default:
+        return value
+    }
+  }
 
   return filterVariant === "select" ? (
     <select
-      onChange={(e) => column.setFilterValue(e.currentTarget.value)}
+      onChange={(e) => {
+        const value = e.currentTarget.value
+        // Converte o valor selecionado para número antes de definir o filtro
+        column.setFilterValue(value === "" ? "" : value)
+      }}
       value={columnFilterValue?.toString()}
     >
       <option value="">Todos</option>
       {sortedUniqueValues.map((value) => (
         <option value={value} key={value}>
-          {value}
+          {optionMapping(value)}
         </option>
       ))}
     </select>
