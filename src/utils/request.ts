@@ -1,5 +1,6 @@
 import { pack, unpack } from "msgpackr"
 import toast from "react-hot-toast"
+import router from "./router"
 
 export default async function request(
   path: string,
@@ -29,7 +30,7 @@ export default async function request(
     if (refreshRes.ok) {
       return request(path, init)
     } else {
-      location.href = "/login"
+      router.navigate("/login")
     }
   } else if (!res.status.toString().startsWith("2")) {
     const error = unpack(await res.arrayBuffer()).message
