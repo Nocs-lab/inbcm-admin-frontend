@@ -23,7 +23,9 @@ const Header: React.FC = () => {
     queryKey: ["user"],
     queryFn: async () => {
       const response = await request("/api/public/users")
-      return response.json()
+      const data = await response.json()
+
+      return data || { profile: { name: "admin" }, nome: "Admin" }
     }
   })
 
