@@ -142,7 +142,7 @@ export default function Declaracoes() {
             onClick={() => navigate(`/declaracoes/${info.getValue()}`)}
             className="!font-thin analise"
           >
-            <i className="fa-solid fa-timeline p-2"></i>Histórico
+            <i className="fa-solid fa-eye p-2"></i>Exibir
           </Button>
         </div>
       )

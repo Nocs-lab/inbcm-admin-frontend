@@ -5,7 +5,6 @@ import { useState } from "react"
 import { useNavigate, useParams, Link } from "react-router"
 import MismatchsModal from "../../../components/MismatchsModal"
 import TableItens from "../../../components/TableItens"
-import { getColorStatus } from "../../../utils/colorStatus"
 import request from "../../../utils/request"
 import { Button, Modal } from "react-dsgov"
 import { useModal } from "../../../utils/modal"
@@ -70,7 +69,7 @@ export default function DeclaracaoPage() {
 
   return (
     <>
-      <Link to="/" className="text-lg">
+      <Link to="/declaracoes" className="text-lg">
         <i className="fas fa-arrow-left" aria-hidden="true"></i>
         Voltar
       </Link>
@@ -78,9 +77,7 @@ export default function DeclaracaoPage() {
         Declaração{" "}
         {data.retificacao ? `retificadora 0${data.versao - 1}` : "original"}
       </h2>
-      <span className="br-tag mb-5" style={getColorStatus(data.status)}>
-        {data.status}
-      </span>
+      <span className="br-tag mb-5">{data.status}</span>
       <div className="flex gap-4">
         <a href={`/api/public/recibo/${id}`} className="text-xl">
           <i className="fas fa-file-pdf" aria-hidden="true"></i> Recibo
@@ -128,7 +125,7 @@ export default function DeclaracaoPage() {
         </a>
         {data.status !== "Recebida" && (
           <Link to={`/declaracoes/${id}/analise`} className="text-xl">
-            <i className="fas fa-chalkboard-user"></i> Parecer do analista
+            <i className="fas fa-chalkboard-user"></i> Parecer
           </Link>
         )}
       </div>
@@ -220,12 +217,7 @@ export default function DeclaracaoPage() {
               >
                 <div className="flex items-center justify-between">
                   <span className="mb-3 flex items-center justify-start gap-1">
-                    <span
-                      className="br-tag"
-                      style={getColorStatus(data.museologico?.status)}
-                    >
-                      {data.museologico?.status}
-                    </span>
+                    <span className="br-tag">{data.museologico?.status}</span>
                   </span>
                   <a
                     href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao._id}/museologico`}
@@ -252,12 +244,7 @@ export default function DeclaracaoPage() {
               >
                 <div className="flex items-center justify-between">
                   <span className="mb-3 flex items-center justify-start gap-1">
-                    <span
-                      className="br-tag"
-                      style={getColorStatus(data.bibliografico?.status)}
-                    >
-                      {data.bibliografico?.status}
-                    </span>
+                    <span className="br-tag">{data.bibliografico?.status}</span>
                   </span>
                   <a
                     href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao._id}/bibliografico`}
@@ -284,12 +271,7 @@ export default function DeclaracaoPage() {
               >
                 <div className="flex items-center justify-between">
                   <span className="mb-3 flex items-center justify-start gap-1">
-                    <span
-                      className="br-tag"
-                      style={getColorStatus(data.arquivistico?.status)}
-                    >
-                      {data.arquivistico?.status}
-                    </span>
+                    <span className="br-tag">{data.arquivistico?.status}</span>
                   </span>
                   <a
                     href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao._id}/arquivistico`}

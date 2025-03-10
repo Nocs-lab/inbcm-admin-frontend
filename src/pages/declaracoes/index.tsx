@@ -170,7 +170,7 @@ const AcoesExcluirDeclaracao: React.FC<{
           onClick={() => navigate(`/declaracoes/${row.original._id}`)}
           className="!font-thin analise"
         >
-          <i className="fa-solid fa-timeline p-2"></i>Histórico
+          <i className="fas fa-eye" aria-hidden="true"></i> Exibir
         </Button>
       </div>
     </>
@@ -221,7 +221,7 @@ const AcoesDefinirStatus: React.FC<{
           onClick={() => navigate(`/declaracoes/${row.original._id}`)}
           className="!font-thin analise"
         >
-          <i className="fa-solid fa-timeline p-2"></i>Histórico
+          <i className="fa-solid fa-eye p-2" aria-hidden="true"></i> Exibir
         </Button>
       </div>
     </>
@@ -259,7 +259,7 @@ const AcoesBotaoHistorico: React.FC<{
         onClick={() => navigate(`/declaracoes/${row.original._id}`)}
         className="!font-thin analise"
       >
-        <i className="fa-solid fa-timeline p-2"></i>Histórico
+        <i className="fa-solid fa-eye p-2" aria-hidden="true"></i> Exibir
       </Button>
     </div>
   )
