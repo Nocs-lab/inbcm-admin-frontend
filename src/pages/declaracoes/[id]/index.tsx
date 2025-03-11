@@ -8,10 +8,13 @@ import TableItens from "../../../components/TableItens"
 import request from "../../../utils/request"
 import { Button, Modal } from "react-dsgov"
 import { useModal } from "../../../utils/modal"
+import useStore from "../../../utils/store"
 
 export default function DeclaracaoPage() {
   const params = useParams()
   const id = params.id!
+
+  const user = useStore((state) => state.user)
 
   const navigate = useNavigate()
 
@@ -69,7 +72,10 @@ export default function DeclaracaoPage() {
 
   return (
     <>
-      <Link to="/declaracoes" className="text-lg">
+      <Link
+        to={user?.perfil === "admin" ? "/declaracoes" : "/analista"}
+        className="text-lg"
+      >
         <i className="fas fa-arrow-left" aria-hidden="true"></i>
         Voltar
       </Link>
@@ -221,7 +227,8 @@ export default function DeclaracaoPage() {
                   </span>
                   <a
                     href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao._id}/museologico`}
-                    className="mb-2"
+                    className="text-xl"
+                    role="button"
                   >
                     <i className="fas fa-download" aria-hidden="true"></i>{" "}
                     Baixar planilha
@@ -248,7 +255,8 @@ export default function DeclaracaoPage() {
                   </span>
                   <a
                     href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao._id}/bibliografico`}
-                    className="mb-2"
+                    className="text-xl"
+                    role="button"
                   >
                     <i className="fas fa-download" aria-hidden="true"></i>{" "}
                     Baixar planilha
@@ -275,7 +283,8 @@ export default function DeclaracaoPage() {
                   </span>
                   <a
                     href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao._id}/arquivistico`}
-                    className="mb-2"
+                    className="text-xl"
+                    role="button"
                   >
                     <i className="fas fa-download" aria-hidden="true"></i>{" "}
                     Baixar planilha

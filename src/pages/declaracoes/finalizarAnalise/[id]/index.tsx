@@ -296,19 +296,13 @@ export default function FinalizarAnalise() {
     if (currentTab === "museologico") {
       return (
         <>
-          <div>
-            <span className="br-tag">{data.museologico.status}</span>
-          </div>
           <div className="flex items-center justify-between">
-            <span>
-              <span className="font-bold text-lg">Analista museológico: </span>
-              {data.museologico.analistasResponsaveisNome}
-            </span>
-            {data.museologico.status === "Recebida" &&
-              !data.museologico.analistasResponsaveisNome.includes(
-                userNome
-              ) && (
-                <div className="flex gap-10">
+            <span className="br-tag">{data.museologico.status}</span>
+            <div className="flex justify-end gap-10">
+              {data.museologico.status === "Recebida" &&
+                !data.museologico.analistasResponsaveisNome.includes(
+                  userNome
+                ) && (
                   <a
                     className="text-xl"
                     href="#"
@@ -324,29 +318,36 @@ export default function FinalizarAnalise() {
                     ></i>{" "}
                     Atribuir para mim
                   </a>
-                </div>
+                )}
+              {data.museologico.analiseUrl && (
+                <a
+                  href={`/api/public/declaracoes/download/analise/${data._id}/museologico`}
+                  className="text-xl"
+                  role="button"
+                >
+                  <i className="fas fa-download" aria-hidden="true"></i> Baixar
+                  arquivo complementar
+                </a>
               )}
-          </div>
-          <div className="flex justify-end gap-10">
-            {data.museologico.analiseUrl && (
-              <a
-                href={`/api/public/declaracoes/download/analise/${data._id}/museologico`}
-                className="mb-2"
-              >
-                <i className="fas fa-download" aria-hidden="true"></i> Baixar
-                comentários técnicos
-              </a>
-            )}
-            {data.museologico.status != "Recebida" && (
               <a
                 href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao._id}/museologico`}
-                className="mb-2"
+                className="text-xl"
+                role="button"
               >
                 <i className="fas fa-download" aria-hidden="true"></i> Baixar
                 planilha
               </a>
-            )}
+            </div>
           </div>
+          <div className="flex items-center justify-between">
+            <span>
+              <span className="font-bold text-lg">Analista museológico: </span>
+              <span className="text-lg">
+                {data.museologico.analistasResponsaveisNome}
+              </span>
+            </span>
+          </div>
+
           {data.museologico.status === "Recebida" && (
             <div className="flex items-center justify-between">
               <div className="grid grid-cols-2 gap-4">
@@ -370,13 +371,6 @@ export default function FinalizarAnalise() {
                   accept=".pdf,.doc,.docx,.txt"
                 />
               </div>
-              <a
-                href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao._id}/museologico`}
-                className="mb-2"
-              >
-                <i className="fas fa-download" aria-hidden="true"></i> Baixar
-                planilha
-              </a>
             </div>
           )}
 
@@ -423,57 +417,60 @@ export default function FinalizarAnalise() {
         <>
           <div>
             <span className="br-tag">{data.bibliografico.status}</span>
+            <div className="flex justify-end gap-10">
+              {data.bibliografico.status === "Recebida" &&
+                !data.bibliografico.analistasResponsaveisNome.includes(
+                  userNome
+                ) && (
+                  <div className="flex gap-10">
+                    <a
+                      className="text-xl"
+                      href="#"
+                      onClick={() => {
+                        setTipoDeclaracao("bibliografico")
+                        setModalAssinar(true)
+                      }}
+                      role="button"
+                    >
+                      <i
+                        className="fa-solid fa-file-signature"
+                        aria-hidden="true"
+                      ></i>{" "}
+                      Atribuir para mim
+                    </a>
+                  </div>
+                )}
+              {data.bibliografico.analiseUrl && (
+                <a
+                  href={`/api/public/declaracoes/download/analise/${data._id}/bibliografico`}
+                  className="text-xl"
+                  role="button"
+                >
+                  <i className="fas fa-download" aria-hidden="true"></i> Baixar
+                  arquivo complementar
+                </a>
+              )}
+              <a
+                href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao}/bibliografico`}
+                className="text-xl"
+                role="button"
+              >
+                <i className="fas fa-download" aria-hidden="true"></i> Baixar
+                planilha
+              </a>
+            </div>
           </div>
           <div className="flex items-center justify-between">
             <span>
               <span className="font-bold text-lg">
                 Analista bibliográfico:{" "}
               </span>
-              {data.bibliografico.analistasResponsaveisNome}
+              <span className="text-lg">
+                {data.bibliografico.analistasResponsaveisNome}
+              </span>
             </span>
-            {data.bibliografico.status === "Recebida" &&
-              !data.bibliografico.analistasResponsaveisNome.includes(
-                userNome
-              ) && (
-                <div className="flex gap-10">
-                  <a
-                    className="text-xl"
-                    href="#"
-                    onClick={() => {
-                      setTipoDeclaracao("bibliografico")
-                      setModalAssinar(true)
-                    }}
-                    role="button"
-                  >
-                    <i
-                      className="fa-solid fa-file-signature"
-                      aria-hidden="true"
-                    ></i>{" "}
-                    Atribuir para mim
-                  </a>
-                </div>
-              )}
           </div>
-          <div className="flex justify-end gap-10">
-            {data.bibliografico.analiseUrl && (
-              <a
-                href={`/api/public/declaracoes/download/analise/${data._id}/bibliografico`}
-                className="mb-2"
-              >
-                <i className="fas fa-download" aria-hidden="true"></i> Baixar
-                comentários técnicos
-              </a>
-            )}
-            {data.bibliografico.status != "Recebida" && (
-              <a
-                href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao}/bibliografico`}
-                className="mb-2"
-              >
-                <i className="fas fa-download" aria-hidden="true"></i> Baixar
-                planilha
-              </a>
-            )}
-          </div>
+          <div className="flex justify-end gap-10"></div>
 
           {data.bibliografico.status === "Recebida" && (
             <div className="flex items-center justify-between">
@@ -496,13 +493,6 @@ export default function FinalizarAnalise() {
                   accept=".pdf,.doc,.docx,.txt"
                 />
               </div>
-              <a
-                href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao._id}/bibliografico`}
-                className="mb-2"
-              >
-                <i className="fas fa-download" aria-hidden="true"></i> Baixar
-                planilha
-              </a>
             </div>
           )}
 
@@ -550,54 +540,56 @@ export default function FinalizarAnalise() {
         <>
           <div>
             <span className="br-tag">{data.arquivistico.status}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span>
-              <span className="font-bold text-lg">Analista arquivístico: </span>
-              {data.arquivistico.analistasResponsaveisNome}
-            </span>
-            {data.arquivistico.status === "Recebida" &&
-              !data.arquivistico.analistasResponsaveisNome.includes(
-                userNome
-              ) && (
-                <div className="flex gap-10">
-                  <a
-                    className="text-xl"
-                    href="#"
-                    onClick={() => {
-                      setTipoDeclaracao("arquivistico")
-                      setModalAssinar(true)
-                    }}
-                    role="button"
-                  >
-                    <i
-                      className="fa-solid fa-file-signature"
-                      aria-hidden="true"
-                    ></i>{" "}
-                    Atribuir para mim
-                  </a>
-                </div>
+            <div className="flex justify-end gap-10">
+              {data.arquivistico.status === "Recebida" &&
+                !data.arquivistico.analistasResponsaveisNome.includes(
+                  userNome
+                ) && (
+                  <div className="flex gap-10">
+                    <a
+                      className="text-xl"
+                      href="#"
+                      onClick={() => {
+                        setTipoDeclaracao("arquivistico")
+                        setModalAssinar(true)
+                      }}
+                      role="button"
+                    >
+                      <i
+                        className="fa-solid fa-file-signature"
+                        aria-hidden="true"
+                      ></i>{" "}
+                      Atribuir para mim
+                    </a>
+                  </div>
+                )}
+              {data.arquivistico.analiseUrl && (
+                <a
+                  href={`/api/public/declaracoes/download/analise/${data._id}/arquivistico`}
+                  className="text-xl"
+                  role="button"
+                >
+                  <i className="fas fa-download" aria-hidden="true"></i> Baixar
+                  comentários técnicos
+                </a>
               )}
-          </div>
-          <div className="flex justify-end gap-10">
-            {data.arquivistico.analiseUrl && (
-              <a
-                href={`/api/public/declaracoes/download/analise/${data._id}/arquivistico`}
-                className="mb-2"
-              >
-                <i className="fas fa-download" aria-hidden="true"></i> Baixar
-                comentários técnicos
-              </a>
-            )}
-            {data.arquivistico.status != "Recebida" && (
               <a
                 href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao._id}/arquivistico`}
-                className="mb-2"
+                className="text-xl"
+                role="button"
               >
                 <i className="fas fa-download" aria-hidden="true"></i> Baixar
                 planilha
               </a>
-            )}
+            </div>
+          </div>
+          <div className="flex items-center justify-between">
+            <span>
+              <span className="font-bold text-lg">Analista arquivístico: </span>
+              <span className="text-lg">
+                {data.arquivistico.analistasResponsaveisNome}
+              </span>
+            </span>
           </div>
           {data.arquivistico.status === "Recebida" && (
             <div className="flex items-center justify-between">
@@ -620,13 +612,6 @@ export default function FinalizarAnalise() {
                   accept=".pdf,.doc,.docx,.txt"
                 />
               </div>
-              <a
-                href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao._id}/arquivistico`}
-                className="mb-2"
-              >
-                <i className="fas fa-download" aria-hidden="true"></i> Baixar
-                planilha
-              </a>
             </div>
           )}
 
