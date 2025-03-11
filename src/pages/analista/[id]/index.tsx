@@ -261,21 +261,21 @@ export default function FinalizarAnalise() {
               {data.museologico.analiseUrl && (
                 <a
                   href={`/api/public/declaracoes/download/analise/${data._id}/museologico`}
-                  className="mb-2"
+                  className="text-xl"
+                  role="button"
                 >
                   <i className="fas fa-download" aria-hidden="true"></i> Baixar
-                  comentários técnicos
+                  arquivo complementar
                 </a>
               )}
-              {data.museologico.status != "Recebida" && (
-                <a
-                  href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao._id}/museologico`}
-                  className="mb-2"
-                >
-                  <i className="fas fa-download" aria-hidden="true"></i> Baixar
-                  planilha
-                </a>
-              )}
+              <a
+                href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao._id}/museologico`}
+                className="text-xl"
+                role="button"
+              >
+                <i className="fas fa-download" aria-hidden="true"></i> Baixar
+                planilha
+              </a>
             </div>
           </div>
 
@@ -359,21 +359,21 @@ export default function FinalizarAnalise() {
               {data.bibliografico.analiseUrl && (
                 <a
                   href={`/api/public/declaracoes/download/analise/${data._id}/bibliografico`}
-                  className="mb-2"
+                  className="text-xl"
+                  role="button"
                 >
                   <i className="fas fa-download" aria-hidden="true"></i> Baixar
-                  comentários técnicos
+                  arquivo complementar
                 </a>
               )}
-              {data.bibliografico.status != "Recebida" && (
-                <a
-                  href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao}/bibliografico`}
-                  className="mb-2"
-                >
-                  <i className="fas fa-download" aria-hidden="true"></i> Baixar
-                  planilha
-                </a>
-              )}
+              <a
+                href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao}/bibliografico`}
+                className="text-xl"
+                role="button"
+              >
+                <i className="fas fa-download" aria-hidden="true"></i> Baixar
+                planilha
+              </a>
             </div>
           </div>
 
@@ -398,13 +398,6 @@ export default function FinalizarAnalise() {
                   accept=".pdf,.doc,.docx,.txt"
                 />
               </div>
-              <a
-                href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao._id}/bibliografico`}
-                className="mb-2"
-              >
-                <i className="fas fa-download" aria-hidden="true"></i> Baixar
-                planilha
-              </a>
             </div>
           )}
 
@@ -456,21 +449,21 @@ export default function FinalizarAnalise() {
               {data.arquivistico.analiseUrl && (
                 <a
                   href={`/api/public/declaracoes/download/analise/${data._id}/arquivistico`}
-                  className="mb-2"
+                  className="text-xl"
+                  role="button"
                 >
                   <i className="fas fa-download" aria-hidden="true"></i> Baixar
-                  comentários técnicos
+                  arquivo complementar
                 </a>
               )}
-              {data.arquivistico.status != "Recebida" && (
-                <a
-                  href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao._id}/arquivistico`}
-                  className="mb-2"
-                >
-                  <i className="fas fa-download" aria-hidden="true"></i> Baixar
-                  planilha
-                </a>
-              )}
+              <a
+                href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao._id}/arquivistico`}
+                className="text-xl"
+                role="button"
+              >
+                <i className="fas fa-download" aria-hidden="true"></i> Baixar
+                planilha
+              </a>
             </div>
           </div>
 
@@ -495,13 +488,6 @@ export default function FinalizarAnalise() {
                   accept=".pdf,.doc,.docx,.txt"
                 />
               </div>
-              <a
-                href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao._id}/arquivistico`}
-                className="mb-2"
-              >
-                <i className="fas fa-download" aria-hidden="true"></i> Baixar
-                planilha
-              </a>
             </div>
           )}
 
