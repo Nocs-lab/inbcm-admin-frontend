@@ -303,16 +303,12 @@ const columns = [
   columnHelper.accessor("anoDeclaracao.ano", {
     cell: (info) => info.getValue(),
     header: "Ano",
-    meta: {
-      filterVariant: "select"
-    }
+    enableColumnFilter: false
   }),
   columnHelper.accessor("retificacao", {
     cell: (info) => (info.getValue() ? "Retificada" : "Original"),
     header: "Tipo",
-    meta: {
-      filterVariant: "select"
-    }
+    enableColumnFilter: false
   }),
   columnHelper.accessor(
     (row) => {
@@ -324,14 +320,16 @@ const columns = [
     },
     {
       header: "Acervo",
-      meta: {
-        filterVariant: "select"
-      }
+      enableColumnFilter: false
     }
   ),
   columnHelper.accessor("responsavelEnvioNome", {
     cell: (info) => info.getValue(),
-    header: "Declarante"
+    header: "Declarante",
+    enableColumnFilter: true,
+    meta: {
+      filterVariant: "text"
+    }
   }),
   columnHelper.accessor("dataCriacao", {
     id: "recebidoEm",
@@ -339,9 +337,9 @@ const columns = [
       const value = info.getValue()
       return value
         ? format(new Date(value), "dd/MM/yyyy HH:mm")
-        : "__ /__ /____ --:--"
+        : "Sem registro"
     },
-    header: "Recebido em",
+    header: "Recebida",
     enableColumnFilter: false
   }),
   columnHelper.accessor("dataEnvioAnalise", {
@@ -350,9 +348,9 @@ const columns = [
       const value = info.getValue()
       return value
         ? format(new Date(value), "dd/MM/yyyy HH:mm")
-        : "__ /__ /____ --:--"
+        : "Sem registro"
     },
-    header: "Enviada em",
+    header: "Enviada",
     enableColumnFilter: false
   }),
   columnHelper.accessor("dataFimAnalise", {
@@ -361,9 +359,9 @@ const columns = [
       const value = info.getValue()
       return value
         ? format(new Date(value), "dd/MM/yyyy HH:mm")
-        : "__ /__ /____ --:--"
+        : "Sem registro"
     },
-    header: "Finalizada em",
+    header: "Finalizada",
     enableColumnFilter: false
   }),
   columnHelper.accessor("dataExclusao", {
@@ -372,9 +370,9 @@ const columns = [
       const value = info.getValue()
       return value
         ? format(new Date(value), "dd/MM/yyyy HH:mm")
-        : "__ /__ /____ --:--"
+        : "Sem registro"
     },
-    header: "Excluída em",
+    header: "Excluída",
     enableColumnFilter: false
   }),
   columnHelper.accessor("museu_id.endereco.regiao", {
@@ -407,11 +405,14 @@ const columns = [
       return <span className="whitespace-nowrap font-bold">{status}</span>
     },
     header: "Situação",
-    enableColumnFilter: false
+    enableColumnFilter: true,
+    meta: {
+      filterVariant: "select"
+    }
   }),
   columnHelper.accessor("analistasResponsaveisNome", {
     cell: (info) => {
-      const data = info.row.original // Acessa o objeto original da linha
+      const data = info.row.original
       const analistas = [
         ...(data.analistasResponsaveisNome || []),
         ...(data.museologico?.analistasResponsaveisNome || []),
@@ -419,16 +420,13 @@ const columns = [
         ...(data.bibliografico?.analistasResponsaveisNome || [])
       ]
 
-      // Remove duplicatas e retorna os analistas formatados
       const analistasUnicos = [...new Set(analistas)]
       return analistasUnicos.length > 0
         ? analistasUnicos.join(", ")
         : "Nenhum analista"
     },
     header: "Todos os Analistas",
-    meta: {
-      filterVariant: "select"
-    }
+    enableColumnFilter: false
   }),
 
   columnHelper.display({
@@ -496,11 +494,14 @@ function Filter<TData extends RowData>({
   column: Column<TData, unknown>
 }) {
   const { filterVariant } = column.columnDef.meta ?? {}
+
   const columnFilterValue = column.getFilterValue()
+
   const sortedUniqueValues = useMemo(() => {
     const uniqueValues = Array.from(column.getFacetedUniqueValues().keys())
     return uniqueValues.sort()
   }, [column])
+
   return filterVariant === "select" ? (
     <select
       onChange={(e) => column.setFilterValue(e.target.value ?? "")}
@@ -582,7 +583,7 @@ const DeclaracoesPage = () => {
     definirStatus: false,
     _id: true,
     excluirDeclaracao: false,
-    recebidoEm: true, // Mostrar "Recebido em" por padrão
+    recebidoEm: true,
     enviadaEm: false,
     finalizadaEm: false,
     excluidaEm: false
@@ -599,7 +600,7 @@ const DeclaracoesPage = () => {
         analistasResponsaveisNome: false,
         definirStatus: false,
         historico: false,
-        recebidoEm: true, // Mostrar "Recebido em"
+        recebidoEm: true,
         enviadaEm: false,
         finalizadaEm: false,
         excluidaEm: false
@@ -614,7 +615,7 @@ const DeclaracoesPage = () => {
         definirStatus: true,
         historico: false,
         recebidoEm: false,
-        enviadaEm: true, // Mostrar "Enviada em"
+        enviadaEm: true,
         finalizadaEm: false,
         excluidaEm: false
       })
@@ -633,7 +634,7 @@ const DeclaracoesPage = () => {
         historico: true,
         recebidoEm: false,
         enviadaEm: false,
-        finalizadaEm: true, // Mostrar "Finalizada em"
+        finalizadaEm: true,
         excluidaEm: false
       })
     } else if (
@@ -648,13 +649,13 @@ const DeclaracoesPage = () => {
         recebidoEm: false,
         enviadaEm: false,
         finalizadaEm: false,
-        excluidaEm: true // Mostrar "Excluída em"
+        excluidaEm: true
       })
     } else {
       setVisibility((prev) => ({
         ...prev,
         analistasResponsaveisNome: true,
-        recebidoEm: true, // Mostrar "Recebido em" para a aba "Todas"
+        recebidoEm: true,
         enviadaEm: false,
         finalizadaEm: false,
         excluidaEm: false
