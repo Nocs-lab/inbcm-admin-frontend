@@ -415,7 +415,7 @@ export default function FinalizarAnalise() {
     } else if (currentTab === "bibliografico") {
       return (
         <>
-          <div>
+          <div className="flex items-center justify-between">
             <span className="br-tag">{data.bibliografico.status}</span>
             <div className="flex justify-end gap-10">
               {data.bibliografico.status === "Recebida" &&
@@ -538,7 +538,7 @@ export default function FinalizarAnalise() {
     } else if (currentTab === "arquivistico") {
       return (
         <>
-          <div>
+          <div className="flex items-center justify-between">
             <span className="br-tag">{data.arquivistico.status}</span>
             <div className="flex justify-end gap-10">
               {data.arquivistico.status === "Recebida" &&
