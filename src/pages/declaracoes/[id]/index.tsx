@@ -5,14 +5,16 @@ import { useState } from "react"
 import { useNavigate, useParams, Link } from "react-router"
 import MismatchsModal from "../../../components/MismatchsModal"
 import TableItens from "../../../components/TableItens"
-import { getColorStatus } from "../../../utils/colorStatus"
 import request from "../../../utils/request"
 import { Button, Modal } from "react-dsgov"
 import { useModal } from "../../../utils/modal"
+import useStore from "../../../utils/store"
 
 export default function DeclaracaoPage() {
   const params = useParams()
   const id = params.id!
+
+  const user = useStore((state) => state.user)
 
   const navigate = useNavigate()
 
@@ -70,7 +72,10 @@ export default function DeclaracaoPage() {
 
   return (
     <>
-      <Link to="/" className="text-lg">
+      <Link
+        to={user?.perfil === "admin" ? "/declaracoes" : "/analista"}
+        className="text-lg"
+      >
         <i className="fas fa-arrow-left" aria-hidden="true"></i>
         Voltar
       </Link>
@@ -78,9 +83,7 @@ export default function DeclaracaoPage() {
         Declaração{" "}
         {data.retificacao ? `retificadora 0${data.versao - 1}` : "original"}
       </h2>
-      <span className="br-tag mb-5" style={getColorStatus(data.status)}>
-        {data.status}
-      </span>
+      <span className="br-tag mb-5">{data.status}</span>
       <div className="flex gap-4">
         <a href={`/api/public/recibo/${id}`} className="text-xl">
           <i className="fas fa-file-pdf" aria-hidden="true"></i> Recibo
@@ -128,7 +131,7 @@ export default function DeclaracaoPage() {
         </a>
         {data.status !== "Recebida" && (
           <Link to={`/declaracoes/${id}/analise`} className="text-xl">
-            <i className="fas fa-chalkboard-user"></i> Parecer do analista
+            <i className="fas fa-chalkboard-user"></i> Parecer
           </Link>
         )}
       </div>
@@ -139,7 +142,7 @@ export default function DeclaracaoPage() {
         </span>
         <span>
           <span className="font-bold">Ano: </span>
-          {data.anoDeclaracao}
+          {data.anoDeclaracao.ano}
         </span>
         <span>
           <span className="font-bold">Museu: </span>
@@ -220,16 +223,12 @@ export default function DeclaracaoPage() {
               >
                 <div className="flex items-center justify-between">
                   <span className="mb-3 flex items-center justify-start gap-1">
-                    <span
-                      className="br-tag"
-                      style={getColorStatus(data.museologico?.status)}
-                    >
-                      {data.museologico?.status}
-                    </span>
+                    <span className="br-tag">{data.museologico?.status}</span>
                   </span>
                   <a
-                    href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao}/museologico`}
-                    className="mb-2"
+                    href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao._id}/museologico`}
+                    className="text-xl"
+                    role="button"
                   >
                     <i className="fas fa-download" aria-hidden="true"></i>{" "}
                     Baixar planilha
@@ -237,7 +236,7 @@ export default function DeclaracaoPage() {
                 </div>
                 <TableItens
                   acervo="museologico"
-                  ano={data.anoDeclaracao}
+                  ano={data.anoDeclaracao._id}
                   museuId={data.museu_id._id}
                 />
               </div>
@@ -252,16 +251,12 @@ export default function DeclaracaoPage() {
               >
                 <div className="flex items-center justify-between">
                   <span className="mb-3 flex items-center justify-start gap-1">
-                    <span
-                      className="br-tag"
-                      style={getColorStatus(data.bibliografico?.status)}
-                    >
-                      {data.bibliografico?.status}
-                    </span>
+                    <span className="br-tag">{data.bibliografico?.status}</span>
                   </span>
                   <a
-                    href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao}/bibliografico`}
-                    className="mb-2"
+                    href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao._id}/bibliografico`}
+                    className="text-xl"
+                    role="button"
                   >
                     <i className="fas fa-download" aria-hidden="true"></i>{" "}
                     Baixar planilha
@@ -269,7 +264,7 @@ export default function DeclaracaoPage() {
                 </div>
                 <TableItens
                   acervo="bibliografico"
-                  ano={data.anoDeclaracao}
+                  ano={data.anoDeclaracao._id}
                   museuId={data.museu_id._id}
                 />
               </div>
@@ -284,16 +279,12 @@ export default function DeclaracaoPage() {
               >
                 <div className="flex items-center justify-between">
                   <span className="mb-3 flex items-center justify-start gap-1">
-                    <span
-                      className="br-tag"
-                      style={getColorStatus(data.arquivistico?.status)}
-                    >
-                      {data.arquivistico?.status}
-                    </span>
+                    <span className="br-tag">{data.arquivistico?.status}</span>
                   </span>
                   <a
-                    href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao}/arquivistico`}
-                    className="mb-2"
+                    href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao._id}/arquivistico`}
+                    className="text-xl"
+                    role="button"
                   >
                     <i className="fas fa-download" aria-hidden="true"></i>{" "}
                     Baixar planilha
@@ -301,7 +292,7 @@ export default function DeclaracaoPage() {
                 </div>
                 <TableItens
                   acervo="arquivistico"
-                  ano={data.anoDeclaracao}
+                  ano={data.anoDeclaracao._id}
                   museuId={data.museu_id._id}
                 />
               </div>

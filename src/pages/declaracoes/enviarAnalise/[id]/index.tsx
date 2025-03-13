@@ -2,7 +2,7 @@ import { useSuspenseQuery, useMutation } from "@tanstack/react-query"
 import { useParams, Link, useNavigate } from "react-router"
 import { useState, useEffect } from "react"
 import request from "../../../../utils/request"
-import { Select, Row, Col, Button } from "react-dsgov"
+import { Select, Row, Col, Button, Modal } from "react-dsgov"
 import { format } from "date-fns"
 import toast from "react-hot-toast"
 
@@ -10,6 +10,8 @@ const EnviarParaAnalise: React.FC = () => {
   const params = useParams()
   const id = params.id!
   const navigate = useNavigate()
+
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   const { data: declaracao } = useSuspenseQuery({
     queryKey: ["declaracoes", id],
@@ -70,17 +72,20 @@ const EnviarParaAnalise: React.FC = () => {
 
   const { mutate: enviarAnalise, isPending } = useMutation({
     mutationFn: async () => {
-      // Filtrar apenas os analistas que estão presentes na declaração
+      // Filtrar apenas os analistas que estão presentes na declaração e com status "Recebida"
       const analistasSelecionados = {
-        ...(declaracao?.museologico && {
-          museologico: [analistaSelecionado.museologico].filter(Boolean)
-        }),
-        ...(declaracao?.bibliografico && {
-          bibliografico: [analistaSelecionado.bibliografico].filter(Boolean)
-        }),
-        ...(declaracao?.arquivistico && {
-          arquivistico: [analistaSelecionado.arquivistico].filter(Boolean)
-        })
+        ...(declaracao?.museologico &&
+          declaracao?.museologico.status === "Recebida" && {
+            museologico: [analistaSelecionado.museologico].filter(Boolean)
+          }),
+        ...(declaracao?.bibliografico &&
+          declaracao?.bibliografico.status === "Recebida" && {
+            bibliografico: [analistaSelecionado.bibliografico].filter(Boolean)
+          }),
+        ...(declaracao?.arquivistico &&
+          declaracao?.arquivistico.status === "Recebida" && {
+            arquivistico: [analistaSelecionado.arquivistico].filter(Boolean)
+          })
       }
 
       const response = await request(`/api/admin/declaracoes/${id}/analises`, {
@@ -105,6 +110,63 @@ const EnviarParaAnalise: React.FC = () => {
       toast.error(error.message || "Erro ao enviar a declaração para análise")
     }
   })
+
+  const handleConfirmarEnvio = () => {
+    setIsModalOpen(true)
+  }
+
+  const handleModalConfirm = () => {
+    setIsModalOpen(false)
+    enviarAnalise()
+  }
+
+  const handleModalCancel = () => {
+    setIsModalOpen(false)
+  }
+
+  // Função para obter os nomes dos analistas selecionados
+  const getNomesAnalistas = () => {
+    const nomesUnicos = new Set<string>()
+
+    // Verifica se o tipo de analista está presente na declaração e com status "Recebida"
+    if (
+      declaracao?.museologico &&
+      declaracao?.museologico.status === "Recebida" &&
+      analistaSelecionado.museologico
+    ) {
+      const analista = analistas.museologico.find(
+        (a) => a._id === analistaSelecionado.museologico
+      )
+      if (analista) nomesUnicos.add(analista.nome)
+    }
+    if (
+      declaracao?.bibliografico &&
+      declaracao?.bibliografico.status === "Recebida" &&
+      analistaSelecionado.bibliografico
+    ) {
+      const analista = analistas.bibliografico.find(
+        (a) => a._id === analistaSelecionado.bibliografico
+      )
+      if (analista) nomesUnicos.add(analista.nome)
+    }
+    if (
+      declaracao?.arquivistico &&
+      declaracao?.arquivistico.status === "Recebida" &&
+      analistaSelecionado.arquivistico
+    ) {
+      const analista = analistas.arquivistico.find(
+        (a) => a._id === analistaSelecionado.arquivistico
+      )
+      if (analista) nomesUnicos.add(analista.nome)
+    }
+
+    const nomesArray = Array.from(nomesUnicos)
+
+    if (nomesArray.length === 0) return ""
+    if (nomesArray.length === 1) return nomesArray[0]
+    return `${nomesArray.slice(0, -1).join(", ")} e ${nomesArray[nomesArray.length - 1]}`
+  }
+
   return (
     <>
       <Link to="/declaracoes" className="text-lg">
@@ -120,7 +182,7 @@ const EnviarParaAnalise: React.FC = () => {
         </span>
         <span>
           <span className="font-bold">Ano: </span>
-          {declaracao.anoDeclaracao}
+          {declaracao.anoDeclaracao.ano}
         </span>
         <span>
           <span className="font-bold">Museu: </span>
@@ -130,7 +192,7 @@ const EnviarParaAnalise: React.FC = () => {
       <form
         onSubmit={(e) => {
           e.preventDefault()
-          enviarAnalise()
+          handleConfirmarEnvio()
         }}
       >
         <Row>
@@ -208,6 +270,33 @@ const EnviarParaAnalise: React.FC = () => {
           </Button>
         </Row>
       </form>
+      {/* Modal de Confirmação */}
+      {isModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
+          <Modal
+            title="Confirmar envio para análise"
+            showCloseButton
+            onCloseButtonClick={handleModalCancel}
+          >
+            <Modal.Body>
+              Deseja, realmente, enviar a declaração do ano{" "}
+              <b>{declaracao.anoDeclaracao.ano}</b> do museu{" "}
+              <b>{declaracao.museu_id.nome}</b> para o(s) analista(s){" "}
+              <b>{getNomesAnalistas()}</b>?
+            </Modal.Body>
+            <Modal.Footer justify-content="end">
+              <div className="flex gap-2">
+                <Button secondary small onClick={handleModalCancel}>
+                  Cancelar
+                </Button>
+                <Button primary small onClick={handleModalConfirm}>
+                  Confirmar
+                </Button>
+              </div>
+            </Modal.Footer>
+          </Modal>
+        </div>
+      )}
     </>
   )
 }

@@ -11,9 +11,12 @@ import clsx from "clsx"
 interface Declaracao {
   _id: string
   dataCriacao: Date
+  responsavelEnvioNome: string
   dataEnvioAnalise: Date
   dataFimAnalise: Date
-  anoDeclaracao: string
+  anoDeclaracao: {
+    ano: number
+  }
   retificacao: boolean
   museu_id: {
     _id: string
@@ -59,7 +62,28 @@ export default function Declaracoes() {
     columnHelper.accessor("retificacao", {
       header: "Tipo",
       cell: (info) => (info.getValue() ? "Retificadora" : "Original"),
-      enableColumnFilter: false
+      meta: {
+        filterVariant: "select"
+      }
+    }),
+    columnHelper.accessor(
+      (row) => {
+        const tiposAcervo = []
+        if (row.arquivistico) tiposAcervo.push("A")
+        if (row.bibliografico) tiposAcervo.push("B")
+        if (row.museologico) tiposAcervo.push("M")
+        return tiposAcervo.join(", ")
+      },
+      {
+        header: "Acervo",
+        meta: {
+          filterVariant: "select"
+        }
+      }
+    ),
+    columnHelper.accessor("responsavelEnvioNome", {
+      cell: (info) => info.getValue(),
+      header: "Declarante"
     }),
     columnHelper.accessor("dataEnvioAnalise", {
       header: "Envio",
@@ -85,7 +109,7 @@ export default function Declaracoes() {
           })
         ]
       : []),
-    columnHelper.accessor("anoDeclaracao", {
+    columnHelper.accessor("anoDeclaracao.ano", {
       header: "Ano",
       meta: {
         filterVariant: "select"
@@ -118,7 +142,7 @@ export default function Declaracoes() {
             onClick={() => navigate(`/declaracoes/${info.getValue()}`)}
             className="!font-thin analise"
           >
-            <i className="fa-solid fa-timeline p-2"></i>Histórico
+            <i className="fa-solid fa-eye p-2"></i>Exibir
           </Button>
         </div>
       )

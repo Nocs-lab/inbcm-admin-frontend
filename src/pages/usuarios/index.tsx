@@ -3,10 +3,15 @@ import { useNavigate, Link } from "react-router"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import request from "../../utils/request"
 import { Modal, Button } from "react-dsgov"
-import { type ColumnDef, createColumnHelper } from "@tanstack/react-table"
+import {
+  CellContext,
+  type ColumnDef,
+  createColumnHelper
+} from "@tanstack/react-table"
 import toast from "react-hot-toast"
 import Table from "../../components/Table"
 import clsx from "clsx"
+import { useModal } from "../../utils/modal"
 
 interface User {
   _id: string
@@ -50,16 +55,175 @@ const fetchUsers = async (): Promise<User[]> => {
   )
 }
 
-const profileMapping: { [key: string]: string } = {
-  admin: "Administrador",
-  declarant: "Declarante",
-  analyst: "Analista"
+const labelMapping = (value: string) => {
+  switch (value.toString()) {
+    case "0":
+      return "Para aprovar"
+    case "1":
+      return "Ativo"
+    case "2":
+      return "Inativo"
+    case "3":
+      return "Não aprovado"
+    case "admin":
+      return "Administrador"
+    case "analyst":
+      return "Analista"
+    case "declarant":
+      return "Declarante"
+    default:
+      return value
+  }
 }
 
-const situacaoMapping: { [key: number]: string } = {
-  0: "Para aprovar",
-  1: "Ativo",
-  2: "Inativo"
+const PendingActions: React.FC<{
+  info: CellContext<User, string>
+}> = ({ info }) => {
+  const queryClient = useQueryClient()
+
+  const negateMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      const response = await request(`/api/admin/users/${userId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ situacao: 3 })
+      })
+      if (!response.ok) {
+        throw new Error("Failed to negate user")
+      }
+      return response.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] })
+    },
+    onMutate: () => {
+      closeNegateModal()
+    }
+  })
+
+  const negate = async () => {
+    await toast.promise(negateMutation.mutateAsync(info.getValue()), {
+      loading: "Negando usuário...",
+      success: "Usuário negado com sucesso!",
+      error: "Erro ao negar usuário"
+    })
+  }
+
+  const { openModal: openNegateModal, closeModal: closeNegateModal } = useModal(
+    (close) => (
+      <Modal
+        title="Negar acesso de usuário?"
+        showCloseButton
+        onCloseButtonClick={close}
+      >
+        <Modal.Body>
+          <p>
+            Deseja realmente negar o acesso do usuário{" "}
+            <strong>{info.row.original.nome}</strong> para enviar declarações
+            do(s) museu(s){" "}
+            <strong>
+              {info.row.original.museus.length > 0
+                ? info.row.original.museus.map((museu) => museu.nome).join(", ")
+                : "Nenhum museu"}
+            </strong>
+            ?
+          </p>
+        </Modal.Body>
+        <Modal.Footer justify-content="end">
+          <Button primary small m={2} onClick={negate}>
+            Confirmar
+          </Button>
+          <Button secondary small m={2} onClick={close}>
+            Cancelar
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    )
+  )
+
+  const approvalMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      const response = await request(`/api/admin/users/${userId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ situacao: 1 })
+      })
+      if (!response.ok) {
+        throw new Error("Failed to approve user")
+      }
+      return response.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] })
+    },
+    onMutate: () => {
+      closeApproveModal()
+    }
+  })
+
+  const approve = async () => {
+    await toast.promise(approvalMutation.mutateAsync(info.getValue()), {
+      loading: "Aprovando usuário...",
+      success: "Usuário aprovado com sucesso!",
+      error: "Erro ao aprovar usuário"
+    })
+  }
+
+  const { openModal: openAprovveModal, closeModal: closeApproveModal } =
+    useModal((close) => (
+      <Modal
+        title="Aprovar usuário?"
+        showCloseButton
+        onCloseButtonClick={close}
+      >
+        <Modal.Body>
+          <p>
+            Deseja realmente autorizar o acesso do usuário{" "}
+            <strong>{info.row.original.nome}</strong> para enviar declarações
+            do(s) museu(s){" "}
+            <strong>
+              {info.row.original.museus.length > 0
+                ? info.row.original.museus.map((museu) => museu.nome).join(", ")
+                : "Nenhum museu"}
+            </strong>
+            ?
+          </p>
+        </Modal.Body>
+        <Modal.Footer justify-content="end">
+          <Button primary small m={2} onClick={approve}>
+            Confirmar
+          </Button>
+          <Button secondary small m={2} onClick={close}>
+            Cancelar
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    ))
+
+  return (
+    <div className="flex justify-start gap-2">
+      <button
+        className="btn text-[#1351b4]"
+        onClick={openAprovveModal}
+        aria-label="Aprovar usuário"
+        title="Aprovar usuário"
+      >
+        <i className="fa-solid fa-user-check fa-fw pl-2"></i>
+      </button>
+      <button
+        className="btn text-[#1351b4]"
+        onClick={openNegateModal}
+        aria-label="Aprovar usuário"
+        title="Não aprovar usuário"
+      >
+        <i className="fa-solid fa-user-xmark fa-fw pl-2"></i>
+      </button>
+    </div>
+  )
 }
 
 const Index: React.FC = () => {
@@ -72,11 +236,9 @@ const Index: React.FC = () => {
   })
 
   const [showModalDelete, setShowModalDelete] = useState(false)
-  const [showModalApproval, setShowModalApproval] = useState(false)
   const [userIdToDelete, setUserIdToDelete] = useState<string>("")
-  const [userIdToApproval, setUserIdToApproval] = useState<string>("")
   const [activeTab, setActiveTab] = useState<
-    "admin" | "declarant" | "analyst" | "all" | "pending"
+    "admin" | "declarant" | "analyst" | "all" | "pending" | "negated"
   >("declarant")
 
   const mutation = useMutation({
@@ -95,26 +257,6 @@ const Index: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] })
       toast.success("Usuário desativado com sucesso!")
-    }
-  })
-
-  const approvalMutation = useMutation({
-    mutationFn: async (userId: string) => {
-      const response = await request(`/api/admin/users/${userId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ situacao: 1 })
-      })
-      if (!response.ok) {
-        throw new Error("Failed to approve user")
-      }
-      return response.json()
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["users"] })
-      toast.success("Usuário aprovado com sucesso!")
     }
   })
 
@@ -137,35 +279,10 @@ const Index: React.FC = () => {
     }
   }
 
-  const userToApprove = useMemo(() => {
-    if (!userData || !userIdToApproval) return null
-    return userData.find((user) => user._id === userIdToApproval)
-  }, [userData, userIdToApproval])
-
-  const handleOpenModalApproval = (userId: string) => {
-    setUserIdToApproval(userId)
-    setShowModalApproval(true)
-  }
-
-  const handleCloseModalApproval = () => {
-    setShowModalApproval(false)
-    setUserIdToApproval("")
-  }
-
-  const handleApprovalUser = async () => {
-    try {
-      await approvalMutation.mutateAsync(userIdToApproval)
-      setShowModalApproval(false)
-    } catch (error) {
-      console.error("Erro ao aprovar usuário:", error)
-      toast.error("Erro ao aprovar usuário")
-    }
-  }
-
   const columnHelper = createColumnHelper<User>()
 
   const columns = [
-    ...(activeTab === "pending"
+    ...(["pending", "negated"].includes(activeTab)
       ? [
           columnHelper.accessor("cpf", {
             header: "CPF",
@@ -227,29 +344,37 @@ const Index: React.FC = () => {
           columnHelper.accessor("profile", {
             header: "Perfil",
             cell: (info) => {
-              const profileName = info.getValue()?.name
-              return profileName ? profileMapping[profileName] : "Não informado"
+              const profileName = info.getValue()?.toString()
+              return profileName ? labelMapping(profileName) : "Não informado"
             },
             meta: {
-              filterVariant: "text"
+              filterVariant: "select"
+            },
+            accessorFn: (row) => row.profile?.name || "",
+            filterFn: (row, columnId, filterValue) => {
+              const profileName = row.original.profile?.name
+              return profileName === filterValue
             }
           })
         ]
       : []),
-    columnHelper.accessor("situacao", {
-      header: "Situação",
-      cell: (info) => {
-        const situacaoName = info.getValue()?.toString()
-        return situacaoName
-          ? situacaoMapping[Number(situacaoName)]
-          : "Não informado"
-      },
-      meta: {
-        filterVariant: "text"
-      }
-    }),
-    ...(activeTab !== "pending"
+    ...(!["pending", "negated"].includes(activeTab)
       ? [
+          columnHelper.accessor("situacao", {
+            header: "Situação",
+            cell: (info) => {
+              const situacaoName = info.getValue()?.toString()
+              return situacaoName ? labelMapping(situacaoName) : "Não informado"
+            },
+            meta: {
+              filterVariant: "select"
+            },
+            filterFn: (row, columnId, filterValue) => {
+              // Converte o valor do filtro para número antes de comparar
+              const situacaoNumber = Number(filterValue)
+              return row.original.situacao === situacaoNumber
+            }
+          }),
           columnHelper.accessor("_id", {
             header: "Ações",
             cell: (info) => {
@@ -293,18 +418,7 @@ const Index: React.FC = () => {
       ? [
           columnHelper.accessor("_id", {
             header: "Ações",
-            cell: (info) => (
-              <div className="flex justify-start gap-2">
-                <button
-                  className="btn text-[#1351b4]"
-                  onClick={() => handleOpenModalApproval(info.getValue())}
-                  aria-label="Aprovar usuário"
-                  title="Aprovar usuário"
-                >
-                  <i className="fa-solid fa-user-check fa-fw pl-2"></i>
-                </button>
-              </div>
-            ),
+            cell: (info) => <PendingActions info={info} />,
             enableColumnFilter: false
           })
         ]
@@ -313,7 +427,14 @@ const Index: React.FC = () => {
 
   const userCounts = useMemo(() => {
     if (!userData)
-      return { admin: 0, declarant: 0, analyst: 0, all: 0, pending: 0 }
+      return {
+        admin: 0,
+        declarant: 0,
+        analyst: 0,
+        all: 0,
+        pending: 0,
+        negated: 0
+      }
 
     return {
       admin: userData.filter((user) => user.profile?.name === "admin").length,
@@ -323,7 +444,8 @@ const Index: React.FC = () => {
       analyst: userData.filter((user) => user.profile?.name === "analyst")
         .length,
       all: userData.length,
-      pending: userData.filter((user) => user.situacao === 0).length
+      pending: userData.filter((user) => user.situacao === 0).length,
+      negated: userData.filter((user) => user.situacao === 3).length
     }
   }, [userData])
 
@@ -335,6 +457,8 @@ const Index: React.FC = () => {
         return userData
       case "pending":
         return userData.filter((user) => user.situacao === 0)
+      case "negated":
+        return userData.filter((user) => user.situacao === 3)
       default:
         return userData.filter(
           (user) =>
@@ -363,6 +487,16 @@ const Index: React.FC = () => {
               <button type="button" onClick={() => setActiveTab("pending")}>
                 <span className="name">
                   Aguardando aprovação ({userCounts.pending})
+                </span>
+              </button>
+            </li>
+            <li
+              className={clsx("tab-item", activeTab === "negated" && "active")}
+              title="Não aprovados"
+            >
+              <button type="button" onClick={() => setActiveTab("negated")}>
+                <span className="name">
+                  Não aprovados ({userCounts.negated})
                 </span>
               </button>
             </li>
@@ -410,7 +544,7 @@ const Index: React.FC = () => {
       </div>
 
       <div className="overflow-x-auto">
-        <Table columns={columns} data={filteredUsers} />
+        <Table columns={columns as ColumnDef<unknown>[]} data={filteredUsers} />
       </div>
 
       {showModalDelete && (
@@ -428,37 +562,6 @@ const Index: React.FC = () => {
                 Confirmar
               </Button>
               <Button secondary small m={2} onClick={handleCloseModalDelete}>
-                Cancelar
-              </Button>
-            </Modal.Footer>
-          </Modal>
-        </div>
-      )}
-      {showModalApproval && userToApprove && (
-        <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
-          <Modal
-            title="Aprovar usuário?"
-            showCloseButton
-            onCloseButtonClick={() => handleCloseModalApproval()}
-          >
-            <Modal.Body>
-              <p>
-                Deseja realmente autorizar o acesso do usuário{" "}
-                <strong>{userToApprove.nome}</strong> para enviar declarações
-                do(s) museu(s){" "}
-                <strong>
-                  {userToApprove.museus.length > 0
-                    ? userToApprove.museus.map((museu) => museu.nome).join(", ")
-                    : "Nenhum museu"}
-                </strong>
-                ?
-              </p>
-            </Modal.Body>
-            <Modal.Footer justify-content="end">
-              <Button primary small m={2} onClick={handleApprovalUser}>
-                Confirmar
-              </Button>
-              <Button secondary small m={2} onClick={handleCloseModalApproval}>
                 Cancelar
               </Button>
             </Modal.Footer>
