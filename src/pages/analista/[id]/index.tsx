@@ -302,13 +302,6 @@ export default function FinalizarAnalise() {
                   accept=".pdf,.doc,.docx,.txt"
                 />
               </div>
-              <a
-                href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao._id}/museologico`}
-                className="mb-2"
-              >
-                <i className="fas fa-download" aria-hidden="true"></i> Baixar
-                planilha
-              </a>
             </div>
           )}
 
