@@ -98,6 +98,17 @@ function Filter({ column }: { column: Column<unknown, unknown> }) {
     }
   }
 
+  if (filterVariant === "date") {
+    return (
+      <input
+        type="date"
+        value={(columnFilterValue ?? "") as string}
+        onChange={(e) => column.setFilterValue(e.target.value)}
+        className="p-1 border border-gray-700 text-xs"
+      />
+    )
+  }
+
   return filterVariant === "select" ? (
     <select
       onChange={(e) => {

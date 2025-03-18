@@ -92,14 +92,20 @@ export default function Declaracoes() {
     [result]
   )
 
-  console.log("data", result)
-
   const columnHelper = createColumnHelper<Declaracao>()
 
   const columns = [
+    columnHelper.accessor("anoDeclaracao.ano", {
+      header: "Ano",
+      enableColumnFilter: true,
+      meta: {
+        filterVariant: "select"
+      }
+    }),
     columnHelper.accessor("retificacao", {
       header: "Tipo",
       cell: (info) => (info.getValue() ? "Retificadora" : "Original"),
+      enableColumnFilter: true,
       meta: {
         filterVariant: "select"
       }
@@ -123,32 +129,79 @@ export default function Declaracoes() {
       cell: (info) => info.getValue(),
       header: "Declarante"
     }),
-    columnHelper.accessor("dataEnvioAnalise", {
-      header: "Envio",
-      cell: (info) => {
-        const date = info.getValue()
-        return date
-          ? format(new Date(date), "dd/MM/yyyy HH:mm")
-          : "__ /__ /____ --:--"
-      },
-      enableColumnFilter: false
-    }),
-    ...(activeTab !== "Em análise"
+    ...(activeTab == "Recebida" || activeTab == "all"
       ? [
-          columnHelper.accessor("dataFimAnalise", {
-            header: "Conclusão",
+          columnHelper.accessor("dataCriacao", {
+            header: "Recebida",
+            enableColumnFilter: true,
             cell: (info) => {
               const date = info.getValue()
               return date
                 ? format(new Date(date), "dd/MM/yyyy HH:mm")
-                : "__ /__ /____ --:--"
+                : "Sem registro"
             },
-            enableColumnFilter: false
+            meta: {
+              filterVariant: "date"
+            }
           })
         ]
       : []),
-    columnHelper.accessor("anoDeclaracao.ano", {
-      header: "Ano",
+    ...(activeTab == "Em análise"
+      ? [
+          columnHelper.accessor("dataEnvioAnalise", {
+            header: "Enviada",
+            cell: (info) => {
+              const date = info.getValue()
+              return date
+                ? format(new Date(date), "dd/MM/yyyy HH:mm")
+                : "Sem registro"
+            },
+            enableColumnFilter: true,
+            meta: {
+              filterVariant: "date"
+            }
+          })
+        ]
+      : []),
+    ...(activeTab == "Em conformidade" || activeTab == "Não conformidade"
+      ? [
+          columnHelper.accessor("dataFimAnalise", {
+            header: "Finalizada",
+            cell: (info) => {
+              const date = info.getValue()
+              return date
+                ? format(new Date(date), "dd/MM/yyyy HH:mm")
+                : "Sem registro"
+            },
+            enableColumnFilter: true,
+            meta: {
+              filterVariant: "date"
+            }
+          })
+        ]
+      : []),
+    ...(activeTab == "Excluída"
+      ? [
+          columnHelper.accessor("dataExclusao", {
+            id: "excluidaEm",
+            cell: (info) => {
+              const value = info.getValue()
+              return value
+                ? format(new Date(value), "dd/MM/yyyy HH:mm")
+                : "Sem registro"
+            },
+            header: "Excluída",
+            enableColumnFilter: true,
+            meta: {
+              filterVariant: "date"
+            }
+          })
+        ]
+      : []),
+    columnHelper.accessor("museu_id.endereco.regiao", {
+      cell: (info) => info.getValue(),
+      header: "Região",
+      enableColumnFilter: true,
       meta: {
         filterVariant: "select"
       }
@@ -156,23 +209,100 @@ export default function Declaracoes() {
     columnHelper.accessor("museu_id.nome", {
       header: "Museu",
       meta: {
+        filterVariant: "text"
+      }
+    }),
+    columnHelper.accessor("museu_id.endereco.municipio", {
+      cell: (info) => info.getValue(),
+      header: "Cidade"
+    }),
+    columnHelper.accessor("museu_id.endereco.uf", {
+      cell: (info) => info.getValue(),
+      header: "UF",
+      meta: {
         filterVariant: "select"
       }
     }),
+    ...(activeTab === "all"
+      ? [
+          columnHelper.accessor("status", {
+            cell: (info) => {
+              const status = info.getValue()
+
+              return (
+                <span className="whitespace-nowrap font-bold">{status}</span>
+              )
+            },
+            header: "Situação",
+            enableColumnFilter: true,
+            meta: {
+              filterVariant: "select"
+            }
+          })
+        ]
+      : []),
+    ...(activeTab !== "Recebida"
+      ? [
+          columnHelper.accessor("analistasResponsaveisNome", {
+            cell: (info) => {
+              const data = info.row.original
+              const analistas = [
+                ...(data.analistasResponsaveisNome || []),
+                ...(data.museologico?.analistasResponsaveisNome || []),
+                ...(data.arquivistico?.analistasResponsaveisNome || []),
+                ...(data.bibliografico?.analistasResponsaveisNome || [])
+              ]
+
+              const analistasUnicos = [...new Set(analistas)]
+              return analistasUnicos.length > 0
+                ? analistasUnicos.join(", ")
+                : "Nenhum analista"
+            },
+            header: "Analistas",
+            enableColumnFilter: true,
+            meta: {
+              filterVariant: "text"
+            }
+          })
+        ]
+      : []),
     columnHelper.accessor("_id", {
       header: () => <div className="text-center">Ações</div>,
       enableColumnFilter: false,
       enableSorting: false,
       cell: (info) => (
         <div className="justify-start">
-          {activeTab === "Em análise" && (
+          {activeTab === "Recebida" && (
             <Button
               small
-              onClick={() => navigate(`/analista/${info.getValue()}`)}
+              onClick={() =>
+                navigate(`/declaracoes/enviarAnalise/${info.getValue()}`)
+              }
               className="!font-thin analise"
             >
               <i className="fa-solid fa-magnifying-glass-arrow-right p-2"></i>
               Analisar
+            </Button>
+          )}
+          {activeTab === "Em análise" && (
+            <Button
+              small
+              onClick={() =>
+                navigate(`/declaracoes/finalizarAnalise/${info.getValue()}`)
+              }
+              className="!font-thin concluir"
+            >
+              <i className="fa-solid fa-circle-check p-2"></i>Finalizar
+            </Button>
+          )}
+          {activeTab === "Excluída" && (
+            <Button
+              small
+              onClick={() => navigate(`/restaurar/${info.getValue()}`)}
+              className="!font-thin analise"
+            >
+              <i className="fa-solid fa-magnifying-glass-arrow-right p-2"></i>
+              Restaurar
             </Button>
           )}
           <Button
@@ -285,7 +415,7 @@ export default function Declaracoes() {
             >
               <button type="button" onClick={() => setActiveTab("Recebida")}>
                 <span className="name">
-                  Recebida ({declaracaoCounts.recebida})
+                  Recebidas ({declaracaoCounts.recebida})
                 </span>
               </button>
             </li>
@@ -340,7 +470,7 @@ export default function Declaracoes() {
             >
               <button type="button" onClick={() => setActiveTab("Excluída")}>
                 <span className="name">
-                  Excluída ({declaracaoCounts.excluida})
+                  Excluídas ({declaracaoCounts.excluida})
                 </span>
               </button>
             </li>
