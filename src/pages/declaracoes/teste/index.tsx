@@ -348,7 +348,7 @@ export default function Declaracoes() {
       enableColumnFilter: false,
       enableSorting: false,
       cell: (info) => (
-        <div className="justify-start">
+        <div className="flex space-x-2">
           {activeTab === "Recebida" && (
             <Button
               small
