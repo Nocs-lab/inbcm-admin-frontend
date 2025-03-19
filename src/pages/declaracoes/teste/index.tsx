@@ -1,13 +1,14 @@
 import { useState, useMemo } from "react"
-import { useSuspenseQuery } from "@tanstack/react-query"
+import { useMutation, useSuspenseQuery } from "@tanstack/react-query"
 import { type ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import { format } from "date-fns"
 import { useNavigate } from "react-router"
-import { Button } from "react-dsgov"
+import { Button, Modal } from "react-dsgov"
 import { stateRegions } from ".././../../utils/regioes"
 import Table from "../../../components/Table"
 import request from "../../../utils/request"
 import clsx from "clsx"
+import toast from "react-hot-toast"
 
 interface Declaracao {
   _id: string
@@ -55,6 +56,9 @@ export default function Declaracoes() {
 
   const navigate = useNavigate()
 
+  const [modalAberta, setModalAberta] = useState(false)
+  const [idSelecionado, setIdSelecionado] = useState<Declaracao | null>(null)
+
   const { data: result } = useSuspenseQuery({
     queryKey: ["declaracoes"],
     queryFn: async () => {
@@ -92,6 +96,26 @@ export default function Declaracoes() {
     [result]
   )
 
+  const { mutate, isPending } = useMutation({
+    mutationFn: () => {
+      return request(`/api/admin/declaracoes/restaurar/${idSelecionado?._id}`, {
+        method: "PUT"
+      })
+    },
+    onSuccess: () => {
+      setModalAberta(false)
+      window.location.reload()
+      toast.success("Declaração recuperada com sucesso!")
+    }
+  })
+
+  const handleOpenModal = (id: string) => {
+    const declaracaoSelecionada =
+      data.find((item: Declaracao) => item._id === id) || null
+    setIdSelecionado(declaracaoSelecionada)
+    setModalAberta(true)
+  }
+
   const columnHelper = createColumnHelper<Declaracao>()
 
   const columns = [
@@ -100,6 +124,11 @@ export default function Declaracoes() {
       enableColumnFilter: true,
       meta: {
         filterVariant: "select"
+      },
+      cell: (info) => info.getValue(),
+      filterFn: (row, columnId, filterValue) => {
+        const rowValue = row.getValue(columnId) as number
+        return rowValue === Number(filterValue)
       }
     }),
     columnHelper.accessor("retificacao", {
@@ -108,6 +137,10 @@ export default function Declaracoes() {
       enableColumnFilter: true,
       meta: {
         filterVariant: "select"
+      },
+      filterFn: (row, columnId, filterValue) => {
+        const rowValue = row.getValue(columnId) as boolean
+        return rowValue === (filterValue === "true")
       }
     }),
     columnHelper.accessor(
@@ -116,12 +149,21 @@ export default function Declaracoes() {
         if (row.arquivistico) tiposAcervo.push("A")
         if (row.bibliografico) tiposAcervo.push("B")
         if (row.museologico) tiposAcervo.push("M")
-        return tiposAcervo.join(", ")
+        return tiposAcervo
       },
       {
+        id: "acervo",
         header: "Acervo",
         meta: {
           filterVariant: "select"
+        },
+        cell: (info) => {
+          const tiposAcervo = info.getValue() as string[]
+          return tiposAcervo.join(", ")
+        },
+        filterFn: (row, columnId, filterValue) => {
+          const rowValue = row.getValue(columnId) as string[]
+          return rowValue.includes(filterValue)
         }
       }
     ),
@@ -142,6 +184,11 @@ export default function Declaracoes() {
             },
             meta: {
               filterVariant: "date"
+            },
+            filterFn: (row, columnId, filterValue) => {
+              const rowValue = row.getValue(columnId) as Date
+              const filterDate = new Date(filterValue)
+              return rowValue.toDateString() === filterDate.toDateString()
             }
           })
         ]
@@ -159,6 +206,11 @@ export default function Declaracoes() {
             enableColumnFilter: true,
             meta: {
               filterVariant: "date"
+            },
+            filterFn: (row, columnId, filterValue) => {
+              const rowValue = row.getValue(columnId) as Date
+              const filterDate = new Date(filterValue)
+              return rowValue.toDateString() === filterDate.toDateString()
             }
           })
         ]
@@ -176,6 +228,11 @@ export default function Declaracoes() {
             enableColumnFilter: true,
             meta: {
               filterVariant: "date"
+            },
+            filterFn: (row, columnId, filterValue) => {
+              const rowValue = row.getValue(columnId) as Date
+              const filterDate = new Date(filterValue)
+              return rowValue.toDateString() === filterDate.toDateString()
             }
           })
         ]
@@ -194,6 +251,11 @@ export default function Declaracoes() {
             enableColumnFilter: true,
             meta: {
               filterVariant: "date"
+            },
+            filterFn: (row, columnId, filterValue) => {
+              const rowValue = row.getValue(columnId) as Date
+              const filterDate = new Date(filterValue)
+              return rowValue.toDateString() === filterDate.toDateString()
             }
           })
         ]
@@ -243,27 +305,42 @@ export default function Declaracoes() {
       : []),
     ...(activeTab !== "Recebida"
       ? [
-          columnHelper.accessor("analistasResponsaveisNome", {
-            cell: (info) => {
-              const data = info.row.original
+          columnHelper.accessor(
+            (row) => {
               const analistas = [
-                ...(data.analistasResponsaveisNome || []),
-                ...(data.museologico?.analistasResponsaveisNome || []),
-                ...(data.arquivistico?.analistasResponsaveisNome || []),
-                ...(data.bibliografico?.analistasResponsaveisNome || [])
+                ...(row.analistasResponsaveisNome || []),
+                ...(row.museologico?.analistasResponsaveisNome || []),
+                ...(row.arquivistico?.analistasResponsaveisNome || []),
+                ...(row.bibliografico?.analistasResponsaveisNome || [])
               ]
-
-              const analistasUnicos = [...new Set(analistas)]
-              return analistasUnicos.length > 0
-                ? analistasUnicos.join(", ")
-                : "Nenhum analista"
+              return analistas
             },
-            header: "Analistas",
-            enableColumnFilter: true,
-            meta: {
-              filterVariant: "text"
+            {
+              id: "analistasResponsaveisNome", // Adicione um ID explícito para a coluna
+              header: "Analistas",
+              cell: (info) => {
+                const analistasUnicos = [
+                  ...new Set(info.getValue() as string[])
+                ]
+                return analistasUnicos.length > 0
+                  ? analistasUnicos.join(", ")
+                  : "Nenhum analista"
+              },
+              enableColumnFilter: true,
+              meta: {
+                filterVariant: "text"
+              },
+              filterFn: (row, columnId, filterValue) => {
+                const rowValue = row.getValue(columnId) as string[]
+                if (!rowValue || !Array.isArray(rowValue)) {
+                  return false
+                }
+                return rowValue.some((analista) =>
+                  analista.toLowerCase().includes(filterValue.toLowerCase())
+                )
+              }
             }
-          })
+          )
         ]
       : []),
     columnHelper.accessor("_id", {
@@ -298,7 +375,7 @@ export default function Declaracoes() {
           {activeTab === "Excluída" && (
             <Button
               small
-              onClick={() => navigate(`/restaurar/${info.getValue()}`)}
+              onClick={() => handleOpenModal(info.getValue())}
               className="!font-thin analise"
             >
               <i className="fa-solid fa-magnifying-glass-arrow-right p-2"></i>
@@ -498,6 +575,40 @@ export default function Declaracoes() {
         />
       </div>
       <div className="h-10" />
+      {modalAberta && (
+        <Modal
+          useScrim
+          showCloseButton
+          title="Recuperar declaração"
+          className="w-full max-w-[90%] sm:max-w-[600px] md:max-w-[800px] p-3"
+          modalOpened={modalAberta}
+          onCloseButtonClick={() => setModalAberta(false)}
+        >
+          <Modal.Body>
+            Tem certeza que deseja alterar esta declaração para recebida?
+          </Modal.Body>
+          <Modal.Footer justify-content="end">
+            <Button
+              secondary
+              small
+              m={2}
+              onClick={() => setModalAberta(false)}
+              disabled={isPending}
+            >
+              Cancelar
+            </Button>
+            <Button
+              primary
+              small
+              m={2}
+              loading={isPending}
+              onClick={() => mutate()}
+            >
+              Confirmar
+            </Button>
+          </Modal.Footer>
+        </Modal>
+      )}
     </>
   )
 }

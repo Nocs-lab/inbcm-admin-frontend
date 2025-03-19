@@ -73,11 +73,22 @@ function Filter({ column }: { column: Column<unknown, unknown> }) {
   const { filterVariant } = column.columnDef.meta ?? {}
   const columnFilterValue = column.getFilterValue()
   const uniqueValues = column.getFacetedUniqueValues()
-  const sortedUniqueValues = useMemo(
-    () => Array.from(uniqueValues.keys()).sort(),
-    [uniqueValues]
-  )
+  const sortedUniqueValues = useMemo(() => {
+    if (column.id === "retificacao") {
+      return ["true", "false"]
+    }
+    if (column.id === "acervo") {
+      return ["A", "B", "M"]
+    }
+    return Array.from(uniqueValues.keys()).sort()
+  }, [uniqueValues, column.id])
   const optionMapping = (value: string) => {
+    if (column.id === "retificacao") {
+      return value === "true" ? "Retificadora" : "Original"
+    }
+    if (column.id === "acervo") {
+      return value
+    }
     switch (value.toString()) {
       case "0":
         return "Para aprovar"
@@ -113,7 +124,6 @@ function Filter({ column }: { column: Column<unknown, unknown> }) {
     <select
       onChange={(e) => {
         const value = e.currentTarget.value
-        // Converte o valor selecionado para número antes de definir o filtro
         column.setFilterValue(value === "" ? "" : value)
       }}
       value={columnFilterValue?.toString()}
