@@ -12,6 +12,12 @@ import toast from "react-hot-toast"
 import Table from "../../components/Table"
 import clsx from "clsx"
 import { useModal } from "../../utils/modal"
+import { pdfjs, Document } from "react-pdf"
+
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  "pdfjs-dist/build/pdf.worker.min.mjs",
+  import.meta.url
+).toString()
 
 interface User {
   _id: string
@@ -74,6 +80,40 @@ const labelMapping = (value: string) => {
     default:
       return value
   }
+}
+
+const DocumentosModal: React.FC<{
+  close: () => void
+  data: { url: string }
+  error: Error | null
+  isLoading: boolean
+}> = ({ close, data, error, isLoading }) => {
+  if (isLoading || !data) {
+    return <p>Carregando...</p>
+  }
+
+  if (error) {
+    return <p>Erro ao carregar documento</p>
+  }
+
+  return (
+    <Modal
+      title="Documento comprobatório do usuário"
+      showCloseButton
+      onCloseButtonClick={close}
+    >
+      <Modal.Body>
+        <div>
+          <Document file={data.url} />
+        </div>
+      </Modal.Body>
+      <Modal.Footer justify-content="end">
+        <Button primary small m={2} onClick={close}>
+          Fechar
+        </Button>
+      </Modal.Footer>
+    </Modal>
+  )
 }
 
 const PendingActions: React.FC<{
@@ -143,6 +183,32 @@ const PendingActions: React.FC<{
     )
   )
 
+  const {
+    data: documentos,
+    error: documentosError,
+    isLoading: loadingDocumentos
+  } = useQuery({
+    queryKey: ["documentos", info.getValue()],
+    queryFn: async () => {
+      const response = await request(
+        `/api/admin/users/documento/${info.getValue()}`
+      )
+      if (!response.ok) {
+        throw new Error("Failed to fetch user documents")
+      }
+      return response.json()
+    }
+  })
+
+  const { openModal: openDocumentModal } = useModal((close) => (
+    <DocumentosModal
+      close={close}
+      data={documentos}
+      error={documentosError}
+      isLoading={loadingDocumentos}
+    />
+  ))
+
   const approvalMutation = useMutation({
     mutationFn: async (userId: string) => {
       const response = await request(`/api/admin/users/${userId}`, {
@@ -206,6 +272,14 @@ const PendingActions: React.FC<{
 
   return (
     <div className="flex justify-start gap-2">
+      <button
+        className="btn text-[#1351b4]"
+        onClick={openDocumentModal}
+        aria-label="Ver documento"
+        title="Ver documento"
+      >
+        <i className="fa-solid fa-file-alt fa-fw pl-2"></i>
+      </button>
       <button
         className="btn text-[#1351b4]"
         onClick={openAprovveModal}
