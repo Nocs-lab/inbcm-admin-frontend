@@ -13,7 +13,24 @@ import toast from "react-hot-toast"
 import { debounce } from "lodash"
 import Select from "../../components/MultiSelect"
 
-const cpfRegex = /^\d{3}\.\d{3}\.\d{3}-\d{2}$/
+const validateCPF = (cpf: string): boolean => {
+  cpf = cpf.replace(/[^\d]+/g, "")
+  if (cpf.length !== 11 || !!cpf.match(/(\d)\1{10}/)) return false
+
+  const cpfDigits = cpf.split("").map((el) => +el)
+  const rest = (count: number) => {
+    return (
+      ((cpfDigits
+        .slice(0, count - 12)
+        .reduce((soma, el, index) => soma + el * (count - index), 0) *
+        10) %
+        11) %
+      10
+    )
+  }
+
+  return rest(10) === cpfDigits[9] && rest(11) === cpfDigits[10]
+}
 
 const schema = z
   .object({
@@ -22,7 +39,9 @@ const schema = z
     cpf: z
       .string()
       .min(1, "Este campo é obrigatório")
-      .regex(cpfRegex, "CPF deve estar no formato XXX.XXX.XXX-XX"),
+      .refine((cpf) => validateCPF(cpf), {
+        message: "CPF inválido"
+      }),
     profile: z.string().min(1, "Este campo é obrigatório"),
     password: z.string().min(1, "Este campo é obrigatório"),
     confirmPassword: z.string().min(1, "Este campo é obrigatório"),

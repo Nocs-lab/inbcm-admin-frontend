@@ -61,17 +61,25 @@ const fetchUsers = async (): Promise<User[]> => {
   )
 }
 
-const profileMapping: { [key: string]: string } = {
-  admin: "Administrador",
-  declarant: "Declarante",
-  analyst: "Analista"
-}
-
-const situacaoMapping: { [key: number]: string } = {
-  0: "Para aprovar",
-  1: "Ativo",
-  2: "Inativo",
-  3: "Não aprovado"
+const labelMapping = (value: string) => {
+  switch (value.toString()) {
+    case "0":
+      return "Para aprovar"
+    case "1":
+      return "Ativo"
+    case "2":
+      return "Inativo"
+    case "3":
+      return "Não aprovado"
+    case "admin":
+      return "Administrador"
+    case "analyst":
+      return "Analista"
+    case "declarant":
+      return "Declarante"
+    default:
+      return value
+  }
 }
 
 const DocumentosModal: React.FC<{
@@ -410,11 +418,16 @@ const Index: React.FC = () => {
           columnHelper.accessor("profile", {
             header: "Perfil",
             cell: (info) => {
-              const profileName = info.getValue()?.name
-              return profileName ? profileMapping[profileName] : "Não informado"
+              const profileName = info.getValue()?.toString()
+              return profileName ? labelMapping(profileName) : "Não informado"
             },
             meta: {
-              filterVariant: "text"
+              filterVariant: "select"
+            },
+            accessorFn: (row) => row.profile?.name || "",
+            filterFn: (row, columnId, filterValue) => {
+              const profileName = row.original.profile?.name
+              return profileName === filterValue
             }
           })
         ]
@@ -425,12 +438,15 @@ const Index: React.FC = () => {
             header: "Situação",
             cell: (info) => {
               const situacaoName = info.getValue()?.toString()
-              return situacaoName
-                ? situacaoMapping[Number(situacaoName)]
-                : "Não informado"
+              return situacaoName ? labelMapping(situacaoName) : "Não informado"
             },
             meta: {
-              filterVariant: "text"
+              filterVariant: "select"
+            },
+            filterFn: (row, columnId, filterValue) => {
+              // Converte o valor do filtro para número antes de comparar
+              const situacaoNumber = Number(filterValue)
+              return row.original.situacao === situacaoNumber
             }
           }),
           columnHelper.accessor("_id", {

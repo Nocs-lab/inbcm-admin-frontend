@@ -18,7 +18,9 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Create file .env
-        run: echo "${{ secrets.ENVS }}" > .env
+        env:
+          ENVS: ${{ secrets.ENVS }}
+        run: echo "$ENVS" > .env
 
       - name: Set Docker repository name for main branch
         if: github.ref == 'refs/heads/main'
@@ -67,7 +69,9 @@ jobs:
         run: echo "SCRIPT_UPDATE=updatePortainerDev.py" >> $GITHUB_ENV
       
       - name: Create file .env
-        run: echo "${{ secrets.ENVS_UPDATE }}" > .env
+        env:
+          ENVS_UPDATE: ${{ secrets.ENVS_UPDATE }}
+        run: echo "$ENVS_UPDATE" > src/scripts/.env
 
       - name: Configurar Python
         uses: actions/setup-python@v5
