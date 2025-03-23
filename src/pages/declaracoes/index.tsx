@@ -186,10 +186,22 @@ export default function Declaracoes() {
               filterVariant: "date"
             },
             filterFn: (row, columnId, filterValue) => {
-              const rowValue = row.getValue(columnId) as Date
+              const rowValue = new Date(row.getValue(columnId) as string)
               const filterDate = new Date(filterValue)
 
-              return rowValue.toDateString() === filterDate.toDateString()
+              // Ajustar para UTC, removendo diferença de fuso horário
+              const rowDateUTC = new Date(
+                rowValue.getUTCFullYear(),
+                rowValue.getUTCMonth(),
+                rowValue.getUTCDate()
+              )
+              const filterDateUTC = new Date(
+                filterDate.getUTCFullYear(),
+                filterDate.getUTCMonth(),
+                filterDate.getUTCDate()
+              )
+
+              return rowDateUTC.getTime() === filterDateUTC.getTime()
             }
           })
         ]
@@ -209,9 +221,22 @@ export default function Declaracoes() {
               filterVariant: "date"
             },
             filterFn: (row, columnId, filterValue) => {
-              const rowValue = row.getValue(columnId) as Date
+              const rowValue = new Date(row.getValue(columnId) as string)
               const filterDate = new Date(filterValue)
-              return rowValue.toDateString() === filterDate.toDateString()
+
+              // Ajustar para UTC, removendo diferença de fuso horário
+              const rowDateUTC = new Date(
+                rowValue.getUTCFullYear(),
+                rowValue.getUTCMonth(),
+                rowValue.getUTCDate()
+              )
+              const filterDateUTC = new Date(
+                filterDate.getUTCFullYear(),
+                filterDate.getUTCMonth(),
+                filterDate.getUTCDate()
+              )
+
+              return rowDateUTC.getTime() === filterDateUTC.getTime()
             }
           })
         ]
@@ -231,9 +256,22 @@ export default function Declaracoes() {
               filterVariant: "date"
             },
             filterFn: (row, columnId, filterValue) => {
-              const rowValue = row.getValue(columnId) as Date
+              const rowValue = new Date(row.getValue(columnId) as string)
               const filterDate = new Date(filterValue)
-              return rowValue.toDateString() === filterDate.toDateString()
+
+              // Ajustar para UTC, removendo diferença de fuso horário
+              const rowDateUTC = new Date(
+                rowValue.getUTCFullYear(),
+                rowValue.getUTCMonth(),
+                rowValue.getUTCDate()
+              )
+              const filterDateUTC = new Date(
+                filterDate.getUTCFullYear(),
+                filterDate.getUTCMonth(),
+                filterDate.getUTCDate()
+              )
+
+              return rowDateUTC.getTime() === filterDateUTC.getTime()
             }
           })
         ]
@@ -254,9 +292,22 @@ export default function Declaracoes() {
               filterVariant: "date"
             },
             filterFn: (row, columnId, filterValue) => {
-              const rowValue = row.getValue(columnId) as Date
+              const rowValue = new Date(row.getValue(columnId) as string)
               const filterDate = new Date(filterValue)
-              return rowValue.toDateString() === filterDate.toDateString()
+
+              // Ajustar para UTC, removendo diferença de fuso horário
+              const rowDateUTC = new Date(
+                rowValue.getUTCFullYear(),
+                rowValue.getUTCMonth(),
+                rowValue.getUTCDate()
+              )
+              const filterDateUTC = new Date(
+                filterDate.getUTCFullYear(),
+                filterDate.getUTCMonth(),
+                filterDate.getUTCDate()
+              )
+
+              return rowDateUTC.getTime() === filterDateUTC.getTime()
             }
           })
         ]
