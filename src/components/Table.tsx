@@ -185,7 +185,7 @@ const Table: React.FC<{
 
   return (
     <div
-      className="br-table overflow-auto"
+      className="br-table "
       data-search="data-search"
       data-selection="data-selection"
       data-collapse="data-collapse"
@@ -210,8 +210,9 @@ const Table: React.FC<{
                   key={header.id}
                   colSpan={header.colSpan}
                   scope="col"
-                  className="cursor-pointer select-none hover:active"
+                  className="cursor-pointer select-none hover:active text-xs p-2"
                   onClick={() => header.column.getToggleSortingHandler()}
+                  style={{ minWidth: "80px" }}
                 >
                   {header.isPlaceholder ? null : (
                     <>
@@ -246,7 +247,12 @@ const Table: React.FC<{
                 const isStatusColumn = cell.column.id === "status"
 
                 return (
-                  <td key={cell.id} data-th={cell.column.columnDef.header}>
+                  <td
+                    key={cell.id}
+                    data-th={cell.column.columnDef.header}
+                    className="text-xs p-2"
+                    style={{ wordBreak: "break-word" }}
+                  >
                     <span
                       className={`text-base text-center ${isStatusColumn ? "font-bold" : ""}`}
                     >

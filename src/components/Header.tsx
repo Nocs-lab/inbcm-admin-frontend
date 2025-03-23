@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useState, useRef } from "react"
 import { useNavigate, Link, NavLink } from "react-router"
 import { useSuspenseQuery } from "@tanstack/react-query"
 import logoImbramSimples from "../images/logo-ibram-simples.png"
@@ -9,6 +9,8 @@ import clsx from "clsx"
 const Header: React.FC = () => {
   const navigate = useNavigate()
   const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
   const { setUser } = useStore()
 
@@ -37,43 +39,81 @@ const Header: React.FC = () => {
   return (
     <header className="br-header compact large fixed">
       <div className="container-lg">
-        <div className="header-top">
+        <div className="header-top p-2">
           <div className="header-logo">
-            <img src={logoImbramSimples} alt="logo" />
+            <Link to="/">
+              <img
+                src={logoImbramSimples}
+                alt="logo"
+                style={{
+                  maxWidth: "100px",
+                  maxHeight: "50px",
+                  width: "auto",
+                  height: "auto"
+                }}
+              />
+            </Link>
+            <div className="header-subtitle">
+              Instituto Brasileiro de Museus
+            </div>
             <span className="br-divider vertical"></span>
             <div className="header-sign">Instituto Brasileiro de Museus</div>
           </div>
           {user && (
-            <div className="header-actions">
-              <div className="header-links dropdown">
+            <div className="header-actions relative">
+              {/* Links fixos no desktop, dropdown no mobile */}
+              <div className="hidden md:flex space-x-4 whitespace-nowrap">
+                {user.profile.name === "admin" &&
+                  Object.entries(pathnameMap).map(([path, name]) => (
+                    <NavLink
+                      key={path}
+                      className={({ isActive }) =>
+                        clsx("br-item py-2 px-4", isActive && "underline")
+                      }
+                      to={path}
+                    >
+                      {name}
+                    </NavLink>
+                  ))}
+              </div>
+
+              {/* Dropdown só no mobile */}
+              <div className="md:hidden relative" ref={dropdownRef}>
                 <button
                   className="br-button circle small"
                   type="button"
-                  data-toggle="dropdown"
                   aria-label="Abrir Acesso Rápido"
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
                 >
                   <i className="fas fa-ellipsis-v" aria-hidden="true"></i>
                 </button>
-                <div className="br-list">
+                <div
+                  className={clsx(
+                    "absolute left-1/2 -translate-x-1/2 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg transition-all duration-200 transform",
+                    dropdownOpen
+                      ? "opacity-100 scale-100"
+                      : "opacity-0 scale-95 hidden"
+                  )}
+                >
                   {user.profile.name === "admin" &&
-                    Object.entries(pathnameMap).map(
-                      ([path, name]: [string, string]) => (
-                        <NavLink
-                          key={path}
-                          className={({ isActive }) =>
-                            clsx(
-                              "br-item block py-2 px-4",
-                              isActive && "underline"
-                            )
-                          }
-                          to={path}
-                        >
-                          {name}
-                        </NavLink>
-                      )
-                    )}
+                    Object.entries(pathnameMap).map(([path, name]) => (
+                      <NavLink
+                        key={path}
+                        className={({ isActive }) =>
+                          clsx(
+                            "br-item block py-2 px-4",
+                            isActive && "underline"
+                          )
+                        }
+                        to={path}
+                        onClick={() => setDropdownOpen(false)}
+                      >
+                        {name}
+                      </NavLink>
+                    ))}
                 </div>
               </div>
+
               <span className="br-divider vertical mx-half mx-sm-1"></span>
               <div className="header-login relative">
                 <div>
@@ -128,12 +168,9 @@ const Header: React.FC = () => {
             </div>
           )}
         </div>
-        <div className="header-bottom">
+        <div className="header-bottom p-2">
           <div className="header-menu">
             <div className="header-info">
-              <div className="header-subtitle">
-                Instituto Brasileiro de Museus
-              </div>
               <div className="header-title">
                 Inventário Nacional de Bens Culturais Musealizados
               </div>
