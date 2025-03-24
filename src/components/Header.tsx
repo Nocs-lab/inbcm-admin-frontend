@@ -27,7 +27,7 @@ const Header: React.FC = () => {
       const response = await request("/api/public/users")
       const data = await response.json()
 
-      return data || { profile: { name: "admin" }, nome: "Admin" }
+      return data
     }
   })
 
@@ -155,16 +155,86 @@ const Header: React.FC = () => {
                       </button>
                     </Link>
                     <button
-                      className="br-item flex items-center space-x-2"
-                      onClick={logout}
-                      role="menuitem"
+                      className="br-button circle small"
+                      type="button"
+                      data-toggle="dropdown"
+                      aria-label="Abrir Acesso Rápido"
                     >
-                      <i className="fa-solid fa-arrow-right-from-bracket"></i>
-                      <span>Sair</span>
+                      <i className="fas fa-ellipsis-v" aria-hidden="true"></i>
                     </button>
+                    <div className="br-list">
+                      {user.profile.name === "admin" &&
+                        Object.entries(pathnameMap).map(
+                          ([path, name]: [string, string]) => (
+                            <NavLink
+                              key={path}
+                              className={({ isActive }) =>
+                                clsx(
+                                  "br-item block py-2 px-4",
+                                  isActive && "underline"
+                                )
+                              }
+                              to={path}
+                            >
+                              {name}
+                            </NavLink>
+                          )
+                        )}
+                    </div>
+                  </div>
+                  <span className="br-divider vertical mx-half mx-sm-1"></span>
+                  <div className="header-login relative">
+                    <div>
+                      <button
+                        className="br-sign-in p-0"
+                        type="button"
+                        id="avatar-dropdown-trigger"
+                        data-testid="avatar-dropdown-trigger"
+                        onClick={() => setUserMenuOpen((old) => !old)}
+                        data-toggle="dropdown"
+                        data-target="avatar-menu"
+                      >
+                        <span className="br-avatar" title={user.nome}>
+                          <span className="content bg-orange-vivid-30 text-pure-0">
+                            {user.nome.charAt(0).toUpperCase()}
+                          </span>
+                        </span>
+                        <span
+                          className="ml-2 mr-1 text-gray-80 text-weight-regular"
+                          data-testid="username"
+                        >
+                          <span className="text-weight-semi-bold">
+                            {user.nome.split(" ")[0]}
+                          </span>
+                        </span>
+                        <i className="fas fa-caret-down" aria-hidden="true"></i>
+                      </button>
+                      <div
+                        className="br-list z-50 w-full"
+                        id="avatar-menu"
+                        hidden={!userMenuOpen}
+                        role="menu"
+                        aria-labelledby="avatar-dropdown-trigger"
+                      >
+                        <Link to="/perfil">
+                          <button className="br-item flex items-center space-x-2">
+                            <i className="fa-solid fa-user"></i>
+                            <span>Perfil</span>
+                          </button>
+                        </Link>
+                        <button
+                          className="br-item flex items-center space-x-2"
+                          onClick={logout}
+                          role="menuitem"
+                        >
+                          <i className="fa-solid fa-arrow-right-from-bracket"></i>
+                          <span>Sair</span>
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           )}
         </div>
@@ -176,9 +246,9 @@ const Header: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    </header>
+        </header>
+      ) : null}
+    </>
   )
 }
 

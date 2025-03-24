@@ -130,8 +130,8 @@ function Filter({ column }: { column: Column<unknown, unknown> }) {
     >
       <option value="">Todos</option>
       {sortedUniqueValues.map((value) => (
-        <option value={value} key={value}>
-          {optionMapping(value)}
+        <option value={value} key={JSON.stringify(value)}>
+          {value}
         </option>
       ))}
     </select>
@@ -139,7 +139,7 @@ function Filter({ column }: { column: Column<unknown, unknown> }) {
     <>
       <datalist id={column.id + "list"}>
         {sortedUniqueValues.map((value: string) => (
-          <option value={value} key={value} />
+          <option value={value} key={JSON.stringify(value)} />
         ))}
       </datalist>
       <DebouncedInput
