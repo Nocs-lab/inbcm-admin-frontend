@@ -6,8 +6,6 @@ import { useNavigate, useParams, Link } from "react-router"
 import MismatchsModal from "../../../components/MismatchsModal"
 import TableItens from "../../../components/TableItens"
 import request from "../../../utils/request"
-import { Button, Modal } from "react-dsgov"
-import { useModal } from "../../../utils/modal"
 import useStore from "../../../utils/store"
 
 export default function DeclaracaoPage() {
@@ -17,28 +15,6 @@ export default function DeclaracaoPage() {
   const user = useStore((state) => state.user)
 
   const navigate = useNavigate()
-
-  const { openModal } = useModal((close) => (
-    <Modal
-      showCloseButton
-      title="Tela em desenvolvimento"
-      onCloseButtonClick={close}
-    >
-      <Modal.Body>
-        <div className="flex items-center space-x-2">
-          <i className="fas fa-exclamation-triangle text-danger fa-3x"></i>
-          <p className="normal-case text-center">
-            Essa tela ainda está em desenvolvimento.
-          </p>
-        </div>
-      </Modal.Body>
-      <Modal.Footer justify-content="center">
-        <Button primary small m={2} onClick={close}>
-          Voltar
-        </Button>
-      </Modal.Footer>
-    </Modal>
-  ))
 
   const [{ data }] = useSuspenseQueries({
     queries: [
@@ -100,7 +76,7 @@ export default function DeclaracaoPage() {
               role="button"
             >
               <i className="fas fa-exclamation-triangle" aria-hidden="true"></i>{" "}
-              Relatório de pendências
+              Resumo de pendências
             </a>
             <MismatchsModal
               opened={showModal}
@@ -114,13 +90,21 @@ export default function DeclaracaoPage() {
         {(data.museologico?.pendencias.length > 0 ||
           data.bibliografico?.pendencias.length > 0 ||
           data.arquivistico?.pendencias.length > 0) && (
-          <a className="text-xl" href="#" onClick={openModal} role="button">
-            <i
-              className="fas fa-file-circle-exclamation"
-              aria-hidden="true"
-            ></i>{" "}
-            Relatório de pendências
-          </a>
+          <>
+            <a
+              className="text-xl"
+              href={`/api/public/recibo/detalhamento/${id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              role="button"
+            >
+              <i
+                className="fas fa-file-circle-exclamation"
+                aria-hidden="true"
+              ></i>{" "}
+              Relatório de pendências
+            </a>
+          </>
         )}
         <a
           className="text-xl"

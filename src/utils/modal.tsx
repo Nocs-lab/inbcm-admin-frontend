@@ -28,28 +28,35 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
-export function useModal(modalContent: (close: () => void) => React.ReactNode) {
+export function useModal(
+  modalContent: (close: () => void, opened: boolean) => React.ReactNode,
+  { onOpen, onClose }: { onOpen?: () => void; onClose?: () => void } = {}
+) {
   const { open, setModal, setOpen } = useContext(ModalContext)!
 
-  const modal = modalContent(() => setOpen(false))
+  const modal = modalContent(() => setOpen(false), open)
 
   const openModal = () => {
     setModal(modal)
     setOpen(true)
+    onOpen?.()
   }
 
   const closeModal = () => {
     setOpen(false)
+    onClose?.()
   }
 
   const toggleModal = () => {
     if (open) {
       setOpen(false)
+      onClose?.()
     } else {
       setModal(modal)
       setOpen(true)
+      onOpen?.()
     }
   }
 
-  return { toggleModal, openModal, closeModal }
+  return { toggleModal, openModal, closeModal, opened: open }
 }
