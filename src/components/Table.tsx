@@ -73,11 +73,22 @@ function Filter({ column }: { column: Column<unknown, unknown> }) {
   const { filterVariant } = column.columnDef.meta ?? {}
   const columnFilterValue = column.getFilterValue()
   const uniqueValues = column.getFacetedUniqueValues()
-  const sortedUniqueValues = useMemo(
-    () => Array.from(uniqueValues.keys()).sort(),
-    [uniqueValues]
-  )
+  const sortedUniqueValues = useMemo(() => {
+    if (column.id === "retificacao") {
+      return ["true", "false"]
+    }
+    if (column.id === "acervo") {
+      return ["A", "B", "M"]
+    }
+    return Array.from(uniqueValues.keys()).sort()
+  }, [uniqueValues, column.id])
   const optionMapping = (value: string) => {
+    if (column.id === "retificacao") {
+      return value === "true" ? "Retificadora" : "Original"
+    }
+    if (column.id === "acervo") {
+      return value
+    }
     switch (value.toString()) {
       case "0":
         return "Para aprovar"
@@ -98,11 +109,21 @@ function Filter({ column }: { column: Column<unknown, unknown> }) {
     }
   }
 
+  if (filterVariant === "date") {
+    return (
+      <input
+        type="date"
+        value={(columnFilterValue ?? "") as string}
+        onChange={(e) => column.setFilterValue(e.target.value)}
+        className="p-1 border border-gray-700 text-xs"
+      />
+    )
+  }
+
   return filterVariant === "select" ? (
     <select
       onChange={(e) => {
         const value = e.currentTarget.value
-        // Converte o valor selecionado para número antes de definir o filtro
         column.setFilterValue(value === "" ? "" : value)
       }}
       value={columnFilterValue?.toString()}
@@ -164,7 +185,7 @@ const Table: React.FC<{
 
   return (
     <div
-      className="br-table overflow-auto"
+      className="br-table "
       data-search="data-search"
       data-selection="data-selection"
       data-collapse="data-collapse"
@@ -189,8 +210,9 @@ const Table: React.FC<{
                   key={header.id}
                   colSpan={header.colSpan}
                   scope="col"
-                  className="cursor-pointer select-none hover:active"
+                  className="cursor-pointer select-none hover:active text-xs p-2"
                   onClick={() => header.column.getToggleSortingHandler()}
+                  style={{ minWidth: "80px" }}
                 >
                   {header.isPlaceholder ? null : (
                     <>
@@ -225,7 +247,12 @@ const Table: React.FC<{
                 const isStatusColumn = cell.column.id === "status"
 
                 return (
-                  <td key={cell.id} data-th={cell.column.columnDef.header}>
+                  <td
+                    key={cell.id}
+                    data-th={cell.column.columnDef.header}
+                    className="text-xs p-2"
+                    style={{ wordBreak: "break-word" }}
+                  >
                     <span
                       className={`text-base text-center ${isStatusColumn ? "font-bold" : ""}`}
                     >
