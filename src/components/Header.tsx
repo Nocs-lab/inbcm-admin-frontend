@@ -61,7 +61,7 @@ const Header: React.FC = () => {
           </div>
           {user && (
             <div className="header-actions relative">
-              {/* Links fixos no desktop, dropdown no mobile */}
+              {/* desktop */}
               <div className="hidden md:flex space-x-4 whitespace-nowrap">
                 {user.profile.name === "admin" &&
                   Object.entries(pathnameMap).map(([path, name]) => (
@@ -77,7 +77,7 @@ const Header: React.FC = () => {
                   ))}
               </div>
 
-              {/* Dropdown só no mobile */}
+              {/* mobile */}
               <div className="md:hidden relative" ref={dropdownRef}>
                 <button
                   className="br-button circle small"
