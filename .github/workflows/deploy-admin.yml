@@ -17,18 +17,17 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v3
 
-      - name: Create file .env
-        env:
-          ENVS: ${{ secrets.ENVS }}
-        run: echo "$ENVS" > .env
-
       - name: Set Docker repository name for main branch
         if: github.ref == 'refs/heads/main'
-        run: echo "DOCKER_REPOSITORY=inbcm-admin-main" >> $GITHUB_ENV
+        run: |
+          echo "DOCKER_REPOSITORY=inbcm-admin-main" >> $GITHUB_ENV
+          echo "${{ secrets.ENVS_MAIN }}" > .env         
 
       - name: Set Docker repository name for development branch
         if: github.ref == 'refs/heads/development'
-        run: echo "DOCKER_REPOSITORY=inbcm-admin" >> $GITHUB_ENV
+        run: |
+          echo "DOCKER_REPOSITORY=inbcm-admin" >> $GITHUB_ENV
+          echo "${{ secrets.ENVS_DEV }}" > .env
 
       - name: Truncate commit SHA
         run: echo "VITE_SHORT_SHA=${GITHUB_SHA:0:7}" >> $GITHUB_ENV
