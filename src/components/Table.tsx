@@ -82,6 +82,7 @@ function Filter({ column }: { column: Column<unknown, unknown> }) {
     }
     return Array.from(uniqueValues.keys()).sort()
   }, [uniqueValues, column.id])
+
   const optionMapping = (value: string) => {
     if (column.id === "retificacao") {
       return value === "true" ? "Retificadora" : "Original"
@@ -131,7 +132,7 @@ function Filter({ column }: { column: Column<unknown, unknown> }) {
       <option value="">Todos</option>
       {sortedUniqueValues.map((value) => (
         <option value={value} key={JSON.stringify(value)}>
-          {value}
+          {optionMapping(value) !== value ? optionMapping(value) : value}
         </option>
       ))}
     </select>

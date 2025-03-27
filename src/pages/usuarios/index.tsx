@@ -383,34 +383,32 @@ const Index: React.FC = () => {
     }),
     ...(activeTab === "declarant" || activeTab === "pending"
       ? [
-          columnHelper.accessor("museus", {
-            header: "Museus",
-            cell: (info) => {
-              const museus = info.getValue()
-              return museus.length > 0
-                ? museus.map((museu) => museu.nome).join(", ")
-                : "Nenhum museu"
-            },
-            meta: {
-              filterVariant: "text"
+          columnHelper.accessor(
+            (row) =>
+              row.museus?.map((m) => m.nome).join(", ") || "Nenhum museu",
+            {
+              header: "Museus",
+              cell: (info) => info.getValue(),
+              meta: {
+                filterVariant: "text"
+              }
             }
-          })
+          )
         ]
       : []),
     ...(activeTab === "analyst"
       ? [
-          columnHelper.accessor("especialidadeAnalista", {
-            header: "Especialidade",
-            cell: (info) => {
-              const especialidades = info.getValue()
-              return especialidades
-                ? especialidades.join(", ")
-                : "Nenhuma especialidade"
-            },
-            meta: {
-              filterVariant: "text"
+          columnHelper.accessor(
+            (row) =>
+              row.especialidadeAnalista?.join(", ") || "Nenhuma especialidade",
+            {
+              header: "Especialidade",
+              cell: (info) => info.getValue(),
+              meta: {
+                filterVariant: "text"
+              }
             }
-          })
+          )
         ]
       : []),
     ...(activeTab === "all"
