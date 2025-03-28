@@ -555,7 +555,58 @@ const EditUser: React.FC = () => {
               </legend>
               <div className="mt-6">
                 {user.museus && user.museus.length > 0 ? (
-                  <Table columns={columns} data={user.museus} />
+                  <>
+                    {/* Tabela para desktop */}
+                    <div className="hidden md:block">
+                      <Table columns={columns} data={user.museus} />
+                    </div>
+
+                    {/* Cards para mobile */}
+                    <div className="md:hidden space-y-4">
+                      {user.museus.map((museu) => (
+                        <div
+                          key={museu._id}
+                          className="border rounded-lg p-4 shadow-sm"
+                        >
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <p className="font-semibold">Nome</p>
+                              <p>{museu.nome || "Não disponível"}</p>
+                            </div>
+                            <div>
+                              <p className="font-semibold">Município</p>
+                              <p>
+                                {museu.endereco?.municipio || "Não disponível"}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="font-semibold">Bairro</p>
+                              <p>
+                                {museu.endereco?.bairro || "Não disponível"}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="font-semibold">Administração</p>
+                              <p>
+                                {museu.esferaAdministraiva || "Não disponível"}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="mt-3 flex justify-end">
+                            <button
+                              className="text-[#1351b4]"
+                              onClick={() => handleOpenModal(museu._id)}
+                              aria-label="Desassociar museu"
+                              title="Desassociar museu"
+                            >
+                              <i className="fa-solid fa-trash fa-fw"></i>{" "}
+                              Desassociar
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
                 ) : (
                   <p className="text-gray-500">Nenhum museu associado.</p>
                 )}

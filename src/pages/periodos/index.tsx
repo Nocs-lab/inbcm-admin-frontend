@@ -171,7 +171,24 @@ const Gestao: React.FC = () => {
           Novo
         </Link>
       </div>
-      <Table columns={columns as ColumnDef<unknown>[]} data={data} />
+      <div className="relative">
+        <div className="overflow-x-auto shadow-md sm:rounded-lg">
+          <div className="inline-block min-w-full align-middle">
+            <div className="overflow-hidden">
+              <Table
+                columns={columns as ColumnDef<unknown>[]}
+                data={data}
+                className="min-w-[800px] md:min-w-full"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Indicador de scroll para mobile */}
+        <div className="md:hidden text-center mt-2 text-sm text-gray-500">
+          <span className="animate-pulse">← Arraste para ver mais →</span>
+        </div>
+      </div>
     </>
   )
 }
