@@ -13,6 +13,8 @@ import { FaCalendar, FaEdit, FaPlus, FaTrash } from "react-icons/fa"
 import { useModal } from "../../utils/modal"
 import { Button, Modal } from "react-dsgov"
 import toast from "react-hot-toast"
+import { useState, useMemo } from "react"
+import clsx from "clsx"
 
 interface Ano {
   _id: string
@@ -78,7 +80,7 @@ const ActionsCell: React.FC<{ id: string; declaracaoVinculada: boolean }> = ({
 
   return (
     <div className="flex gap-2">
-      <Link to={`/periodos/${id}`} className="btn btn-sm btn-primary">
+      <Link to={`/configuracoes/${id}`} className="btn btn-sm btn-primary">
         <FaEdit />
       </Link>
       <button
@@ -94,55 +96,11 @@ const ActionsCell: React.FC<{ id: string; declaracaoVinculada: boolean }> = ({
 
 const columnHelper = createColumnHelper<Ano>()
 
-const columns = [
-  columnHelper.accessor("ano", {
-    header: "Ano",
-    enableColumnFilter: true
-  }),
-  columnHelper.accessor("dataInicioSubmissao", {
-    header: "Início Submissão",
-    cell: (info) =>
-      format(info.getValue(), "dd/MM/yyyy HH:mm", { locale: ptBR }),
-    enableColumnFilter: false
-  }),
-  columnHelper.accessor("dataFimSubmissao", {
-    header: "Fim Submissão",
-    cell: (info) =>
-      format(info.getValue(), "dd/MM/yyyy HH:mm", { locale: ptBR }),
-    enableColumnFilter: false
-  }),
-  columnHelper.accessor("dataInicioRetificacao", {
-    header: "Início Retificação",
-    cell: (info) =>
-      format(info.getValue(), "dd/MM/yyyy HH:mm", { locale: ptBR }),
-    enableColumnFilter: false
-  }),
-  columnHelper.accessor("dataFimRetificacao", {
-    header: "Fim Retificação",
-    cell: (info) =>
-      format(info.getValue(), "dd/MM/yyyy HH:mm", { locale: ptBR }),
-    enableColumnFilter: false
-  }),
-  columnHelper.accessor("metaDeclaracoesEnviadas", {
-    header: "Meta",
-    cell: (info) => info.getValue(),
-    enableColumnFilter: false,
-    enableSorting: false
-  }),
-  columnHelper.accessor("_id", {
-    header: "Ações",
-    cell: (info) => (
-      <ActionsCell
-        id={info.getValue()}
-        declaracaoVinculada={info.row.original.declaracaoVinculada}
-      />
-    ),
-    enableColumnFilter: false,
-    enableSorting: false
-  })
-]
-
 const Gestao: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<"emails" | "submissao">(
+    "submissao"
+  )
+
   const { data: rawData } = useSuspenseQuery({
     queryKey: ["periodos"],
     queryFn: async () => {
@@ -151,44 +109,139 @@ const Gestao: React.FC = () => {
     }
   })
 
-  const data = rawData.map((item: Ano) => ({
-    ...item,
-    ano: item.ano.toString()
-  }))
+  const data = useMemo(
+    () =>
+      rawData.map((item: Ano) => ({
+        ...item,
+        ano: item.ano.toString()
+      })),
+    [rawData]
+  )
 
-  console.log(data)
+  const columns = useMemo(
+    () =>
+      [
+        ...(activeTab === "submissao"
+          ? [
+              columnHelper.accessor("ano", {
+                header: "Ano",
+                enableColumnFilter: true
+              }),
+              columnHelper.accessor("dataInicioSubmissao", {
+                header: "Início Submissão",
+                cell: (info) =>
+                  format(info.getValue(), "dd/MM/yyyy HH:mm", { locale: ptBR }),
+                enableColumnFilter: false
+              }),
+              columnHelper.accessor("dataFimSubmissao", {
+                header: "Fim Submissão",
+                cell: (info) =>
+                  format(info.getValue(), "dd/MM/yyyy HH:mm", { locale: ptBR }),
+                enableColumnFilter: false
+              }),
+              columnHelper.accessor("dataInicioRetificacao", {
+                header: "Início Retificação",
+                cell: (info) =>
+                  format(info.getValue(), "dd/MM/yyyy HH:mm", { locale: ptBR }),
+                enableColumnFilter: false
+              }),
+              columnHelper.accessor("dataFimRetificacao", {
+                header: "Fim Retificação",
+                cell: (info) =>
+                  format(info.getValue(), "dd/MM/yyyy HH:mm", { locale: ptBR }),
+                enableColumnFilter: false
+              }),
+              columnHelper.accessor("metaDeclaracoesEnviadas", {
+                header: "Meta",
+                cell: (info) => info.getValue(),
+                enableColumnFilter: false,
+                enableSorting: false
+              }),
+              columnHelper.accessor("_id", {
+                header: "Ações",
+                cell: (info) => (
+                  <ActionsCell
+                    id={info.getValue()}
+                    declaracaoVinculada={info.row.original.declaracaoVinculada}
+                  />
+                ),
+                enableColumnFilter: false,
+                enableSorting: false
+              })
+            ]
+          : [])
+      ] as ColumnDef<Ano>[],
+    [activeTab]
+  )
 
   return (
     <>
-      <div className="flex justify-between items-center mb-4">
-        <h2>Períodos de submissão</h2>
-        <Link
-          to="/periodos/novo"
-          className="btn text-xl p-3 flex items-center gap-2"
-        >
-          <FaCalendar />
-          <FaPlus size={12} className="-ml-2 mb-1" />
-          Novo
-        </Link>
+      <h2>Configurações do sistema</h2>
+
+      <div className="br-tab small">
+        <nav className="tab-nav">
+          <ul>
+            <li
+              className={clsx(
+                "tab-item",
+                activeTab === "submissao" && "active"
+              )}
+            >
+              <button type="button" onClick={() => setActiveTab("submissao")}>
+                <span className="name">Submissões</span>
+              </button>
+            </li>
+            <li
+              className={clsx("tab-item", activeTab === "emails" && "active")}
+            >
+              <button type="button" onClick={() => setActiveTab("emails")}>
+                <span className="name">E-mails</span>
+              </button>
+            </li>
+          </ul>
+        </nav>
       </div>
-      <div className="relative">
-        <div className="overflow-x-auto shadow-md sm:rounded-lg">
-          <div className="inline-block min-w-full align-middle">
-            <div className="overflow-hidden">
-              <Table
-                columns={columns as ColumnDef<unknown>[]}
-                data={data}
-                className="min-w-[800px] md:min-w-full"
-              />
+
+      {activeTab === "submissao" && (
+        <div>
+          <div className="flex flex-row-reverse justify-between items-center mb-4 p-2">
+            <Link
+              to="/configuracoes/novo"
+              className="btn text-xl p-3 flex items-center gap-2"
+            >
+              <FaCalendar />
+              <FaPlus size={12} className="-ml-2 mb-1" />
+              Novo
+            </Link>
+          </div>
+
+          <div className="relative">
+            <div className="overflow-x-auto shadow-md sm:rounded-lg">
+              <div className="inline-block min-w-full align-middle">
+                <div className="overflow-hidden">
+                  <Table
+                    columns={columns as ColumnDef<unknown>[]}
+                    data={data}
+                    className="min-w-[800px] md:min-w-full"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Indicador de scroll para mobile */}
+            <div className="md:hidden text-center mt-2 text-sm text-gray-500">
+              <span className="animate-pulse">← Arraste para ver mais →</span>
             </div>
           </div>
         </div>
+      )}
 
-        {/* Indicador de scroll para mobile */}
-        <div className="md:hidden text-center mt-2 text-sm text-gray-500">
-          <span className="animate-pulse">← Arraste para ver mais →</span>
+      {activeTab === "emails" && (
+        <div>
+          {/* Conteúdo da aba de emails */}
+          <p>Conteúdo da aba de emails aqui</p>
         </div>
-      </div>
+      )}
     </>
   )
 }

@@ -88,7 +88,7 @@ const CriarPeriodo: React.FC = () => {
   return (
     <>
       <div className="container mx-auto p-8">
-        <Link to="/periodos" className="text-lg">
+        <Link to="/configuracoes" className="text-lg">
           <i className="fas fa-arrow-left" aria-hidden="true"></i>
           Voltar
         </Link>
