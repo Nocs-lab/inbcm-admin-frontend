@@ -16,9 +16,9 @@ const Header: React.FC = () => {
 
   const pathnameMap = {
     "/": "Painel analítico",
-    "/periodos": "Períodos",
     "/declaracoes": "Declarações",
-    "/usuarios": "Usuários"
+    "/usuarios": "Usuários",
+    "/configuracoes": "Configurações"
   }
 
   const { data: user } = useSuspenseQuery({
