@@ -15,6 +15,7 @@ import { Button, Modal } from "react-dsgov"
 import toast from "react-hot-toast"
 import { useState, useMemo } from "react"
 import clsx from "clsx"
+import Input from "../../components/Input"
 
 interface Ano {
   _id: string
@@ -237,10 +238,37 @@ const Gestao: React.FC = () => {
       )}
 
       {activeTab === "emails" && (
-        <div>
-          {/* Conteúdo da aba de emails */}
-          <p>Conteúdo da aba de emails aqui</p>
-        </div>
+        <>
+          <div className="flex flex-row-reverse justify-between items-center mb-4 p-2">
+            <Link
+              to="/configuracoes/novo"
+              className="btn text-xl p-3 flex items-center gap-2"
+            >
+              <i className="fa-solid fa-envelope"></i>
+              Novo
+            </Link>
+          </div>
+          <div className="p-2">
+            <form className="space-y-6">
+              <Input label="URL do servidor" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input type="datetime-local" label="Porta" />
+                <Input type="datetime-local" label="Protocolo" />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input type="datetime-local" label="Domínio" />
+                <Input type="datetime-local" label="Usuário" />
+              </div>
+              <Input type="number" label="Senha" min={1} step={1} />
+              <Input type="number" label="Autenticação" min={1} step={1} />
+              <div className="flex justify-end space-x-4">
+                <button className={clsx("br-button primary")} type="submit">
+                  Criar
+                </button>
+              </div>
+            </form>
+          </div>
+        </>
       )}
     </>
   )
