@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react"
 import { useNavigate, Link, NavLink } from "react-router"
 import { useSuspenseQuery } from "@tanstack/react-query"
-import logoImbramSimples from "../images/logo-ibram-simples.png"
+import logoImbramSimples from "../images/logo2025-sem fundo.png"
 import request from "../utils/request"
 import useStore from "../utils/store"
 import clsx from "clsx"
