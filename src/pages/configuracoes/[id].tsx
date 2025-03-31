@@ -20,7 +20,19 @@ const schema = z.object({
   dataFimSubmissao: z.string(),
   dataInicioRetificacao: z.string(),
   dataFimRetificacao: z.string(),
-  metaDeclaracoesEnviadas: z.number()
+  metaDeclaracoesEnviadas: z.number(),
+  diasAlertaPrazo: z
+    .number()
+    .min(0, "Este campo é obrigatório")
+    .max(100, "Este campo é obrigatório"),
+  quantidadeLembretesEmail: z
+    .number()
+    .min(0, "Este campo é obrigatório")
+    .max(100, "Este campo é obrigatório"),
+  intervaloLembretesEmail: z
+    .number()
+    .min(0, "Este campo é obrigatório")
+    .max(100, "Este campo é obrigatório")
 })
 
 type FormData = z.infer<typeof schema>
@@ -72,7 +84,10 @@ const EditarPeriodo: React.FC = () => {
       dataFimSubmissao,
       dataInicioRetificacao,
       dataFimRetificacao,
-      metaDeclaracoesEnviadas
+      metaDeclaracoesEnviadas,
+      diasAlertaPrazo,
+      quantidadeLembretesEmail,
+      intervaloLembretesEmail
     }: FormData) => {
       const res = await request(`/api/admin/anoDeclaracao/${id}`, {
         method: "PUT",
@@ -82,7 +97,10 @@ const EditarPeriodo: React.FC = () => {
           dataFimSubmissao,
           dataInicioRetificacao,
           dataFimRetificacao,
-          metaDeclaracoesEnviadas
+          metaDeclaracoesEnviadas,
+          diasAlertaPrazo,
+          quantidadeLembretesEmail,
+          intervaloLembretesEmail
         }
       })
 
@@ -113,54 +131,89 @@ const EditarPeriodo: React.FC = () => {
         </Link>
         <h2>Editar período</h2>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <Input
-            type="number"
-            label="Ano"
-            error={errors.ano}
-            {...register("ano", { valueAsNumber: true })}
-          />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              type="datetime-local"
-              label="Início do período de submissão"
-              error={errors.dataInicioSubmissao}
-              {...register("dataInicioSubmissao")}
-            />
-            <Input
-              type="datetime-local"
-              label="Fim do período de submissão"
-              disabled={!inicioSubmissao}
-              min={inicioSubmissao ? inicioSubmissao.substring(0, 16) : ""}
-              error={errors.dataFimSubmissao}
-              {...register("dataFimSubmissao")}
-            />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              type="datetime-local"
-              label="Início do período de retificação"
-              disabled={!inicioSubmissao}
-              error={errors.dataInicioRetificacao}
-              min={inicioSubmissao ? inicioSubmissao.substring(0, 16) : ""}
-              {...register("dataInicioRetificacao")}
-            />
-            <Input
-              type="datetime-local"
-              label="Fim do período de retificação"
-              disabled={!inicioRetificacao}
-              min={inicioRetificacao ? inicioRetificacao.substring(0, 16) : ""}
-              error={errors.dataFimRetificacao}
-              {...register("dataFimRetificacao")}
-            />
-          </div>
-          <Input
-            type="number"
-            label="Meta de declarações enviadas"
-            error={errors.metaDeclaracoesEnviadas}
-            min={1}
-            step={1}
-            {...register("metaDeclaracoesEnviadas", { valueAsNumber: true })}
-          />
+          <fieldset
+            className="rounded-lg p-3"
+            style={{ border: "2px solid #e0e0e0" }}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input
+                type="number"
+                label="Ano"
+                error={errors.ano}
+                {...register("ano", { valueAsNumber: true })}
+              />
+              <Input
+                type="number"
+                label="Meta de declarações enviadas"
+                error={errors.metaDeclaracoesEnviadas}
+                min={1}
+                step={1}
+                {...register("metaDeclaracoesEnviadas", {
+                  valueAsNumber: true
+                })}
+              />
+              <Input
+                type="datetime-local"
+                label="Início do período de submissão"
+                error={errors.dataInicioSubmissao}
+                {...register("dataInicioSubmissao")}
+              />
+              <Input
+                type="datetime-local"
+                label="Fim do período de submissão"
+                disabled={!inicioSubmissao}
+                min={inicioSubmissao ? inicioSubmissao.substring(0, 16) : ""}
+                error={errors.dataFimSubmissao}
+                {...register("dataFimSubmissao")}
+              />
+              <Input
+                type="datetime-local"
+                label="Início do período de retificação"
+                disabled={!inicioSubmissao}
+                error={errors.dataInicioRetificacao}
+                min={inicioSubmissao ? inicioSubmissao.substring(0, 16) : ""}
+                {...register("dataInicioRetificacao")}
+              />
+              <Input
+                type="datetime-local"
+                label="Fim do período de retificação"
+                disabled={!inicioRetificacao}
+                min={
+                  inicioRetificacao ? inicioRetificacao.substring(0, 16) : ""
+                }
+                error={errors.dataFimRetificacao}
+                {...register("dataFimRetificacao")}
+              />
+              <Input
+                type="number"
+                label="Quantidade de notificações em tela antes do prazo final de envio"
+                error={errors.diasAlertaPrazo}
+                min={0}
+                step={1}
+                {...register("diasAlertaPrazo", { valueAsNumber: true })}
+              />
+              <Input
+                type="number"
+                label="Quantidade de e-mails lembretes antes do prazo final"
+                error={errors.quantidadeLembretesEmail}
+                min={0}
+                step={1}
+                {...register("quantidadeLembretesEmail", {
+                  valueAsNumber: true
+                })}
+              />
+              <Input
+                type="number"
+                label="Intervalo em dias do envio de e-mails"
+                error={errors.intervaloLembretesEmail}
+                min={0}
+                step={1}
+                {...register("intervaloLembretesEmail", {
+                  valueAsNumber: true
+                })}
+              />
+            </div>
+          </fieldset>
           <div className="flex justify-end space-x-4">
             <button
               className={clsx("br-button primary", isSubmitting && "loading")}
