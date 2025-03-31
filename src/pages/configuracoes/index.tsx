@@ -261,7 +261,7 @@ const Gestao: React.FC = () => {
               className={clsx("tab-item", activeTab === "emails" && "active")}
             >
               <button type="button" onClick={() => setActiveTab("emails")}>
-                <span className="name">E-mails</span>
+                <span className="name">Notificações</span>
               </button>
             </li>
           </ul>

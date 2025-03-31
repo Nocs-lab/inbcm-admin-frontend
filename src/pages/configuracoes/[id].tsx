@@ -107,7 +107,7 @@ const EditarPeriodo: React.FC = () => {
       return await res.json()
     },
     onSuccess: () => {
-      navigate("/periodos")
+      navigate("/configuracoes")
     },
     onMutate: () => {
       queryClient.invalidateQueries({ queryKey: ["periodos"] })
