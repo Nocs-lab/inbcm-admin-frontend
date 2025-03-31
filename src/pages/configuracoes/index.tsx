@@ -13,7 +13,7 @@ import { FaCalendar, FaEdit, FaPlus, FaTrash } from "react-icons/fa"
 import { useModal } from "../../utils/modal"
 import { Button, Modal } from "react-dsgov"
 import toast from "react-hot-toast"
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import clsx from "clsx"
 import Input from "../../components/Input"
 
@@ -26,6 +26,14 @@ interface Ano {
   dataFimRetificacao: Date
   metaDeclaracoesEnviadas: number
   declaracaoVinculada: boolean
+}
+
+interface EmailConfig {
+  emailHost: string
+  emailPort: string
+  emailUser: string
+  emailPass: string
+  emailFrom: string
 }
 
 const ActionsCell: React.FC<{ id: string; declaracaoVinculada: boolean }> = ({
@@ -175,6 +183,63 @@ const Gestao: React.FC = () => {
     [activeTab]
   )
 
+  const { data: emailConfig } = useSuspenseQuery<EmailConfig>({
+    queryKey: ["emailConfig"],
+    queryFn: async () => {
+      const response = await request("/api/admin/emailconfig")
+      return response.json()
+    }
+  })
+
+  const [formEmail, setFformEmail] = useState<EmailConfig>({
+    emailHost: "",
+    emailPort: "",
+    emailUser: "",
+    emailPass: "",
+    emailFrom: ""
+  })
+
+  useEffect(() => {
+    if (emailConfig) {
+      setFformEmail(emailConfig)
+    }
+  }, [emailConfig])
+
+  const queryClient = useQueryClient()
+  const { mutateAsync: updateEmailConfig } = useMutation({
+    mutationFn: async (data: EmailConfig) => {
+      const response = await request("/api/admin/emailconfig", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
+      })
+      return response.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["emailConfig"] })
+      window.location.reload()
+    }
+  })
+
+  const handleEmailConfigSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    toast.promise(updateEmailConfig(formEmail), {
+      loading: "Atualizando...",
+      success: "Configurações atualizadas com sucesso",
+      error: "Erro ao atualizar configurações"
+    })
+  }
+
+  const handleEmailConfigChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setFformEmail((prev) => ({
+      ...prev,
+      [name]: value
+    }))
+  }
+
   return (
     <>
       <h2>Configurações do sistema</h2>
@@ -205,10 +270,10 @@ const Gestao: React.FC = () => {
 
       {activeTab === "submissao" && (
         <div>
-          <div className="flex flex-row-reverse justify-between items-center mb-4 p-2">
+          <div className="flex flex-row-reverse justify-between items-center p-2">
             <Link
               to="/configuracoes/novo"
-              className="btn text-xl p-3 flex items-center gap-2"
+              className="btn text-xl p-2 flex items-center gap-2"
             >
               <FaCalendar />
               <FaPlus size={12} className="-ml-2 mb-1" />
@@ -239,31 +304,56 @@ const Gestao: React.FC = () => {
 
       {activeTab === "emails" && (
         <>
-          <div className="flex flex-row-reverse justify-between items-center mb-4 p-2">
-            <Link
-              to="/configuracoes/novo"
-              className="btn text-xl p-3 flex items-center gap-2"
-            >
-              <i className="fa-solid fa-envelope"></i>
-              Novo
-            </Link>
-          </div>
-          <div className="p-2">
-            <form className="space-y-6">
-              <Input label="URL do servidor" />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input type="datetime-local" label="Porta" />
-                <Input type="datetime-local" label="Protocolo" />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input type="datetime-local" label="Domínio" />
-                <Input type="datetime-local" label="Usuário" />
-              </div>
-              <Input type="number" label="Senha" min={1} step={1} />
-              <Input type="number" label="Autenticação" min={1} step={1} />
-              <div className="flex justify-end space-x-4">
+          <div className="container mx-auto p-8">
+            <form className="space-y-6" onSubmit={handleEmailConfigSubmit}>
+              <fieldset
+                className="rounded-lg p-3"
+                style={{ border: "2px solid #e0e0e0" }}
+              >
+                <legend className="text-lg font-semibold">
+                  Configurações de e-mail
+                </legend>
+                <div className="grid grid-cols-2 gap-2 w-full p-2">
+                  <Input
+                    type="text"
+                    label="Host"
+                    name="emailHost"
+                    value={formEmail.emailHost}
+                    onChange={handleEmailConfigChange}
+                  />
+                  <Input
+                    type="text"
+                    label="Porta"
+                    name="emailPort"
+                    value={formEmail.emailPort}
+                    onChange={handleEmailConfigChange}
+                  />
+                  <Input
+                    type="text"
+                    label="Destino"
+                    name="emailFrom"
+                    value={formEmail.emailFrom}
+                    onChange={handleEmailConfigChange}
+                  />
+                  <Input
+                    type="text"
+                    label="Usuário"
+                    name="emailUser"
+                    value={formEmail.emailUser}
+                    onChange={handleEmailConfigChange}
+                  />
+                  <Input
+                    type="text"
+                    label="Senha"
+                    name="emailPass"
+                    value={formEmail.emailPass}
+                    onChange={handleEmailConfigChange}
+                  />
+                </div>
+              </fieldset>
+              <div className="flex justify-end space-x-4 p-2">
                 <button className={clsx("br-button primary")} type="submit">
-                  Criar
+                  Atualizar
                 </button>
               </div>
             </form>
