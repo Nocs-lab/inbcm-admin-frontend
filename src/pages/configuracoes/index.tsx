@@ -311,7 +311,7 @@ const Gestao: React.FC = () => {
                 style={{ border: "2px solid #e0e0e0" }}
               >
                 <legend className="text-lg font-semibold">
-                  Configurações de e-mail
+                  Configurações do serviço de e-mail
                 </legend>
                 <div className="grid grid-cols-2 gap-2 w-full p-2">
                   <Input
@@ -330,7 +330,7 @@ const Gestao: React.FC = () => {
                   />
                   <Input
                     type="text"
-                    label="Destino"
+                    label="Remetente"
                     name="emailFrom"
                     value={formEmail.emailFrom}
                     onChange={handleEmailConfigChange}
@@ -343,7 +343,7 @@ const Gestao: React.FC = () => {
                     onChange={handleEmailConfigChange}
                   />
                   <Input
-                    type="text"
+                    type="password"
                     label="Senha"
                     name="emailPass"
                     value={formEmail.emailPass}
