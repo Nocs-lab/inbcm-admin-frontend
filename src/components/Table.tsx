@@ -129,7 +129,7 @@ function Filter({ column }: { column: Column<unknown, unknown> }) {
       }}
       value={columnFilterValue?.toString()}
     >
-      <option value="">Todos</option>
+      <option value="">(Todos)</option>
       {sortedUniqueValues.map((value) => (
         <option value={value} key={JSON.stringify(value)}>
           {optionMapping(value) !== value ? optionMapping(value) : value}
