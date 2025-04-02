@@ -63,7 +63,7 @@ const Header: React.FC = () => {
             <div className="header-actions relative">
               {/* Links fixos no desktop, dropdown no mobile */}
               <div className="hidden md:flex space-x-4 whitespace-nowrap">
-                {user.profile.name === "admin" &&
+                {user?.profile?.name === "admin" &&
                   Object.entries(pathnameMap).map(([path, name]) => (
                     <NavLink
                       key={path}
@@ -95,7 +95,7 @@ const Header: React.FC = () => {
                       : "opacity-0 scale-95 hidden"
                   )}
                 >
-                  {user.profile.name === "admin" &&
+                  {user?.profile?.name === "admin" &&
                     Object.entries(pathnameMap).map(([path, name]) => (
                       <NavLink
                         key={path}
@@ -128,7 +128,7 @@ const Header: React.FC = () => {
                   >
                     <span className="br-avatar" title={user.nome}>
                       <span className="content bg-orange-vivid-30 text-pure-0">
-                        {user.nome.charAt(0).toUpperCase()}
+                        {user?.nome?.charAt(0).toUpperCase()}
                       </span>
                     </span>
                     <span
@@ -136,7 +136,7 @@ const Header: React.FC = () => {
                       data-testid="username"
                     >
                       <span className="text-weight-semi-bold">
-                        {user.nome.split(" ")[0]}
+                        {user?.nome?.split(" ")[0] || "Usuário"}
                       </span>
                     </span>
                     <i className="fas fa-caret-down" aria-hidden="true"></i>
