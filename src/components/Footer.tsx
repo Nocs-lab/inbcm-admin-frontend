@@ -1,4 +1,4 @@
-import logoIbramBranco from "../images/logo-ibram-branco.png"
+import logoIbramBranco from "../images/Logotipo _IBRAM_Branco.png"
 import logoIfrn from "../images/logo-ifrn.png"
 import logoNocs from "../images/logo-nocs.png"
 
@@ -7,12 +7,21 @@ const Footer: React.FC = () => {
     <footer className="br-footer mt-auto">
       <div className="container-lg">
         <div className="logo">
-          <img src={logoIbramBranco} alt="Imagem" />
+          <img
+            src={logoIbramBranco}
+            alt="Imagem"
+            style={{
+              maxWidth: "300px",
+              maxHeight: "100px",
+              width: "auto",
+              height: "auto"
+            }}
+          />
         </div>
         <div className="d-none d-sm-block">
           <div className="row align-items-end justify-content-between py-5">
             <div className="col">
-              <div className="social-network">
+              <div className="social-network ml-11">
                 <div className="social-network-title">Redes Sociais</div>
                 <div className="d-flex">
                   <a

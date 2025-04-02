@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react"
 import { useNavigate, Link, NavLink } from "react-router"
 import { useSuspenseQuery } from "@tanstack/react-query"
-import logoImbramSimples from "../images/logo-ibram-simples.png"
+import logoImbramSimples from "../images/Logotipo _IBRAM_Colorida.png"
 import request from "../utils/request"
 import useStore from "../utils/store"
 import clsx from "clsx"
@@ -39,15 +39,15 @@ const Header: React.FC = () => {
   return (
     <header className="br-header compact large fixed">
       <div className="container-lg">
-        <div className="header-top p-2">
+        <div className="header-top">
           <div className="header-logo">
             <Link to="/">
               <img
                 src={logoImbramSimples}
                 alt="logo"
                 style={{
-                  maxWidth: "100px",
-                  maxHeight: "50px",
+                  maxWidth: "150px",
+                  maxHeight: "70px",
                   width: "auto",
                   height: "auto"
                 }}
