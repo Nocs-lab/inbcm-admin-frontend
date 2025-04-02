@@ -355,7 +355,7 @@ export default function Declaracoes() {
           })
         ]
       : []),
-    ...(activeTab !== "Recebida"
+    ...(activeTab !== "Recebida" && activeTab !== "Excluída"
       ? [
           columnHelper.accessor(
             (row) => {
