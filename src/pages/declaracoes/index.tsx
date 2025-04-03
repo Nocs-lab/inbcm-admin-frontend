@@ -355,7 +355,7 @@ export default function Declaracoes() {
           })
         ]
       : []),
-    ...(activeTab !== "Recebida"
+    ...(activeTab !== "Recebida" && activeTab !== "Excluída"
       ? [
           columnHelper.accessor(
             (row) => {
@@ -410,7 +410,7 @@ export default function Declaracoes() {
               className="!font-thin analise"
             >
               <i className="fa-solid fa-magnifying-glass-arrow-right p-2"></i>
-              Analisar
+              Atribuir
             </Button>
           )}
           {activeTab === "Em análise" && (
@@ -421,7 +421,7 @@ export default function Declaracoes() {
               }
               className="!font-thin concluir"
             >
-              <i className="fa-solid fa-circle-check p-2"></i>Finalizar
+              <i className="fa-solid fa-circle-check p-2"></i>Analisar
             </Button>
           )}
           {activeTab === "Excluída" && (

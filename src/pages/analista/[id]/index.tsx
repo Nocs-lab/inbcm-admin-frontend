@@ -547,7 +547,7 @@ export default function FinalizarAnalise() {
               role="button"
             >
               <i className="fas fa-exclamation-triangle" aria-hidden="true"></i>{" "}
-              Pendências
+              Resumo de pendências
             </a>
             <MismatchsModal
               opened={showModal}
@@ -556,6 +556,25 @@ export default function FinalizarAnalise() {
               bibliograficoErrors={data.bibliografico?.pendencias ?? []}
               arquivisticoErrors={data.arquivistico?.pendencias ?? []}
             />
+          </>
+        )}
+        {(data.museologico?.pendencias.length > 0 ||
+          data.bibliografico?.pendencias.length > 0 ||
+          data.arquivistico?.pendencias.length > 0) && (
+          <>
+            <a
+              className="text-xl"
+              href={`/api/public/recibo/detalhamento/${id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              role="button"
+            >
+              <i
+                className="fas fa-file-circle-exclamation"
+                aria-hidden="true"
+              ></i>{" "}
+              Relatório de pendências
+            </a>
           </>
         )}
       </div>

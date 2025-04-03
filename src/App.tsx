@@ -5,11 +5,13 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { Toaster } from "react-hot-toast"
 import { ModalProvider } from "./utils/modal"
 import router from "./utils/router"
+import { useTitle } from "./hooks/useTitle"
 
 const queryClient = new QueryClient()
 
 export default function App() {
   const { user } = useStore()
+  useTitle()
 
   useEffect(() => {
     if (user) {
