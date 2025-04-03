@@ -1,7 +1,6 @@
 import { useParams, Link } from "react-router"
 import { useSuspenseQuery } from "@tanstack/react-query"
 import request from "../../../utils/request"
-import { format } from "date-fns"
 
 const DeclaracaoPage: React.FC = () => {
   const params = useParams()
@@ -10,10 +9,16 @@ const DeclaracaoPage: React.FC = () => {
   const { data: timeline } = useSuspenseQuery({
     queryKey: ["timeline", id],
     queryFn: async () => {
-      const response = await request(`/api/public/timeline/${id}`)
+      const response = await request(`/api/admin/timeline/${id}`)
       return response.json()
     }
   })
+
+  const tipoAnalistaFormatado: { [key: string]: string } = {
+    museologico: "Museológico",
+    bibliografico: "Bibliográfico",
+    arquivistico: "Arquivístico",
+  };
 
   const { data: declaracao } = useSuspenseQuery({
     queryKey: ["declaracoes", id],
@@ -58,22 +63,40 @@ const DeclaracaoPage: React.FC = () => {
             aria-orientation="vertical"
             aria-label="Lista de Opções"
           >
+
             {[...timeline]
               .reverse()
-              .map((item: { dataEvento: Date; nomeEvento: string }) => (
-                <button
-                  key={item.dataEvento.toISOString() + item.nomeEvento}
+              .map((item: { dataEvento: string; label: string; enumName: string; analistaResponsavel: string[] }) => (
+                <div
+                  key={item.dataEvento + item.label + item.enumName + item.analistaResponsavel.join(',')}
                   className="step-progress-btn"
                   role="option"
                   aria-posinset={3}
                   aria-setsize={3}
-                  type="button"
                 >
                   <span className="step-info text-left">
-                    {item.nomeEvento}
-                    <br /> Em {format(item.dataEvento, "dd/MM/yyyy 'às' HH:mm")}
+                    {item.label}
+
+                    {/* Exibe os analistas apenas se o enumName for 'EnvioParaAnalise' */}
+                    {item.enumName === 'EnvioParaAnalise' && item.analistaResponsavel.length > 0 && (
+                      <>
+                        <br />
+                        {item.analistaResponsavel.map((analista, index) => {
+                          // Separa o tipo do analista (museologico, bibliografico...) do nome do analista
+                          const [tipo, nome] = analista.split(": ");
+
+                          return (
+                            <span key={index}>
+                              {tipoAnalistaFormatado[tipo] || tipo}:{` ` +nome}
+                              {index < item.analistaResponsavel.length - 1 && <br />}
+                            </span>
+                          );
+                        })}
+                      </>
+                    )}
+                    <br /> Em {item.dataEvento}
                   </span>
-                </button>
+                </div>
               ))}
           </div>
         </nav>
