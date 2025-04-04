@@ -28,6 +28,7 @@ const Footer: React.FC = () => {
                     className="br-button circle"
                     href="https://www.facebook.com/MuseusBR/"
                     aria-label="Compartilhar por Facebook"
+                    target="_blank"
                   >
                     <i className="fab fa-facebook-f" aria-hidden="true"></i>
                   </a>
@@ -35,6 +36,7 @@ const Footer: React.FC = () => {
                     className="br-button circle"
                     href="https://www.youtube.com/channel/UCAUcQbl5S0_PPKYK2E-78Yw"
                     aria-label="Compartilhar por Youtube"
+                    target="_blank"
                   >
                     <i className="fab fa-youtube" aria-hidden="true"></i>
                   </a>
@@ -42,6 +44,7 @@ const Footer: React.FC = () => {
                     className="br-button circle"
                     href="https://www.instagram.com/museusbr/"
                     aria-label="Compartilhar por Instagram"
+                    target="_blank"
                   >
                     <i className="fab fa-instagram" aria-hidden="true"></i>
                   </a>
@@ -50,8 +53,15 @@ const Footer: React.FC = () => {
             </div>
             <div className="col assigns flex items-center justify-center">
               Desenvolvido por:
-              <img className="ml-4" src={logoNocs} alt="Imagem" />
-              <img className="ml-4" src={logoIfrn} alt="Imagem" />
+              <a href="https://nocs.ifrn.edu.br/" target="_blank">
+                <img className="ml-4" src={logoNocs} alt="Imagem" />
+              </a>
+              <a
+                href="https://portal.ifrn.edu.br/campus/parnamirim/"
+                target="_blank"
+              >
+                <img className="ml-4" src={logoIfrn} alt="Imagem" />
+              </a>
             </div>
           </div>
         </div>
