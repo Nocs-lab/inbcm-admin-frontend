@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form"
 import { useNavigate } from "react-router"
 import { z } from "zod"
 import Input from "../components/Input"
-import logoIbram from "../images/logo-ibram.png"
+import logoIbram from "../images/Logotipo _IBRAM_Colorida.png"
 import request from "../utils/request"
 import useStore from "../utils/store"
 
