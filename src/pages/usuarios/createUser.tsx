@@ -445,14 +445,22 @@ const CreateUser: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
                 type="password"
-                label="Senha"
+                label={
+                  <span>
+                    Senha <span className="text-red-500">*</span>
+                  </span>
+                }
                 placeholder="Digite sua senha"
                 error={errors.password}
                 {...register("password")}
               />
               <Input
                 type="password"
-                label="Confirmar senha"
+                label={
+                  <span>
+                    Confirmar senha <span className="text-red-500">*</span>
+                  </span>
+                }
                 placeholder="Digite sua senha novamente"
                 error={errors.confirmPassword}
                 {...register("confirmPassword")}
