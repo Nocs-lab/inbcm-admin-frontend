@@ -2,7 +2,7 @@ import React from "react"
 import useStore from "../utils/store"
 import Footer from "../components/Footer"
 import Header from "../components/Header"
-import { Navigate, Outlet, useNavigation } from "react-router"
+import { Navigate, Outlet, useLocation } from "react-router"
 import { Suspense } from "react"
 
 const LoadingSkeleton: React.FC = () => {
@@ -16,11 +16,11 @@ const LoadingSkeleton: React.FC = () => {
 
 const DefaultLayout: React.FC = () => {
   const { user } = useStore()
-  const navigation = useNavigation()
-  const isNavigating = Boolean(navigation.location)
+  const location = useLocation()
 
-  if (!user) {
-    return <Navigate to="/login" />
+  // Não redirecionar se estiver tentando acessar login/solicitarAcesso
+  if (!user && !["/login", "/solicitarAcesso"].includes(location.pathname)) {
+    return <Navigate to="/login" state={{ from: location }} replace />
   }
 
   return (
@@ -28,7 +28,6 @@ const DefaultLayout: React.FC = () => {
       <div className="flex flex-col min-h-screen">
         <Header />
         <main className="container py-10">
-          {isNavigating && <LoadingSkeleton />}
           <Suspense fallback={<LoadingSkeleton />}>
             <Outlet />
           </Suspense>

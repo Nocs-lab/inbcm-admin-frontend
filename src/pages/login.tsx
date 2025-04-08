@@ -3,6 +3,7 @@ import { useMutation } from "@tanstack/react-query"
 import clsx from "clsx"
 import React, { useState } from "react"
 import { useForm } from "react-hook-form"
+import { Link } from "react-router"
 import { useNavigate } from "react-router"
 import { z } from "zod"
 import Input from "../components/Input"
@@ -134,6 +135,15 @@ const LoginPage: React.FC = () => {
           >
             Entrar
           </button>
+          <div className="text-center mt-4">
+            <span>
+              Novo usuário?{" "}
+              <Link to="/solicitarAcesso" className="inline-flex items-center">
+                <i className="fa-solid fa-user-check p-1"></i>
+                <span>Solicitar acesso</span>
+              </Link>
+            </span>
+          </div>
         </form>
       </div>
       <div className="hidden lg:block w-7/12 bg-blue-700"></div>
