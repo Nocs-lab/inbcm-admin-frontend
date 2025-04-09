@@ -120,6 +120,8 @@ const PendingActions: React.FC<{
   info: CellContext<User, string>
 }> = ({ info }) => {
   const queryClient = useQueryClient()
+  const [isLoadingDocument, setIsLoadingDocument] = useState(false)
+  const [documentUrl, setDocumentUrl] = useState<string | null>(null)
 
   const negateMutation = useMutation({
     mutationFn: async (userId: string) => {
@@ -183,31 +185,32 @@ const PendingActions: React.FC<{
     )
   )
 
-  const {
-    data: documentos,
-    error: documentosError,
-    isLoading: loadingDocumentos
-  } = useQuery({
-    queryKey: ["documentos", info.getValue()],
-    queryFn: async () => {
+  const handleOpenDocument = async () => {
+    // Se já tivermos o URL, apenas abre em outra aba
+    if (documentUrl) {
+      window.open(documentUrl, "_blank")
+      return
+    }
+
+    setIsLoadingDocument(true)
+    try {
       const response = await request(
         `/api/admin/users/documento/${info.getValue()}`
       )
-      if (!response.ok) {
-        throw new Error("Failed to fetch user documents")
-      }
-      return response.json()
-    }
-  })
 
-  const { openModal: openDocumentModal } = useModal((close) => (
-    <DocumentosModal
-      close={close}
-      data={documentos}
-      error={documentosError}
-      isLoading={loadingDocumentos}
-    />
-  ))
+      if (!response.ok) {
+        throw new Error("Documento não encontrado")
+      }
+
+      const data = await response.json()
+      setDocumentUrl(data.url)
+      window.open(data.url, "_blank")
+    } catch (error) {
+      // Mostra o erro apenas para o documento específico
+    } finally {
+      setIsLoadingDocument(false)
+    }
+  }
 
   const approvalMutation = useMutation({
     mutationFn: async (userId: string) => {
@@ -274,11 +277,16 @@ const PendingActions: React.FC<{
     <div className="flex justify-start gap-2">
       <button
         className="btn text-[#1351b4]"
-        onClick={openDocumentModal}
+        onClick={handleOpenDocument}
         aria-label="Ver documento"
         title="Ver documento"
+        disabled={isLoadingDocument}
       >
-        <i className="fa-solid fa-file-alt fa-fw pl-2"></i>
+        {isLoadingDocument ? (
+          <i className="fa-solid fa-spinner fa-spin pl-2"></i>
+        ) : (
+          <i className="fa-solid fa-file-alt fa-fw pl-2"></i>
+        )}
       </button>
       <button
         className="btn text-[#1351b4]"
@@ -291,8 +299,8 @@ const PendingActions: React.FC<{
       <button
         className="btn text-[#1351b4]"
         onClick={openNegateModal}
-        aria-label="Aprovar usuário"
-        title="Não aprovar usuário"
+        aria-label="Negar usuário"
+        title="Negar usuário"
       >
         <i className="fa-solid fa-user-xmark fa-fw pl-2"></i>
       </button>
