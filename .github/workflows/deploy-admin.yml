@@ -20,7 +20,7 @@ jobs:
       - name: Set Docker repository name for main branch
         if: github.ref == 'refs/heads/main'
         run: |
-          echo "DOCKER_REPOSITORY=inbcm-admin-main" >> $GITHUB_ENV
+          echo "DOCKER_REPOSITORY=inbcm-admin-ibram" >> $GITHUB_ENV
           echo "${{ secrets.ENVS_MAIN }}" > .env         
 
       - name: Set Docker repository name for development branch
