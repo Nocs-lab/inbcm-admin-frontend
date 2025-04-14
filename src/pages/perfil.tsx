@@ -18,13 +18,14 @@ const schema = z
       .email("E-mail inválido"),
     nome: z.string().min(1, "Este campo é obrigatório"),
     password: z.string().min(1, "Este campo é obrigatório"),
+    newPassword: z.string().min(1, "Este campo é obrigatório"),
     confirmPassword: z.string().min(1, "Este campo é obrigatório"),
     especialidadeAnalista: z
       .array(z.string())
       .min(1, "Selecione pelo menos uma especialidade")
       .optional()
   })
-  .refine((data) => data.password === data.confirmPassword, {
+  .refine((data) => data.newPassword === data.confirmPassword, {
     message: "As senhas não são iguais",
     path: ["confirmPassword"]
   })
@@ -64,6 +65,7 @@ const PerfilPage = () => {
       reset({
         email: user.email,
         nome: user.nome,
+        newPassword: "",
         password: "",
         especialidadeAnalista: user.especialidadeAnalista || []
       })
@@ -76,6 +78,7 @@ const PerfilPage = () => {
       email: string
       nome: string
       senha: string
+      senhaAtual: string
       especialidadeAnalista?: string[]
     }) => {
       const res = await request(`/api/admin/users/${user._id}`, {
@@ -100,7 +103,8 @@ const PerfilPage = () => {
     const updateData = {
       email: data.email,
       nome: data.nome,
-      senha: data.password,
+      senhaAtual: data.password,
+      senha: data.newPassword,
       ...(user.profile?.name === "analyst" && {
         especialidadeAnalista: data.especialidadeAnalista
       })
@@ -192,17 +196,28 @@ const PerfilPage = () => {
                 />
               )}
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-2">
+            <div className="grid grid-cols-3 gap-2 w-full p-2">
               <Input
                 type="password"
                 label={
                   <span>
-                    Senha <span className="text-red-500">*</span>
+                    Senha atual <span className="text-red-500">*</span>
                   </span>
                 }
-                placeholder="Digite sua senha"
+                placeholder="Digite sua senha atual"
                 error={errors.password}
                 {...register("password")}
+              />
+              <Input
+                type="password"
+                label={
+                  <span>
+                    Nova senha <span className="text-red-500">*</span>
+                  </span>
+                }
+                placeholder="Digite sua nova senha"
+                error={errors.newPassword}
+                {...register("newPassword")}
               />
               <Input
                 type="password"
@@ -211,7 +226,7 @@ const PerfilPage = () => {
                     Confirmar senha <span className="text-red-500">*</span>
                   </span>
                 }
-                placeholder="Digite sua senha novamente"
+                placeholder="Digite sua nova senha novamente"
                 error={errors.confirmPassword}
                 {...register("confirmPassword")}
               />
