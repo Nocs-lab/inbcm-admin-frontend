@@ -250,15 +250,14 @@ const EditUser: React.FC = () => {
 
       if (!res.ok) {
         const errorData = await res.json()
-        throw new Error(errorData.message || "Erro ao desassociar museu")
+        throw new Error(errorData.message)
       }
 
       toast.success("Museu desassociado com sucesso")
       window.location.reload()
       setShowModal(false)
     } catch (error) {
-      console.error("Erro ao desassociar museu:", error)
-      toast.error("Erro ao desassociar museu")
+      toast.error(error instanceof Error ? error.message : String(error))
     }
   }
 
