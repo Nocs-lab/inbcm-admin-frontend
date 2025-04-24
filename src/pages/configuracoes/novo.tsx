@@ -20,15 +20,7 @@ const schema = z.object({
     .number()
     .min(0, "Este campo é obrigatório")
     .max(100, "Este campo é obrigatório"),
-  diasAlertaPrazo: z
-    .number()
-    .min(0, "Este campo é obrigatório")
-    .max(100, "Este campo é obrigatório"),
   quantidadeLembretesEmail: z
-    .number()
-    .min(0, "Este campo é obrigatório")
-    .max(100, "Este campo é obrigatório"),
-  intervaloLembretesEmail: z
     .number()
     .min(0, "Este campo é obrigatório")
     .max(100, "Este campo é obrigatório")
@@ -66,9 +58,7 @@ const CriarPeriodo: React.FC = () => {
       dataInicioRetificacao,
       dataFimRetificacao,
       metaDeclaracoesEnviadas,
-      diasAlertaPrazo,
-      quantidadeLembretesEmail,
-      intervaloLembretesEmail
+      quantidadeLembretesEmail
     }: FormData) => {
       const res = await request("/api/admin/anoDeclaracao", {
         method: "POST",
@@ -79,9 +69,7 @@ const CriarPeriodo: React.FC = () => {
           dataInicioRetificacao,
           dataFimRetificacao,
           metaDeclaracoesEnviadas,
-          diasAlertaPrazo,
-          quantidadeLembretesEmail,
-          intervaloLembretesEmail
+          quantidadeLembretesEmail
         }
       })
 
@@ -162,32 +150,12 @@ const CriarPeriodo: React.FC = () => {
               />
               <Input
                 type="number"
-                label="Quantidade de notificações em tela antes do prazo final de envio"
-                placeholder="0"
-                error={errors.diasAlertaPrazo}
-                min={1}
-                step={1}
-                {...register("diasAlertaPrazo", { valueAsNumber: true })}
-              />
-              <Input
-                type="number"
-                label="Quantidade de e-mails lembretes antes do prazo final"
+                label="Dias de antecedência para exibir notificação antes do prazo final"
                 placeholder="0"
                 error={errors.quantidadeLembretesEmail}
                 min={1}
                 step={1}
                 {...register("quantidadeLembretesEmail", {
-                  valueAsNumber: true
-                })}
-              />
-              <Input
-                type="number"
-                label="Intervalo em dias do envio de e-mails"
-                placeholder="0"
-                error={errors.intervaloLembretesEmail}
-                min={1}
-                step={1}
-                {...register("intervaloLembretesEmail", {
                   valueAsNumber: true
                 })}
               />
