@@ -307,16 +307,17 @@ const Gestao: React.FC = () => {
           <div className="container mx-auto p-8">
             <form className="space-y-6" onSubmit={handleEmailConfigSubmit}>
               <fieldset
-                className="rounded-lg p-3"
+                className="rounded-lg p-3 pb-6"
                 style={{ border: "2px solid #e0e0e0" }}
               >
                 <legend className="text-lg font-semibold">
                   Configurações do serviço de e-mail
                 </legend>
-                <div className="grid grid-cols-2 gap-2 w-full p-2">
+                <div className="grid grid-cols-1 gap-2 w-1/2 p-2">
                   <Input
                     type="text"
                     label="Host"
+                    placeholder="smtp.exemplo.com"
                     name="emailHost"
                     value={formEmail.emailHost}
                     onChange={handleEmailConfigChange}
@@ -324,6 +325,7 @@ const Gestao: React.FC = () => {
                   <Input
                     type="text"
                     label="Porta"
+                    placeholder="587"
                     name="emailPort"
                     value={formEmail.emailPort}
                     onChange={handleEmailConfigChange}
@@ -331,6 +333,7 @@ const Gestao: React.FC = () => {
                   <Input
                     type="text"
                     label="Remetente"
+                    placeholder="exemplo@email.com"
                     name="emailFrom"
                     value={formEmail.emailFrom}
                     onChange={handleEmailConfigChange}
@@ -338,6 +341,7 @@ const Gestao: React.FC = () => {
                   <Input
                     type="text"
                     label="Usuário"
+                    placeholder="Nome do usuário"
                     name="emailUser"
                     value={formEmail.emailUser}
                     onChange={handleEmailConfigChange}
