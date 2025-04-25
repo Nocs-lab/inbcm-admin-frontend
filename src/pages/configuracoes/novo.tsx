@@ -20,7 +20,7 @@ const schema = z.object({
     .number()
     .min(0, "Este campo é obrigatório")
     .max(100, "Este campo é obrigatório"),
-  quantidadeLembretesEmail: z
+  diasAlertaPrazo: z
     .number()
     .min(0, "Este campo é obrigatório")
     .max(100, "Este campo é obrigatório")
@@ -58,7 +58,7 @@ const CriarPeriodo: React.FC = () => {
       dataInicioRetificacao,
       dataFimRetificacao,
       metaDeclaracoesEnviadas,
-      quantidadeLembretesEmail
+      diasAlertaPrazo
     }: FormData) => {
       const res = await request("/api/admin/anoDeclaracao", {
         method: "POST",
@@ -69,7 +69,7 @@ const CriarPeriodo: React.FC = () => {
           dataInicioRetificacao,
           dataFimRetificacao,
           metaDeclaracoesEnviadas,
-          quantidadeLembretesEmail
+          diasAlertaPrazo
         }
       })
 
@@ -152,10 +152,10 @@ const CriarPeriodo: React.FC = () => {
                 type="number"
                 label="Dias de antecedência para exibir notificação antes do prazo final"
                 placeholder="0"
-                error={errors.quantidadeLembretesEmail}
+                error={errors.diasAlertaPrazo}
                 min={1}
                 step={1}
-                {...register("quantidadeLembretesEmail", {
+                {...register("diasAlertaPrazo", {
                   valueAsNumber: true
                 })}
               />
