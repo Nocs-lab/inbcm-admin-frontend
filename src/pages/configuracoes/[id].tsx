@@ -24,14 +24,6 @@ const schema = z.object({
   diasAlertaPrazo: z
     .number()
     .min(0, "Este campo é obrigatório")
-    .max(100, "Este campo é obrigatório"),
-  quantidadeLembretesEmail: z
-    .number()
-    .min(0, "Este campo é obrigatório")
-    .max(100, "Este campo é obrigatório"),
-  intervaloLembretesEmail: z
-    .number()
-    .min(0, "Este campo é obrigatório")
     .max(100, "Este campo é obrigatório")
 })
 
@@ -85,9 +77,7 @@ const EditarPeriodo: React.FC = () => {
       dataInicioRetificacao,
       dataFimRetificacao,
       metaDeclaracoesEnviadas,
-      diasAlertaPrazo,
-      quantidadeLembretesEmail,
-      intervaloLembretesEmail
+      diasAlertaPrazo
     }: FormData) => {
       const res = await request(`/api/admin/anoDeclaracao/${id}`, {
         method: "PUT",
@@ -98,9 +88,7 @@ const EditarPeriodo: React.FC = () => {
           dataInicioRetificacao,
           dataFimRetificacao,
           metaDeclaracoesEnviadas,
-          diasAlertaPrazo,
-          quantidadeLembretesEmail,
-          intervaloLembretesEmail
+          diasAlertaPrazo
         }
       })
 
@@ -186,31 +174,11 @@ const EditarPeriodo: React.FC = () => {
               />
               <Input
                 type="number"
-                label="Quantidade de notificações em tela antes do prazo final de envio"
+                label="Dias de antecedência para exibir notificação antes do prazo final"
                 error={errors.diasAlertaPrazo}
                 min={0}
                 step={1}
                 {...register("diasAlertaPrazo", { valueAsNumber: true })}
-              />
-              <Input
-                type="number"
-                label="Quantidade de e-mails lembretes antes do prazo final"
-                error={errors.quantidadeLembretesEmail}
-                min={0}
-                step={1}
-                {...register("quantidadeLembretesEmail", {
-                  valueAsNumber: true
-                })}
-              />
-              <Input
-                type="number"
-                label="Intervalo em dias do envio de e-mails"
-                error={errors.intervaloLembretesEmail}
-                min={0}
-                step={1}
-                {...register("intervaloLembretesEmail", {
-                  valueAsNumber: true
-                })}
               />
             </div>
           </fieldset>
