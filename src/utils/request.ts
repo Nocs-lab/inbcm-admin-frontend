@@ -23,6 +23,14 @@ export default async function request(
   })
 
   if (res.status === 401) {
+    if (path.includes("/login")) {
+
+      const error = unpack(await res.arrayBuffer()).message
+      if (showError) {
+        toast.error(error)
+      }
+      throw new Error(error)
+    }
     const refreshRes = await fetch("/api/admin/auth/refresh", {
       method: "POST",
       credentials: "include"
