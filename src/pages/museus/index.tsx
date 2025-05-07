@@ -97,8 +97,6 @@ const TableMuseus: React.FC = () => {
     }
   })
 
-  console.log("importacaoId", importacaoId)
-
   const { data: importStatus } = useQuery<ImportStatusResponse>({
     queryKey: ["import-status", importacaoId],
     queryFn: async () => {
@@ -123,7 +121,7 @@ const TableMuseus: React.FC = () => {
 
       return data
     },
-    enabled: !!importacaoId, // Só executa quando temos um importacaoId
+    enabled: !!importacaoId,
     refetchInterval: 5000,
     refetchIntervalInBackground: true
   })
