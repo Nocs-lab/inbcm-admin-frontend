@@ -1,174 +1,112 @@
-import { useSuspenseQueries } from "@tanstack/react-query"
+import React from "react"
+import Table from "../../components/Table"
 import request from "../../utils/request"
-import { Suspense } from "react"
-import Charts from "./_components/Charts"
-import { Select } from "react-dsgov"
-import { useState } from "react"
+import { useQuery } from "@tanstack/react-query"
+import { type ColumnDef, createColumnHelper } from "@tanstack/react-table"
 
-const statesNameMap = {
-  AC: "Acre",
-  AL: "Alagoas",
-  AP: "Amapá",
-  AM: "Amazonas",
-  BA: "Bahia",
-  CE: "Ceará",
-  DF: "Distrito Federal",
-  ES: "Espírito Santo",
-  GO: "Goiás",
-  MA: "Maranhão",
-  MT: "Mato Grosso",
-  MS: "Mato Grosso do Sul",
-  MG: "Minas Gerais",
-  PA: "Pará",
-  PB: "Paraíba",
-  PR: "Paraná",
-  PE: "Pernambuco",
-  PI: "Piauí",
-  RJ: "Rio de Janeiro",
-  RN: "Rio Grande do Norte",
-  RS: "Rio Grande do Sul",
-  RO: "Rondônia",
-  RR: "Roraima",
-  SC: "Santa Catarina",
-  SP: "São Paulo",
-  SE: "Sergipe",
-  TO: "Tocantins"
+interface Museus {
+  codIbram: number
+  nome: string
+  municipio: string
+  uf: string
+  bairro: string
 }
 
-const states = Object.keys(statesNameMap)
+const fetchMuseus = async (): Promise<Museus[]> => {
+  const response = await request("/api/admin/museus/listar-museus")
+  if (!response.ok) {
+    let errorMessage = "Museus não encontrados"
+    try {
+      const errorData = await response.json()
+      errorMessage = errorData.message || errorMessage
+    } catch (e) {
+      throw new Error(errorMessage)
+    }
+  }
 
-const Museus: React.FC = () => {
-  const [{ data: museus }, { data: cidades }] = useSuspenseQueries({
-    queries: [
-      {
-        queryKey: ["museus"],
-        queryFn: async () => {
-          const res = await request("/api/admin/museus")
+  const msueus = await response.json()
 
-          return await res.json()
-        }
-      },
-      {
-        queryKey: ["cidades"],
-        queryFn: async () => {
-          const res = await request("/api/admin/museus/listarCidades")
+  return msueus.sort((a: Museus, b: Museus) =>
+    a.nome.localeCompare(b.nome, "pt-BR", { sensitivity: "base" })
+  )
+}
 
-          return await res.json()
-        }
-      }
-    ]
+const MuseusBR: React.FC = () => {
+  const { data: museuData } = useQuery<Museus[]>({
+    queryKey: ["users"],
+    queryFn: fetchMuseus
   })
 
-  const [inicio, setInicio] = useState("2024")
-  const [fim, setFim] = useState("2024")
-  const [estado, setEstado] = useState<string | null>(null)
-  const [municipio, setMunicipio] = useState<string | null>(null)
-  const [museu, setMuseu] = useState<string | null>(null)
+  console.log("museuData", museuData)
 
-  const params = new URLSearchParams()
+  const columnHelper = createColumnHelper<Museus>()
 
-  for (const ano of Array.from(
-    { length: Number(fim) - Number(inicio) + 1 },
-    (_, i) => String(Number(inicio) + i)
-  )) {
-    params.append("anos", ano)
-  }
-
-  if (museu) {
-    params.append("museu", museu)
-  }
+  const columns = [
+    columnHelper.accessor("codIbram", {
+      header: "cód.IBRAM",
+      enableColumnFilter: false
+    }),
+    columnHelper.accessor("nome", {
+      header: "Nome",
+      cell: (info) => <span>{info.getValue()}</span>,
+      enableColumnFilter: false
+    }),
+    columnHelper.accessor("municipio", {
+      header: "Município",
+      cell: (info) => <span>{info.getValue()}</span>,
+      enableColumnFilter: false
+    }),
+    columnHelper.accessor("uf", {
+      header: "UF",
+      cell: (info) => <span>{info.getValue()}</span>,
+      enableColumnFilter: false
+    }),
+    columnHelper.accessor("bairro", {
+      header: "Bairro",
+      cell: (info) => <span>{info.getValue()}</span>,
+      enableColumnFilter: false
+    })
+  ] as ColumnDef<Museus>[]
 
   return (
     <>
-      <h2>Museus</h2>
+      <h2>Importar dados do MuseusBR</h2>
+      <div className="flex flex-row-reverse justify-between items-center p-2">
+        <button
+          className="br-button primary flex items-center gap-2"
+          type="submit"
+        >
+          <i className="fa-solid fa-cloud-arrow-down"></i>
+          Importar
+        </button>
+      </div>
+
       <fieldset
-        className="rounded-lg p-3 grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+        className="rounded-lg p-3"
         style={{ border: "2px solid #e0e0e0" }}
       >
-        <legend className="text-lg font-extrabold px-3 m-0">Filtros</legend>
-        <Select
-          placeholder="Selecione um museu"
-          label="Museu"
-          options={museus
-            .filter((museu: { endereco: { municipio: string } }) =>
-              municipio !== null ? museu.endereco.municipio === municipio : true
-            )
-            .map((museu: { nome: string; _id: string }) => ({
-              label: museu.nome,
-              value: museu._id
-            }))}
-          value={museu ?? undefined}
-          onChange={(museu: string) => setMuseu(museu)}
-          className="w-full lg:col-span-3 xl:col-span-4"
-        />
-        <Select
-          label="Inicio"
-          value={inicio}
-          options={[
-            { label: "2021", value: "2021" },
-            { label: "2022", value: "2022" },
-            { label: "2023", value: "2023" },
-            { label: "2024", value: "2024" }
-          ]}
-          onChange={(ano: string) => setInicio(ano)}
-          className="w-full"
-        />
-        <Select
-          label="Fim"
-          value={fim}
-          options={[
-            { label: "2021", value: "2021" },
-            { label: "2022", value: "2022" },
-            { label: "2023", value: "2023" },
-            { label: "2024", value: "2024" }
-          ].filter((ano) => Number(ano.value) >= Number(inicio))}
-          onChange={(ano: string) => setFim(ano)}
-          className="w-full"
-        />
-        <Select
-          label="Estado"
-          value={estado ?? undefined}
-          options={states.map((uf) => ({
-            label: statesNameMap[uf as keyof typeof statesNameMap],
-            value: uf
-          }))}
-          onChange={(uf: string) => setEstado(uf)}
-          disabled={museu !== null}
-          placeholder="Selecione um estado"
-          className="w-full"
-        />
-        <Select
-          label="Município"
-          value={municipio ?? undefined}
-          options={
-            cidades
-              .filter((cidade: { estado: string }) => cidade.estado === estado)
-              .map((cidade: { municipio: string }) => ({
-                label: cidade.municipio,
-                value: cidade.municipio
-              })) ?? []
-          }
-          onChange={(municipio: string) => setMunicipio(municipio)}
-          disabled={!estado || museu !== null}
-          placeholder="Selecione uma cidade"
-          className="w-full"
-        />
+        <legend className="text-lg font-extrabold px-3 m-0">
+          Dados de importação
+        </legend>
+        <div className="flex justify-center gap-10 p-2">
+          <label htmlFor="">
+            Museus cadastrados:
+            <span>{3.123}</span>
+          </label>
+          <label htmlFor="">
+            Última importação:
+            <span>06/05/2025 ás 21:10</span>
+          </label>
+          <label htmlFor="">
+            Número de importações:
+            <span>12 museus</span>
+          </label>
+        </div>
       </fieldset>
-      <Suspense
-        fallback={
-          <div className="w-screen h-90 flex items-center justify-center">
-            <div
-              className="br-loading medium"
-              role="progressbar"
-              aria-label="carregando exemplo medium exemplo"
-            ></div>
-          </div>
-        }
-      >
-        <Charts params={params} inicio={inicio} fim={fim} museu={museu} />
-      </Suspense>
+
+      <Table columns={columns as ColumnDef<Museus>[]} data={museuData || []} />
     </>
   )
 }
 
-export default Museus
+export default MuseusBR
