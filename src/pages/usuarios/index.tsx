@@ -202,9 +202,10 @@ const PendingActions: React.FC<{
         throw new Error("Documento não encontrado")
       }
 
-      const data = await response.json()
-      setDocumentUrl(data.url)
-      window.open(data.url, "_blank")
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+      setDocumentUrl(url)
+      window.open(url, "_blank")
     } catch (error) {
       // Mostra o erro apenas para o documento específico
     } finally {
