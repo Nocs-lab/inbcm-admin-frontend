@@ -7,6 +7,7 @@ import {
 } from "inbcm-xlsx-validator/schema"
 import request from "../utils/request"
 import Table from "./Table"
+import { useState } from "react"
 
 const columnHelper = createColumnHelper()
 
@@ -68,13 +69,15 @@ const TableItens: React.FC<{
   ano: string
   museuId: string
 }> = ({ acervo, ano, museuId }) => {
+  const [page, setPage] = useState(1)
+  const [limit, setLimit] = useState(10)
+
   const { data } = useSuspenseQuery({
-    queryKey: ["itens", acervo],
+    queryKey: ["itens", acervo, page, limit],
     queryFn: async () => {
       const res = await request(
-        `/api/admin/declaracoes/listar-itens/${museuId}/${ano}/${acervo}/`
+        `/api/admin/declaracoes/listar-itens/${museuId}/${ano}/${acervo}/?page=${page}&limit=${limit}`
       )
-
       return await res.json()
     }
   })
@@ -89,7 +92,23 @@ const TableItens: React.FC<{
     columns = arquivisticoColumns
   }
 
-  return <Table data={data} columns={columns} />
+  return (
+    <Table
+      data={data.itens}
+      columns={columns}
+      itensPagination={{
+        page,
+        limit,
+        total: data.total,
+        totalPages: data.totalPages,
+        onPageChange: setPage,
+        onLimitChange: (newLimit) => {
+          setLimit(newLimit)
+          setPage(1)
+        }
+      }}
+    />
+  )
 }
 
 export default TableItens
