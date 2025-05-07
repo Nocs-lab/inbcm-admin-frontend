@@ -113,6 +113,14 @@ const TableMuseus: React.FC = () => {
         setImportacaoId(null)
       }
 
+      if (data.status === "erro") {
+        toast.error(data.mensagem || "Erro ao importar dados!", {
+          duration: 9000,
+          position: "top-center"
+        })
+        setImportacaoId(null)
+      }
+
       return data
     },
     enabled: !!importacaoId, // Só executa quando temos um importacaoId
