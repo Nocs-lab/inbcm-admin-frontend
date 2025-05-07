@@ -16,7 +16,6 @@ import {
   VisibilityState
 } from "@tanstack/react-table"
 import { FaCaretUp, FaCaretDown } from "react-icons/fa"
-import ReactPaginate from "react-paginate"
 import clsx from "clsx"
 
 declare module "@tanstack/react-table" {
@@ -161,28 +160,241 @@ const Table: React.FC<{
   actions?: JSX.Element
   data: unknown[]
   columns: ColumnDef<unknown>[]
-}> = ({ title, data, columns, actions }) => {
+  itensPagination?: {
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+    onPageChange: (page: number) => void
+    onLimitChange: (limit: number) => void
+  }
+}> = ({ title, data, columns, actions, itensPagination }) => {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [visibility, setVisibility] = useState<VisibilityState>({})
+  const [frontendPagination, setFrontendPagination] = useState({
+    pageIndex: 0,
+    pageSize: 10 // Define o valor inicial como 10 itens por página
+  })
 
   const table = useReactTable({
     data,
     columns,
+    initialState: {
+      pagination: {
+        pageIndex: itensPagination ? itensPagination.page - 1 : 0,
+        pageSize: itensPagination ? itensPagination.limit : 10
+      }
+    },
     state: {
       columnFilters,
-      columnVisibility: visibility
+      columnVisibility: visibility,
+      pagination: itensPagination
+        ? {
+            pageIndex: itensPagination.page - 1,
+            pageSize: itensPagination.limit
+          }
+        : frontendPagination // Usa o estado de paginação do frontend
     },
     autoResetPageIndex: false,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setVisibility,
+    onPaginationChange: !itensPagination
+      ? setFrontendPagination // Atualiza o estado de paginação no frontend
+      : undefined,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
-    getFacetedMinMaxValues: getFacetedMinMaxValues()
+    getFacetedMinMaxValues: getFacetedMinMaxValues(),
+    manualPagination: !!itensPagination,
+    pageCount: itensPagination?.totalPages
   })
+
+  const PaginationFooter = () => {
+    // Modo com paginação do backend
+    if (itensPagination) {
+      return (
+        <div className="table-footer">
+          <nav className="br-pagination" aria-label="paginação">
+            <div className="pagination-per-page">
+              <div className="br-select">
+                <div className="br-input">
+                  <label htmlFor="per-page-selection">Exibir</label>
+                  <select
+                    id="per-page-selection"
+                    value={itensPagination.limit}
+                    onChange={(e) =>
+                      itensPagination.onLimitChange(Number(e.target.value))
+                    }
+                  >
+                    {[10, 20, 30, 50].map((size) => (
+                      <option key={size} value={size}>
+                        {size}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <span className="br-divider d-none d-sm-block mx-3"></span>
+
+            <div className="pagination-information d-none d-sm-flex">
+              <span>
+                {(itensPagination.page - 1) * itensPagination.limit + 1}
+              </span>
+              &ndash;
+              <span>
+                {Math.min(
+                  itensPagination.page * itensPagination.limit,
+                  itensPagination.total
+                )}
+              </span>
+              &nbsp;de&nbsp;<span>{itensPagination.total}</span>
+              &nbsp;itens
+            </div>
+
+            <div className="pagination-go-to-page d-none d-sm-flex ml-auto">
+              <div className="br-input">
+                <label htmlFor="go-to-page">Página</label>
+                <input
+                  id="go-to-page"
+                  type="number"
+                  min="1"
+                  max={itensPagination.totalPages}
+                  value={itensPagination.page}
+                  onChange={(e) => {
+                    const page = Math.max(
+                      1,
+                      Math.min(
+                        Number(e.target.value),
+                        itensPagination.totalPages
+                      )
+                    )
+                    itensPagination.onPageChange(page)
+                  }}
+                />
+              </div>
+            </div>
+
+            <span className="br-divider d-none d-sm-block mx-3"></span>
+
+            <div className="pagination-arrows ml-auto ml-sm-0">
+              <button
+                className="br-button circle"
+                type="button"
+                aria-label="Voltar página"
+                onClick={() =>
+                  itensPagination.onPageChange(itensPagination.page - 1)
+                }
+                disabled={itensPagination.page <= 1}
+              >
+                <i className="fas fa-angle-left" aria-hidden="true"></i>
+              </button>
+              <button
+                className="br-button circle"
+                type="button"
+                aria-label="Página seguinte"
+                onClick={() =>
+                  itensPagination.onPageChange(itensPagination.page + 1)
+                }
+                disabled={itensPagination.page >= itensPagination.totalPages}
+              >
+                <i className="fas fa-angle-right" aria-hidden="true"></i>
+              </button>
+            </div>
+          </nav>
+        </div>
+      )
+    }
+
+    // Modo com paginação do frontend
+    return (
+      <div className="table-footer">
+        <nav className="br-pagination" aria-label="paginação">
+          <div className="pagination-per-page">
+            <div className="br-select">
+              <div className="br-input">
+                <label htmlFor="per-page-selection">Exibir</label>
+                <select
+                  id="per-page-selection"
+                  value={frontendPagination.pageSize}
+                  onChange={(e) =>
+                    setFrontendPagination((prev) => ({
+                      ...prev,
+                      pageSize: Number(e.target.value),
+                      pageIndex: 0 // Reseta para a primeira página
+                    }))
+                  }
+                >
+                  {[10, 20, 30, 50].map((size) => (
+                    <option key={size} value={size}>
+                      {size}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <span className="br-divider d-none d-sm-block mx-3"></span>
+
+          <div className="pagination-go-to-page d-none d-sm-flex ml-auto">
+            <span>
+              {frontendPagination.pageIndex * frontendPagination.pageSize + 1}
+            </span>
+            &ndash;
+            <span>
+              {Math.min(
+                (frontendPagination.pageIndex + 1) *
+                  frontendPagination.pageSize,
+                data.length
+              )}
+            </span>
+            &nbsp;de&nbsp;<span>{data.length}</span>
+            &nbsp;itens
+          </div>
+
+          <div className="pagination-arrows ml-auto ml-sm-0">
+            <button
+              className="br-button circle"
+              type="button"
+              aria-label="Voltar página"
+              onClick={() =>
+                setFrontendPagination((prev) => ({
+                  ...prev,
+                  pageIndex: prev.pageIndex - 1
+                }))
+              }
+              disabled={frontendPagination.pageIndex <= 0}
+            >
+              <i className="fas fa-angle-left" aria-hidden="true"></i>
+            </button>
+            <button
+              className="br-button circle"
+              type="button"
+              aria-label="Página seguinte"
+              onClick={() =>
+                setFrontendPagination((prev) => ({
+                  ...prev,
+                  pageIndex: prev.pageIndex + 1
+                }))
+              }
+              disabled={
+                (frontendPagination.pageIndex + 1) *
+                  frontendPagination.pageSize >=
+                data.length
+              }
+            >
+              <i className="fas fa-angle-right" aria-hidden="true"></i>
+            </button>
+          </div>
+        </nav>
+      </div>
+    )
+  }
 
   return (
     <div
@@ -269,77 +481,7 @@ const Table: React.FC<{
           ))}
         </tbody>
       </table>
-      <div className="table-footer">
-        <nav
-          className="br-pagination"
-          aria-label="paginação"
-          data-total="50"
-          data-current="1"
-          data-per-page="20"
-        >
-          <div className="pagination-per-page">
-            <div className="br-select">
-              <div className="br-input">
-                <label htmlFor="per-page">Itens por página</label>
-                <select
-                  className="bg-white rounded border border-gray-500 p-1"
-                  id="per-page"
-                  aria-label="Itens por página"
-                  value={table.getState().pagination.pageSize}
-                  onChange={(e) =>
-                    table.setPageSize(Number(e.currentTarget.value))
-                  }
-                >
-                  <option value="10">10</option>
-                  <option value="20">20</option>
-                  <option value="50">50</option>
-                  <option value="100">100</option>
-                </select>
-              </div>
-            </div>
-          </div>
-          <span className="br-divider d-none d-sm-block mx-3"></span>
-          <div className="pagination-information d-none d-sm-flex">
-            <span className="current">
-              {table.getState().pagination.pageIndex *
-                table.getState().pagination.pageSize +
-                1}
-            </span>
-            &ndash;
-            <span className="per-page">
-              {Math.min(
-                (table.getState().pagination.pageIndex + 1) *
-                  table.getState().pagination.pageSize,
-                data.length
-              )}
-            </span>
-            &nbsp;de&nbsp;<span className="total">{data.length}</span>
-            &nbsp;itens
-          </div>
-          <div className="pagination-go-to-page d-none d-sm-flex ml-auto"></div>
-          <span className="br-divider d-none d-sm-block mx-3"></span>
-          <div className="pagination-arrows ml-auto ml-sm-0">
-            <ReactPaginate
-              breakLinkClassName="br-button circle"
-              breakLabel="..."
-              nextLinkClassName="br-button circle"
-              nextLabel={
-                <i className="fas fa-angle-right" aria-hidden="true"></i>
-              }
-              onPageChange={({ selected }) => table.setPageIndex(selected)}
-              pageRangeDisplayed={5}
-              pageCount={table.getPageCount()}
-              previousLinkClassName="br-button circle"
-              activeClassName="disabled"
-              previousLabel={
-                <i className="fas fa-angle-left" aria-hidden="true"></i>
-              }
-              pageLinkClassName="br-button circle"
-              renderOnZeroPageCount={null}
-            />
-          </div>
-        </nav>
-      </div>
+      <PaginationFooter />
     </div>
   )
 }
