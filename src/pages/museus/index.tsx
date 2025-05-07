@@ -252,7 +252,6 @@ const TableMuseus: React.FC = () => {
           <span>
             <span className="font-bold">Número de importações: </span>
             {lastImportData?.totalImportacoesConcluidas.toLocaleString()} {""}
-            museus
           </span>
         </div>
       </fieldset>
