@@ -1,84 +1,227 @@
-import React from "react"
-import Table from "../../components/Table"
+import { useSuspenseQuery, useMutation, useQuery } from "@tanstack/react-query"
+import { createColumnHelper } from "@tanstack/react-table"
+import { Modal, Button, Loading } from "react-dsgov"
+import { useModal } from "../../utils/modal"
 import request from "../../utils/request"
-import { useQuery } from "@tanstack/react-query"
-import { type ColumnDef, createColumnHelper } from "@tanstack/react-table"
+import Table from "../../components/Table"
+import { useState } from "react"
+import toast from "react-hot-toast"
 
-interface Museus {
-  codIbram: number
-  nome: string
+interface Endereco {
   municipio: string
   uf: string
   bairro: string
 }
 
-const fetchMuseus = async (): Promise<Museus[]> => {
-  const response = await request("/api/admin/museus/listar-museus")
-  if (!response.ok) {
-    let errorMessage = "Museus não encontrados"
-    try {
-      const errorData = await response.json()
-      errorMessage = errorData.message || errorMessage
-    } catch (e) {
-      throw new Error(errorMessage)
-    }
-  }
-
-  const msueus = await response.json()
-
-  return msueus.sort((a: Museus, b: Museus) =>
-    a.nome.localeCompare(b.nome, "pt-BR", { sensitivity: "base" })
-  )
+interface Museu {
+  _id: string
+  codIbram: string
+  nome: string
+  endereco: Endereco
+  __v: number
 }
 
-const MuseusBR: React.FC = () => {
-  const { data: museuData } = useQuery<Museus[]>({
-    queryKey: ["users"],
-    queryFn: fetchMuseus
+interface ApiResponse {
+  itens: Museu[]
+  total: number
+  page: number
+  limit: number
+  totalPages: number
+  links: {
+    first: string
+    prev: string | null
+    next: string | null
+    last: string
+  }
+}
+
+interface LastImport {
+  _id: string
+  status: string
+  iniciadoEm: string
+  totalImportacoesConcluidas: number
+  usuario: {
+    _id: string
+    nome: string
+    email: string
+  }
+  __v: number
+  finalizadoEm: string
+  museusCadastrados: number
+  numeroImportados: number
+}
+
+interface ImportStatusResponse {
+  status: string
+  mensagem: string
+  importacaoId: string
+  usuario: {
+    _id: string
+    nome: string
+    email: string
+  }
+}
+
+const TableMuseus: React.FC = () => {
+  const [page, setPage] = useState(1)
+  const [limit, setLimit] = useState(10)
+  const [importacaoId, setImportacaoId] = useState<string | null>(null)
+
+  const { data: museusData } = useSuspenseQuery<ApiResponse>({
+    queryKey: ["museus", page, limit],
+    queryFn: async () => {
+      const res = await request(
+        `/api/admin/museus/listar-museus?page=${page}&limit=${limit}`
+      )
+      return await res.json()
+    }
   })
 
-  console.log("museuData", museuData)
+  const { data: lastImportData } = useSuspenseQuery<LastImport>({
+    queryKey: ["last-import"],
+    queryFn: async () => {
+      const res = await request("/api/admin/imports/last")
+      return await res.json()
+    }
+  })
 
-  const columnHelper = createColumnHelper<Museus>()
+  const startImportMutation = useMutation({
+    mutationFn: async () => {
+      const response = await request("/api/admin/imports/start", {
+        method: "POST"
+      })
+      return response.json()
+    },
+    onSuccess: (data: { importacaoId: string }) => {
+      setImportacaoId(data.importacaoId)
+    }
+  })
+
+  console.log("importacaoId", importacaoId)
+
+  const { data: importStatus } = useQuery<ImportStatusResponse>({
+    queryKey: ["import-status", importacaoId],
+    queryFn: async () => {
+      const res = await request(`/api/admin/imports/${importacaoId}/status`)
+      const data = await res.json()
+
+      if (data.status === "concluida") {
+        toast.success(data.mensagem || "Importação finalizada com sucesso!", {
+          duration: 9000,
+          position: "top-center"
+        })
+        setImportacaoId(null)
+      }
+
+      return data
+    },
+    enabled: !!importacaoId, // Só executa quando temos um importacaoId
+    refetchInterval: 5000,
+    refetchIntervalInBackground: true
+  })
+
+  const isLoading =
+    startImportMutation.isPending ||
+    (!!importacaoId && importStatus?.status !== "concluida")
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    return (
+      date.toLocaleDateString("pt-BR") +
+      " às " +
+      date.toLocaleTimeString("pt-BR")
+    )
+  }
+
+  const columnHelper = createColumnHelper<Museu>()
 
   const columns = [
     columnHelper.accessor("codIbram", {
-      header: "cód.IBRAM",
+      header: "Cód. IBRAM",
       enableColumnFilter: false
     }),
     columnHelper.accessor("nome", {
       header: "Nome",
-      cell: (info) => <span>{info.getValue()}</span>,
-      enableColumnFilter: false
+      enableColumnFilter: true
     }),
-    columnHelper.accessor("municipio", {
-      header: "Município",
-      cell: (info) => <span>{info.getValue()}</span>,
-      enableColumnFilter: false
-    }),
-    columnHelper.accessor("uf", {
+    columnHelper.accessor("endereco.uf", {
       header: "UF",
-      cell: (info) => <span>{info.getValue()}</span>,
-      enableColumnFilter: false
+      enableColumnFilter: true,
+      meta: {
+        filterVariant: "select"
+      }
     }),
-    columnHelper.accessor("bairro", {
+    columnHelper.accessor("endereco.municipio", {
+      header: "Município",
+      enableColumnFilter: true
+    }),
+    columnHelper.accessor("endereco.bairro", {
       header: "Bairro",
-      cell: (info) => <span>{info.getValue()}</span>,
-      enableColumnFilter: false
+      enableColumnFilter: true
     })
-  ] as ColumnDef<Museus>[]
+  ]
+
+  const { openModal } = useModal((close) => (
+    <Modal
+      title="Importar cadastro de MuseusBR"
+      showCloseButton
+      onCloseButtonClick={close}
+    >
+      <Modal.Body>
+        <div className="text-left">
+          <p>Esse procedimento pode demorar alguns minutos.</p>
+          <p>Deseja continuar mesmo assim?</p>
+        </div>
+      </Modal.Body>
+
+      <Modal.Footer justify-content="end">
+        <Button secondary small m={2} onClick={close}>
+          Cancelar
+        </Button>
+        <Button
+          primary
+          small
+          m={2}
+          onClick={async () => {
+            await startImportMutation.mutateAsync()
+            close()
+          }}
+          loading={startImportMutation.isPending}
+        >
+          Confirmar
+        </Button>
+      </Modal.Footer>
+    </Modal>
+  ))
 
   return (
     <>
       <h2>Importar dados do MuseusBR</h2>
       <div className="flex flex-row-reverse justify-between items-center p-2">
-        <button
-          className="br-button primary flex items-center gap-2"
-          type="submit"
-        >
-          <i className="fa-solid fa-cloud-arrow-down"></i>
-          Importar
-        </button>
+        {isLoading ? (
+          <button
+            className="br-button flex items-center gap-2"
+            type="submit"
+            onClick={() => {
+              openModal()
+            }}
+            disabled={isLoading}
+          >
+            <Loading size="small" />
+            Importando...
+          </button>
+        ) : (
+          <button
+            className="br-button primary flex items-center gap-2"
+            type="submit"
+            onClick={() => {
+              openModal()
+            }}
+          >
+            <i className="fa-solid fa-cloud-arrow-up"></i>
+            Importar
+          </button>
+        )}
       </div>
 
       <fieldset
@@ -89,24 +232,42 @@ const MuseusBR: React.FC = () => {
           Dados de importação
         </legend>
         <div className="flex justify-center gap-10 p-2">
-          <label htmlFor="">
-            Museus cadastrados:
-            <span>{3.123}</span>
-          </label>
-          <label htmlFor="">
-            Última importação:
-            <span>06/05/2025 ás 21:10</span>
-          </label>
-          <label htmlFor="">
-            Número de importações:
-            <span>12 museus</span>
-          </label>
+          <span>
+            <span className="font-bold">Museus cadastrados: </span>
+            {lastImportData?.museusCadastrados.toLocaleString() ||
+              museusData.total.toLocaleString()}
+          </span>
+          <span>
+            <span className="font-bold">Última importação: </span>
+            {lastImportData
+              ? formatDate(lastImportData.finalizadoEm)
+              : "Nenhuma importação registrada"}
+          </span>
+          <span>
+            <span className="font-bold">Número de importações: </span>
+            {lastImportData?.totalImportacoesConcluidas.toLocaleString()} {""}
+            museus
+          </span>
         </div>
       </fieldset>
 
-      <Table columns={columns as ColumnDef<Museus>[]} data={museuData || []} />
+      <Table
+        data={museusData.itens}
+        columns={columns}
+        itensPagination={{
+          page,
+          limit,
+          total: museusData.total,
+          totalPages: museusData.totalPages,
+          onPageChange: setPage,
+          onLimitChange: (newLimit) => {
+            setLimit(newLimit)
+            setPage(1)
+          }
+        }}
+      />
     </>
   )
 }
 
-export default MuseusBR
+export default TableMuseus
