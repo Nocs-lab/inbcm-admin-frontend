@@ -18,6 +18,7 @@ const Header: React.FC = () => {
     "/": "Painel analítico",
     "/declaracoes": "Declarações",
     "/usuarios": "Usuários",
+    "/museus": "Museus",
     "/configuracoes": "Configurações"
   }
 

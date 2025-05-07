@@ -1,174 +1,278 @@
-import { useSuspenseQueries } from "@tanstack/react-query"
+import { useSuspenseQuery, useMutation, useQuery } from "@tanstack/react-query"
+import { createColumnHelper } from "@tanstack/react-table"
+import { Modal, Button, Loading } from "react-dsgov"
+import { useModal } from "../../utils/modal"
 import request from "../../utils/request"
-import { Suspense } from "react"
-import Charts from "./_components/Charts"
-import { Select } from "react-dsgov"
+import Table from "../../components/Table"
 import { useState } from "react"
+import toast from "react-hot-toast"
 
-const statesNameMap = {
-  AC: "Acre",
-  AL: "Alagoas",
-  AP: "Amapá",
-  AM: "Amazonas",
-  BA: "Bahia",
-  CE: "Ceará",
-  DF: "Distrito Federal",
-  ES: "Espírito Santo",
-  GO: "Goiás",
-  MA: "Maranhão",
-  MT: "Mato Grosso",
-  MS: "Mato Grosso do Sul",
-  MG: "Minas Gerais",
-  PA: "Pará",
-  PB: "Paraíba",
-  PR: "Paraná",
-  PE: "Pernambuco",
-  PI: "Piauí",
-  RJ: "Rio de Janeiro",
-  RN: "Rio Grande do Norte",
-  RS: "Rio Grande do Sul",
-  RO: "Rondônia",
-  RR: "Roraima",
-  SC: "Santa Catarina",
-  SP: "São Paulo",
-  SE: "Sergipe",
-  TO: "Tocantins"
+interface Endereco {
+  municipio: string
+  uf: string
+  bairro: string
 }
 
-const states = Object.keys(statesNameMap)
+interface Museu {
+  _id: string
+  codIbram: string
+  nome: string
+  endereco: Endereco
+  __v: number
+}
 
-const Museus: React.FC = () => {
-  const [{ data: museus }, { data: cidades }] = useSuspenseQueries({
-    queries: [
-      {
-        queryKey: ["museus"],
-        queryFn: async () => {
-          const res = await request("/api/admin/museus")
+interface ApiResponse {
+  itens: Museu[]
+  total: number
+  page: number
+  limit: number
+  totalPages: number
+  links: {
+    first: string
+    prev: string | null
+    next: string | null
+    last: string
+  }
+}
 
-          return await res.json()
-        }
-      },
-      {
-        queryKey: ["cidades"],
-        queryFn: async () => {
-          const res = await request("/api/admin/museus/listarCidades")
+interface LastImport {
+  _id: string
+  status: string
+  iniciadoEm: string
+  totalImportacoesConcluidas: number
+  usuario: {
+    _id: string
+    nome: string
+    email: string
+  }
+  __v: number
+  finalizadoEm: string
+  museusCadastrados: number
+  numeroImportados: number
+}
 
-          return await res.json()
-        }
-      }
-    ]
+interface ImportStatusResponse {
+  status: string
+  mensagem: string
+  importacaoId: string
+  usuario: {
+    _id: string
+    nome: string
+    email: string
+  }
+}
+
+const TableMuseus: React.FC = () => {
+  const [page, setPage] = useState(1)
+  const [limit, setLimit] = useState(10)
+  const [importacaoId, setImportacaoId] = useState<string | null>(null)
+
+  const { data: museusData } = useSuspenseQuery<ApiResponse>({
+    queryKey: ["museus", page, limit],
+    queryFn: async () => {
+      const res = await request(
+        `/api/admin/museus/listar-museus?page=${page}&limit=${limit}`
+      )
+      return await res.json()
+    }
   })
 
-  const [inicio, setInicio] = useState("2024")
-  const [fim, setFim] = useState("2024")
-  const [estado, setEstado] = useState<string | null>(null)
-  const [municipio, setMunicipio] = useState<string | null>(null)
-  const [museu, setMuseu] = useState<string | null>(null)
+  const { data: lastImportData } = useSuspenseQuery<LastImport>({
+    queryKey: ["last-import"],
+    queryFn: async () => {
+      const res = await request("/api/admin/imports/last")
+      return await res.json()
+    }
+  })
 
-  const params = new URLSearchParams()
+  const startImportMutation = useMutation({
+    mutationFn: async () => {
+      const response = await request("/api/admin/imports/start", {
+        method: "POST"
+      })
+      return response.json()
+    },
+    onSuccess: (data: { importacaoId: string }) => {
+      setImportacaoId(data.importacaoId)
+    }
+  })
 
-  for (const ano of Array.from(
-    { length: Number(fim) - Number(inicio) + 1 },
-    (_, i) => String(Number(inicio) + i)
-  )) {
-    params.append("anos", ano)
+  const { data: importStatus } = useQuery<ImportStatusResponse>({
+    queryKey: ["import-status", importacaoId],
+    queryFn: async () => {
+      const res = await request(`/api/admin/imports/${importacaoId}/status`)
+      const data = await res.json()
+
+      if (data.status === "concluida") {
+        toast.success(data.mensagem || "Importação finalizada com sucesso!", {
+          duration: 9000,
+          position: "top-center"
+        })
+        setImportacaoId(null)
+      }
+
+      if (data.status === "erro") {
+        toast.error(data.mensagem || "Erro ao importar dados!", {
+          duration: 9000,
+          position: "top-center"
+        })
+        setImportacaoId(null)
+      }
+
+      return data
+    },
+    enabled: !!importacaoId,
+    refetchInterval: 5000,
+    refetchIntervalInBackground: true
+  })
+
+  const isLoading =
+    startImportMutation.isPending ||
+    (!!importacaoId && importStatus?.status !== "concluida")
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    return (
+      date.toLocaleDateString("pt-BR") +
+      " às " +
+      date.toLocaleTimeString("pt-BR")
+    )
   }
 
-  if (museu) {
-    params.append("museu", museu)
-  }
+  const columnHelper = createColumnHelper<Museu>()
+
+  const columns = [
+    columnHelper.accessor("codIbram", {
+      header: "Cód. IBRAM",
+      enableColumnFilter: false
+    }),
+    columnHelper.accessor("nome", {
+      header: "Nome",
+      enableColumnFilter: true
+    }),
+    columnHelper.accessor("endereco.uf", {
+      header: "UF",
+      enableColumnFilter: true,
+      meta: {
+        filterVariant: "select"
+      }
+    }),
+    columnHelper.accessor("endereco.municipio", {
+      header: "Município",
+      enableColumnFilter: true
+    }),
+    columnHelper.accessor("endereco.bairro", {
+      header: "Bairro",
+      enableColumnFilter: true
+    })
+  ]
+
+  const { openModal } = useModal((close) => (
+    <Modal
+      title="Importar cadastro de MuseusBR"
+      showCloseButton
+      onCloseButtonClick={close}
+    >
+      <Modal.Body>
+        <div className="text-left">
+          <p>Esse procedimento pode demorar alguns minutos.</p>
+          <p>Deseja continuar mesmo assim?</p>
+        </div>
+      </Modal.Body>
+
+      <Modal.Footer justify-content="end">
+        <Button secondary small m={2} onClick={close}>
+          Cancelar
+        </Button>
+        <Button
+          primary
+          small
+          m={2}
+          onClick={async () => {
+            await startImportMutation.mutateAsync()
+            close()
+          }}
+          loading={startImportMutation.isPending}
+        >
+          Confirmar
+        </Button>
+      </Modal.Footer>
+    </Modal>
+  ))
 
   return (
     <>
-      <h2>Museus</h2>
+      <h2>Importar dados do MuseusBR</h2>
+      <div className="flex flex-row-reverse justify-between items-center p-2">
+        {isLoading ? (
+          <button
+            className="br-button flex items-center gap-2"
+            type="submit"
+            onClick={() => {
+              openModal()
+            }}
+            disabled={isLoading}
+          >
+            <Loading size="small" />
+            Importando...
+          </button>
+        ) : (
+          <button
+            className="br-button primary flex items-center gap-2"
+            type="submit"
+            onClick={() => {
+              openModal()
+            }}
+          >
+            <i className="fa-solid fa-cloud-arrow-up"></i>
+            Importar
+          </button>
+        )}
+      </div>
+
       <fieldset
-        className="rounded-lg p-3 grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+        className="rounded-lg p-3"
         style={{ border: "2px solid #e0e0e0" }}
       >
-        <legend className="text-lg font-extrabold px-3 m-0">Filtros</legend>
-        <Select
-          placeholder="Selecione um museu"
-          label="Museu"
-          options={museus
-            .filter((museu: { endereco: { municipio: string } }) =>
-              municipio !== null ? museu.endereco.municipio === municipio : true
-            )
-            .map((museu: { nome: string; _id: string }) => ({
-              label: museu.nome,
-              value: museu._id
-            }))}
-          value={museu ?? undefined}
-          onChange={(museu: string) => setMuseu(museu)}
-          className="w-full lg:col-span-3 xl:col-span-4"
-        />
-        <Select
-          label="Inicio"
-          value={inicio}
-          options={[
-            { label: "2021", value: "2021" },
-            { label: "2022", value: "2022" },
-            { label: "2023", value: "2023" },
-            { label: "2024", value: "2024" }
-          ]}
-          onChange={(ano: string) => setInicio(ano)}
-          className="w-full"
-        />
-        <Select
-          label="Fim"
-          value={fim}
-          options={[
-            { label: "2021", value: "2021" },
-            { label: "2022", value: "2022" },
-            { label: "2023", value: "2023" },
-            { label: "2024", value: "2024" }
-          ].filter((ano) => Number(ano.value) >= Number(inicio))}
-          onChange={(ano: string) => setFim(ano)}
-          className="w-full"
-        />
-        <Select
-          label="Estado"
-          value={estado ?? undefined}
-          options={states.map((uf) => ({
-            label: statesNameMap[uf as keyof typeof statesNameMap],
-            value: uf
-          }))}
-          onChange={(uf: string) => setEstado(uf)}
-          disabled={museu !== null}
-          placeholder="Selecione um estado"
-          className="w-full"
-        />
-        <Select
-          label="Município"
-          value={municipio ?? undefined}
-          options={
-            cidades
-              .filter((cidade: { estado: string }) => cidade.estado === estado)
-              .map((cidade: { municipio: string }) => ({
-                label: cidade.municipio,
-                value: cidade.municipio
-              })) ?? []
-          }
-          onChange={(municipio: string) => setMunicipio(municipio)}
-          disabled={!estado || museu !== null}
-          placeholder="Selecione uma cidade"
-          className="w-full"
-        />
+        <legend className="text-lg font-extrabold px-3 m-0">
+          Dados de importação
+        </legend>
+        <div className="flex justify-center gap-10 p-2">
+          <span>
+            <span className="font-bold">Museus cadastrados: </span>
+            {lastImportData?.museusCadastrados.toLocaleString() ||
+              museusData.total.toLocaleString()}
+          </span>
+          <span>
+            <span className="font-bold">Última importação: </span>
+            {lastImportData
+              ? formatDate(lastImportData.finalizadoEm)
+              : "Nenhuma importação registrada"}
+          </span>
+          <span>
+            <span className="font-bold">Número de importações: </span>
+            {lastImportData?.totalImportacoesConcluidas.toLocaleString()} {""}
+          </span>
+        </div>
       </fieldset>
-      <Suspense
-        fallback={
-          <div className="w-screen h-90 flex items-center justify-center">
-            <div
-              className="br-loading medium"
-              role="progressbar"
-              aria-label="carregando exemplo medium exemplo"
-            ></div>
-          </div>
-        }
-      >
-        <Charts params={params} inicio={inicio} fim={fim} museu={museu} />
-      </Suspense>
+
+      <Table
+        data={museusData.itens}
+        columns={columns}
+        itensPagination={{
+          page,
+          limit,
+          total: museusData.total,
+          totalPages: museusData.totalPages,
+          onPageChange: setPage,
+          onLimitChange: (newLimit) => {
+            setLimit(newLimit)
+            setPage(1)
+          }
+        }}
+      />
     </>
   )
 }
 
-export default Museus
+export default TableMuseus
