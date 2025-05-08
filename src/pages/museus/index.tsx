@@ -18,6 +18,8 @@ interface Museu {
   codIbram: string
   nome: string
   endereco: Endereco
+  esferaAdministraiva: string
+  regiao: string
   __v: number
 }
 
@@ -36,29 +38,29 @@ interface ApiResponse {
 }
 
 interface LastImport {
-  _id: string
+  _id?: string
   status: string
-  iniciadoEm: string
+  iniciadoEm: string | null
   totalImportacoesConcluidas: number
   usuario: {
-    _id: string
-    nome: string
-    email: string
-  }
-  __v: number
-  finalizadoEm: string
-  museusCadastrados: number
-  numeroImportados: number
+    _id?: string
+    nome?: string
+    email?: string
+  } | null
+  __v?: number
+  finalizadoEm: string | null
+  museusCadastrados?: number
+  numeroImportados?: number
 }
 
 interface ImportStatusResponse {
   status: string
   mensagem: string
   importacaoId: string
-  usuario: {
-    _id: string
-    nome: string
-    email: string
+  usuario?: {
+    _id?: string
+    nome?: string
+    email?: string
   }
 }
 
@@ -130,8 +132,12 @@ const TableMuseus: React.FC = () => {
     startImportMutation.isPending ||
     (!!importacaoId && importStatus?.status !== "concluida")
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return "00/00/0000 às 00:00:00"
+
     const date = new Date(dateString)
+    if (isNaN(date.getTime())) return "Data inválida"
+
     return (
       date.toLocaleDateString("pt-BR") +
       " às " +
@@ -149,6 +155,17 @@ const TableMuseus: React.FC = () => {
     columnHelper.accessor("nome", {
       header: "Nome",
       enableColumnFilter: true
+    }),
+    columnHelper.accessor("esferaAdministraiva", {
+      header: "Esfera Administrativa",
+      enableColumnFilter: true
+    }),
+    columnHelper.accessor("regiao", {
+      header: "Região",
+      enableColumnFilter: true,
+      meta: {
+        filterVariant: "select"
+      }
     }),
     columnHelper.accessor("endereco.uf", {
       header: "UF",
@@ -235,23 +252,30 @@ const TableMuseus: React.FC = () => {
         style={{ border: "2px solid #e0e0e0" }}
       >
         <legend className="text-lg font-extrabold px-3 m-0">
-          Dados de importação
+          Dados da última importação
         </legend>
-        <div className="flex justify-center gap-10 p-2">
+        <div className="flex justify-between gap-10 p-3">
           <span>
             <span className="font-bold">Museus cadastrados: </span>
-            {lastImportData?.museusCadastrados.toLocaleString() ||
-              museusData.total.toLocaleString()}
+            {(
+              lastImportData?.museusCadastrados ??
+              museusData?.total ??
+              0
+            ).toLocaleString()}
           </span>
           <span>
-            <span className="font-bold">Última importação: </span>
-            {lastImportData
+            <span className="font-bold">Data: </span>
+            {lastImportData?.finalizadoEm
               ? formatDate(lastImportData.finalizadoEm)
-              : "Nenhuma importação registrada"}
+              : "Nenhuma importação realizada"}
           </span>
           <span>
-            <span className="font-bold">Número de importações: </span>
-            {lastImportData?.totalImportacoesConcluidas.toLocaleString()} {""}
+            <span className="font-bold">Quantidade importada: </span>
+            {(lastImportData?.numeroImportados ?? 0).toLocaleString()} museus
+          </span>
+          <span>
+            <span className="font-bold">Usuário: </span>
+            {lastImportData?.usuario?.nome || "N/A"}
           </span>
         </div>
       </fieldset>
