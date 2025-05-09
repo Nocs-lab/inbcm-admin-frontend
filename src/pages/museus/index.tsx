@@ -3,7 +3,7 @@ import { createColumnHelper } from "@tanstack/react-table"
 import { Modal, Button, Loading } from "react-dsgov"
 import { useModal } from "../../utils/modal"
 import request from "../../utils/request"
-import Table from "../../components/Table"
+import Table from "../../components/TableMuseus"
 import { useState } from "react"
 import toast from "react-hot-toast"
 
