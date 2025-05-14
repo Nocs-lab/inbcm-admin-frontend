@@ -1,31 +1,23 @@
-import { useSuspenseQueries } from "@tanstack/react-query"
+import { useSuspenseQuery } from "@tanstack/react-query"
 import clsx from "clsx"
 import { format } from "date-fns"
 import { useState } from "react"
-import { useNavigate, useParams, Link } from "react-router"
+import { useParams } from "react-router"
+import { Link } from "react-router"
 import MismatchsModal from "../../../components/MismatchsModal"
-import TableItens from "../../../components/TableItens"
+import TablePendencias from "../../../components/TablePendencias"
 import request from "../../../utils/request"
-import useStore from "../../../utils/store"
 
 export default function DeclaracaoPage() {
   const params = useParams()
   const id = params.id!
 
-  const user = useStore((state) => state.user)
-
-  const navigate = useNavigate()
-
-  const [{ data }] = useSuspenseQueries({
-    queries: [
-      {
-        queryKey: ["declaracao", id],
-        queryFn: async () => {
-          const response = await request(`/api/admin/declaracoes/${id}`)
-          return response.json()
-        }
-      }
-    ]
+  const { data } = useSuspenseQuery({
+    queryKey: ["declaracao", id],
+    queryFn: async () => {
+      const response = await request(`/api/admin/declaracoes/${id}`)
+      return response.json()
+    }
   })
 
   const [showModal, setShowModal] = useState(false)
@@ -48,26 +40,20 @@ export default function DeclaracaoPage() {
 
   return (
     <>
-      <Link
-        to={user?.perfil === "admin" ? "/declaracoes" : "/analista"}
-        className="text-lg"
-      >
+      <Link to={`/declaracoes/${id}`} className="text-lg">
         <i className="fas fa-arrow-left" aria-hidden="true"></i>
         Voltar
       </Link>
       <h2 className="mt-3 mb-0">
-        Declaração{" "}
+        Listagem de pendências da declaração{" "}
         {data.retificacao ? `retificadora 0${data.versao - 1}` : "original"}
       </h2>
       <span className="br-tag mb-5">{data.status}</span>
-      <div className="flex gap-4">
-        <a href={`/api/public/recibo/${id}`} className="text-xl">
-          <i className="fas fa-file-pdf" aria-hidden="true"></i> Recibo
-        </a>
 
-        {(data.museologico?.pendencias.length > 0 ||
-          data.bibliografico?.pendencias.length > 0 ||
-          data.arquivistico?.pendencias.length > 0) && (
+      <div className="flex flex-wrap gap-2 text-xl xl:text-xl md:text-xl">
+        {(data.museologico?.pendencias?.length > 0 ||
+          data.bibliografico?.pendencias?.length > 0 ||
+          data.arquivistico?.pendencias?.length > 0) && (
           <>
             <a
               className="text-xl"
@@ -87,31 +73,6 @@ export default function DeclaracaoPage() {
             />
           </>
         )}
-        {(data.museologico?.pendencias.length > 0 ||
-          data.bibliografico?.pendencias.length > 0 ||
-          data.arquivistico?.pendencias.length > 0) && (
-          <>
-            <Link to={`/declaracoes/${id}/pendencias`} className="text-xl">
-              <i
-                className="fas fa-file-circle-exclamation"
-                aria-hidden="true"
-              ></i>{" "}
-              Relatório de pendências
-            </Link>
-          </>
-        )}
-        <a
-          className="text-xl"
-          href="#"
-          onClick={() => navigate(`/declaracoes/${id}/timeline`)}
-        >
-          <i className="fas fa-timeline" aria-hidden="true"></i> Histórico
-        </a>
-        {data.status !== "Recebida" && (
-          <Link to={`/declaracoes/${id}/analise`} className="text-xl">
-            <i className="fas fa-chalkboard-user"></i> Parecer
-          </Link>
-        )}
       </div>
       <div className="flex gap-10 text-lg mt-5">
         <span>
@@ -125,6 +86,10 @@ export default function DeclaracaoPage() {
         <span>
           <span className="font-bold">Museu: </span>
           {data.museu_id.nome}
+        </span>
+        <span>
+          <span className="font-bold">Enviado por: </span>
+          {data.responsavelEnvioNome}
         </span>
       </div>
       <div className="br-tab mt-10" data-counter="true">
@@ -144,7 +109,7 @@ export default function DeclaracaoPage() {
                     onClick={() => setCurrentTab("museologico")}
                   >
                     <span className="name">
-                      Acervo museológico ({data.museologico?.quantidadeItens})
+                      Acervo museológico ({data.museologico.pendencias.length})
                     </span>
                   </button>
                 </li>
@@ -164,7 +129,7 @@ export default function DeclaracaoPage() {
                   >
                     <span className="name">
                       Acervo bibliográfico (
-                      {data.bibliografico?.quantidadeItens})
+                      {data.bibliografico?.pendencias.length})
                     </span>
                   </button>
                 </li>
@@ -183,7 +148,8 @@ export default function DeclaracaoPage() {
                     onClick={() => setCurrentTab("arquivistico")}
                   >
                     <span className="name">
-                      Acervo arquivístico ({data.arquivistico?.quantidadeItens})
+                      Acervo arquivístico({data.arquivistico?.pendencias.length}
+                      )
                     </span>
                   </button>
                 </li>
@@ -212,11 +178,7 @@ export default function DeclaracaoPage() {
                     Baixar planilha
                   </a>
                 </div>
-                <TableItens
-                  acervo="museologico"
-                  ano={data.anoDeclaracao._id}
-                  museuId={data.museu_id._id}
-                />
+                <TablePendencias acervo="museologico" idDeclaracao={data._id} />
               </div>
             )}
           {data.bibliografico?.status &&
@@ -231,19 +193,20 @@ export default function DeclaracaoPage() {
                   <span className="mb-3 flex items-center justify-start gap-1">
                     <span className="br-tag">{data.bibliografico?.status}</span>
                   </span>
-                  <a
-                    href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao._id}/bibliografico`}
-                    className="text-xl"
-                    role="button"
-                  >
-                    <i className="fas fa-download" aria-hidden="true"></i>{" "}
-                    Baixar planilha
-                  </a>
+                  <div className="flex justify-end gap-4">
+                    <a
+                      href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao._id}/bibliografico`}
+                      className="text-xl"
+                      role="button"
+                    >
+                      <i className="fas fa-download" aria-hidden="true"></i>{" "}
+                      Baixar planilha
+                    </a>
+                  </div>
                 </div>
-                <TableItens
+                <TablePendencias
                   acervo="bibliografico"
-                  ano={data.anoDeclaracao._id}
-                  museuId={data.museu_id._id}
+                  idDeclaracao={data._id}
                 />
               </div>
             )}
@@ -259,19 +222,20 @@ export default function DeclaracaoPage() {
                   <span className="mb-3 flex items-center justify-start gap-1">
                     <span className="br-tag">{data.arquivistico?.status}</span>
                   </span>
-                  <a
-                    href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao._id}/arquivistico`}
-                    className="text-xl"
-                    role="button"
-                  >
-                    <i className="fas fa-download" aria-hidden="true"></i>{" "}
-                    Baixar planilha
-                  </a>
+                  <div className="flex justify-end gap-4">
+                    <a
+                      href={`/api/public/declaracoes/download/${data.museu_id._id}/${data.anoDeclaracao._id}/arquivistico`}
+                      className="text-xl"
+                      role="button"
+                    >
+                      <i className="fas fa-download" aria-hidden="true"></i>{" "}
+                      Baixar planilha
+                    </a>
+                  </div>
                 </div>
-                <TableItens
+                <TablePendencias
                   acervo="arquivistico"
-                  ano={data.anoDeclaracao._id}
-                  museuId={data.museu_id._id}
+                  idDeclaracao={data._id}
                 />
               </div>
             )}
