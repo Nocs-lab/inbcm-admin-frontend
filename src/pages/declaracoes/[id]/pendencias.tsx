@@ -7,10 +7,13 @@ import { Link } from "react-router"
 import MismatchsModal from "../../../components/MismatchsModal"
 import TablePendencias from "../../../components/TablePendencias"
 import request from "../../../utils/request"
+import useStore from "../../../utils/store"
 
-export default function DeclaracaoPage() {
+export default function PendenciaPage() {
   const params = useParams()
   const id = params.id!
+
+  const user = useStore((state) => state.user)
 
   const { data } = useSuspenseQuery({
     queryKey: ["declaracao", id],
@@ -40,7 +43,10 @@ export default function DeclaracaoPage() {
 
   return (
     <>
-      <Link to={`/declaracoes/${id}`} className="text-lg">
+      <Link
+        to={user?.perfil === "admin" ? `/declaracoes/${id}` : `/analista/${id}`}
+        className="text-lg"
+      >
         <i className="fas fa-arrow-left" aria-hidden="true"></i>
         Voltar
       </Link>
