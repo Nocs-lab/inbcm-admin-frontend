@@ -109,16 +109,19 @@ const TablePendencias: React.FC<{
   const [limit, setLimit] = useState(10)
 
   const { data } = useSuspenseQuery({
-    queryKey: ["itens", idDeclaracao, acervo],
+    queryKey: ["itens", idDeclaracao, acervo, page],
     queryFn: async () => {
       const res = await request(
-        `/api/public/declaracoes/pendencias/${idDeclaracao}?tipoArquivo=${acervo}`
+        `/api/public/declaracoes/pendencias/${idDeclaracao}?tipoArquivo=${acervo}&page=${page}&limit=${limit}`
       )
       const response = await res.json()
+
       return {
-        itens: Array.isArray(response) ? response : [],
-        total: Array.isArray(response) ? response.length : 0,
-        totalPages: 1
+        itens: response.pendencias ?? [],
+        total: response.total ?? 0,
+        totalPages: response.totalPages ?? 1,
+        page: response.page ?? 1,
+        limit: response.limit ?? 10
       }
     }
   })
