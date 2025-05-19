@@ -562,19 +562,13 @@ export default function FinalizarAnalise() {
           data.bibliografico?.pendencias.length > 0 ||
           data.arquivistico?.pendencias.length > 0) && (
           <>
-            <a
-              className="text-xl"
-              href={`/api/public/recibo/detalhamento/${id}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              role="button"
-            >
+            <Link to={`/declaracoes/${id}/pendencias`} className="text-xl">
               <i
                 className="fas fa-file-circle-exclamation"
                 aria-hidden="true"
               ></i>{" "}
               Relatório de pendências
-            </a>
+            </Link>
           </>
         )}
       </div>
