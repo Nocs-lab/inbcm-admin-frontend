@@ -8,7 +8,7 @@ import MismatchsModal from "../../../components/MismatchsModal"
 import TablePendencias from "../../../components/TablePendencias"
 import request from "../../../utils/request"
 
-export default function DeclaracaoPage() {
+export default function PendenciaPage() {
   const params = useParams()
   const id = params.id!
 
