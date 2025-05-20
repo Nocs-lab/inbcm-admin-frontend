@@ -1,7 +1,7 @@
 import { createColumnHelper } from "@tanstack/react-table"
 import request from "../utils/request"
 import Table from "./Table"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   museologicoFields,
   bibliograficoFields,
@@ -75,8 +75,8 @@ const TablePendencias: React.FC<{
 }> = ({ idDeclaracao, acervo }) => {
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(10)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [filtros, setFiltros] = useState<FormData>({})
+  const [isInitialLoad, setIsInitialLoad] = useState(true)
 
   const {
     //register,
@@ -168,6 +168,20 @@ const TablePendencias: React.FC<{
       setIsFetching(false)
     }
   }
+
+  useEffect(() => {
+    if (!isInitialLoad) {
+      fetchData(filtros)
+    }
+  }, [page, limit, filtros])
+
+  useEffect(() => {
+    if (!isInitialLoad) {
+      setPage(1)
+    } else {
+      setIsInitialLoad(false)
+    }
+  }, [filtros])
 
   const onSubmit = (data: FormData) => {
     setFiltros(data)
@@ -276,9 +290,10 @@ const TablePendencias: React.FC<{
               type="button"
               onClick={() => {
                 reset()
-                setFiltros({})
+                const valoresVazios: FormData = {}
+                setFiltros(valoresVazios)
                 setPage(1)
-                setData(null)
+                fetchData(valoresVazios)
               }}
             >
               Limpar Filtros
@@ -291,7 +306,7 @@ const TablePendencias: React.FC<{
         </form>
       </fieldset>
 
-      {data && (
+      {!isInitialLoad && data && (
         <Table
           data={data.itens}
           columns={columns}
