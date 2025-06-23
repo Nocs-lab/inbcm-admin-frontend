@@ -1,41 +1,10 @@
 import { useSuspenseQuery, useMutation, useQuery } from "@tanstack/react-query"
-import { createColumnHelper } from "@tanstack/react-table"
 import { Modal, Button, Loading } from "react-dsgov"
 import { useModal } from "../../utils/modal"
 import request from "../../utils/request"
 import Table from "../../components/TableMuseus"
 import { useState } from "react"
 import toast from "react-hot-toast"
-
-interface Endereco {
-  municipio: string
-  uf: string
-  bairro: string
-}
-
-interface Museu {
-  _id: string
-  codIbram: string
-  nome: string
-  endereco: Endereco
-  esferaAdministraiva: string
-  regiao: string
-  __v: number
-}
-
-interface ApiResponse {
-  itens: Museu[]
-  total: number
-  page: number
-  limit: number
-  totalPages: number
-  links: {
-    first: string
-    prev: string | null
-    next: string | null
-    last: string
-  }
-}
 
 interface LastImport {
   _id?: string
@@ -65,19 +34,7 @@ interface ImportStatusResponse {
 }
 
 const TableMuseus: React.FC = () => {
-  const [page, setPage] = useState(1)
-  const [limit, setLimit] = useState(10)
   const [importacaoId, setImportacaoId] = useState<string | null>(null)
-
-  const { data: museusData } = useSuspenseQuery<ApiResponse>({
-    queryKey: ["museus", page, limit],
-    queryFn: async () => {
-      const res = await request(
-        `/api/admin/museus/listar-museus?page=${page}&limit=${limit}`
-      )
-      return await res.json()
-    }
-  })
 
   const { data: lastImportData } = useSuspenseQuery<LastImport>({
     queryKey: ["last-import"],
@@ -144,45 +101,6 @@ const TableMuseus: React.FC = () => {
       date.toLocaleTimeString("pt-BR")
     )
   }
-
-  const columnHelper = createColumnHelper<Museu>()
-
-  const columns = [
-    columnHelper.accessor("codIbram", {
-      header: "Cód. IBRAM",
-      enableColumnFilter: false
-    }),
-    columnHelper.accessor("nome", {
-      header: "Nome",
-      enableColumnFilter: true
-    }),
-    columnHelper.accessor("esferaAdministraiva", {
-      header: "Esfera Administrativa",
-      enableColumnFilter: true
-    }),
-    columnHelper.accessor("regiao", {
-      header: "Região",
-      enableColumnFilter: true,
-      meta: {
-        filterVariant: "select"
-      }
-    }),
-    columnHelper.accessor("endereco.uf", {
-      header: "UF",
-      enableColumnFilter: true,
-      meta: {
-        filterVariant: "select"
-      }
-    }),
-    columnHelper.accessor("endereco.municipio", {
-      header: "Município",
-      enableColumnFilter: true
-    }),
-    columnHelper.accessor("endereco.bairro", {
-      header: "Bairro",
-      enableColumnFilter: true
-    })
-  ]
 
   const { openModal } = useModal((close) => (
     <Modal
@@ -257,11 +175,7 @@ const TableMuseus: React.FC = () => {
         <div className="flex justify-between gap-10 p-3">
           <span>
             <span className="font-bold">Museus cadastrados: </span>
-            {(
-              lastImportData?.museusCadastrados ??
-              museusData?.total ??
-              0
-            ).toLocaleString()}
+            {(lastImportData?.museusCadastrados ?? 0).toLocaleString()}
           </span>
           <span>
             <span className="font-bold">Data: </span>
@@ -280,21 +194,7 @@ const TableMuseus: React.FC = () => {
         </div>
       </fieldset>
 
-      <Table
-        data={museusData.itens}
-        columns={columns}
-        itensPagination={{
-          page,
-          limit,
-          total: museusData.total,
-          totalPages: museusData.totalPages,
-          onPageChange: setPage,
-          onLimitChange: (newLimit) => {
-            setLimit(newLimit)
-            setPage(1)
-          }
-        }}
-      />
+      <Table />
     </>
   )
 }

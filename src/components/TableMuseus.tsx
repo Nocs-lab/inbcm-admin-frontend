@@ -1,456 +1,410 @@
-import React, { useEffect, useMemo, useState } from "react"
-import {
-  Column,
-  ColumnFiltersState,
-  RowData,
-  useReactTable,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getSortedRowModel,
-  getPaginationRowModel,
-  getFacetedRowModel,
-  getFacetedUniqueValues,
-  getFacetedMinMaxValues,
-  ColumnDef,
-  flexRender,
-  VisibilityState
-} from "@tanstack/react-table"
-import { FaCaretUp, FaCaretDown } from "react-icons/fa"
-import clsx from "clsx"
+import { useState, useEffect } from "react"
+import request from "../utils/request"
+import Table from "./Table"
+import { createColumnHelper } from "@tanstack/react-table"
+import Input from "../components/Input"
+import { Button } from "react-dsgov"
+import Select from "../components/MultiSelect"
+import { useForm, Controller } from "react-hook-form"
+import { z } from "zod"
+import { zodResolver } from "@hookform/resolvers/zod"
 
-declare module "@tanstack/react-table" {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  interface ColumnMeta<TData extends RowData, TValue> {
-    filterVariant?: "text" | "select"
-  }
+interface Endereco {
+  municipio: string
+  uf: string
+  bairro: string
 }
 
-function DebouncedInput({
-  value: initialValue,
-  onChange,
-  debounce = 500,
-  type = "text",
-  placeholder,
-  list,
-  ...props
-}: {
-  value: string | number
-  onChange: (value: string | number) => void
-  debounce?: number
-  type?: "text" | "number"
-  placeholder?: string
-  list?: string
-} & Omit<React.HTMLAttributes<HTMLInputElement>, "onChange">) {
-  const [value, setValue] = useState(initialValue)
-
-  useEffect(() => {
-    setValue(initialValue)
-  }, [initialValue])
-
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      onChange(value)
-    }, debounce)
-
-    return () => clearTimeout(timeout)
-  }, [value, debounce, onChange])
-
-  return (
-    <input
-      {...props}
-      value={value}
-      type={type}
-      placeholder={placeholder}
-      list={list}
-      onChange={(e) => setValue(e.currentTarget.value)}
-      className={clsx(props.className, "p-1 border border-gray-700 text-xs")}
-    />
-  )
+interface Museu {
+  _id: string
+  codIbram: string
+  nome: string
+  endereco: Endereco
+  esferaAdministraiva: string
+  regiao: string
+  __v: number
 }
 
-function Filter({ column }: { column: Column<unknown, unknown> }) {
-  const { filterVariant } = column.columnDef.meta ?? {}
-  const columnFilterValue = column.getFilterValue()
-  const uniqueValues = column.getFacetedUniqueValues()
-  const sortedUniqueValues = useMemo(() => {
-    return Array.from(uniqueValues.keys()).sort()
-  }, [uniqueValues, column.id])
-
-  if (filterVariant === "date") {
-    return (
-      <input
-        type="date"
-        value={(columnFilterValue ?? "") as string}
-        onChange={(e) => column.setFilterValue(e.target.value)}
-        className="p-1 border border-gray-700 text-xs"
-      />
-    )
-  }
-
-  return filterVariant === "select" ? (
-    <select
-      onChange={(e) => {
-        const value = e.currentTarget.value
-        column.setFilterValue(value === "" ? "" : value)
-      }}
-      value={columnFilterValue?.toString()}
-    >
-      <option value="">(Todos)</option>
-      {sortedUniqueValues.map((value) => (
-        <option value={value} key={JSON.stringify(value)}>
-          {value}
-        </option>
-      ))}
-    </select>
-  ) : (
-    <>
-      <datalist id={column.id + "list"}>
-        {sortedUniqueValues.map((value: string) => (
-          <option value={value} key={JSON.stringify(value)} />
-        ))}
-      </datalist>
-      <DebouncedInput
-        type="text"
-        value={(columnFilterValue ?? "") as string}
-        onChange={(value) => column.setFilterValue(value)}
-        placeholder={`Pesquisar... (${column.getFacetedUniqueValues().size})`}
-        className="w-36 border shadow rounded"
-        list={column.id + "list"}
-      />
-      <div className="h-1" />
-    </>
-  )
+interface ApiResponse {
+  dados: Museu[]
+  total: number
+  pagina: number
+  tamanho: number
 }
 
-const Table: React.FC<{
-  title?: string
-  actions?: JSX.Element
-  data: unknown[]
-  columns: ColumnDef<unknown>[]
-  itensPagination?: {
-    page: number
-    limit: number
+type FiltroFormatado = {
+  atributo: string
+  operador: string
+  tipo: string
+  valores: string[]
+}
+
+const schema = z.object({
+  nome: z.string().optional(),
+  regiao: z.array(z.string()).optional(),
+  uf: z.array(z.string()).optional(),
+  municipio: z.string().optional(),
+  bairro: z.string().optional(),
+  esferaAdministraiva: z.array(z.string()).optional()
+})
+
+type FormData = z.infer<typeof schema>
+
+const TableMuseus: React.FC = () => {
+  const [page, setPage] = useState(1)
+  const [limit, setLimit] = useState(10)
+  const [filtros, setFiltros] = useState<FormData>({})
+  const [isInitialLoad, setIsInitialLoad] = useState(true)
+  const [isFetching, setIsFetching] = useState(false)
+  const [data, setData] = useState<{
+    itens: Museu[]
     total: number
     totalPages: number
-    onPageChange: (page: number) => void
-    onLimitChange: (limit: number) => void
-  }
-}> = ({ title, data, columns, actions, itensPagination }) => {
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-  const [visibility, setVisibility] = useState<VisibilityState>({})
-  const [frontendPagination, setFrontendPagination] = useState({
-    pageIndex: 0,
-    pageSize: 10 // Define o valor inicial como 10 itens por página
+  } | null>(null)
+
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors }
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
+    mode: "onBlur"
   })
 
-  const table = useReactTable({
-    data,
-    columns,
-    initialState: {
-      pagination: {
-        pageIndex: itensPagination ? itensPagination.page - 1 : 0,
-        pageSize: itensPagination ? itensPagination.limit : 10
+  const columnHelper = createColumnHelper<Museu>()
+
+  const columns = [
+    columnHelper.accessor("codIbram", {
+      header: "Cód. IBRAM",
+      enableColumnFilter: false
+    }),
+    columnHelper.accessor("nome", {
+      header: "Nome",
+      enableColumnFilter: false
+    }),
+    columnHelper.accessor("esferaAdministraiva", {
+      header: "Esfera Administrativa",
+      enableColumnFilter: false
+    }),
+    columnHelper.accessor("regiao", {
+      header: "Região",
+      enableColumnFilter: false
+    }),
+    columnHelper.accessor("endereco.uf", {
+      header: "UF",
+      enableColumnFilter: false,
+      cell: (info) => info.getValue().toUpperCase()
+    }),
+    columnHelper.accessor("endereco.municipio", {
+      header: "Município",
+      enableColumnFilter: false
+    }),
+    columnHelper.accessor("endereco.bairro", {
+      header: "Bairro",
+      enableColumnFilter: false
+    })
+  ]
+
+  const regiaoSelect = [
+    { label: "Norte", value: "Norte" },
+    { label: "Nordeste", value: "Nordeste" },
+    { label: "Centro-Oeste", value: "Centro-Oeste" },
+    { label: "Sudeste", value: "Sudeste" },
+    { label: "Sul", value: "Sul" }
+  ]
+
+  const ufSelect = [
+    { label: "AC", value: "ac" },
+    { label: "AL", value: "al" },
+    { label: "AM", value: "am" },
+    { label: "AP", value: "ap" },
+    { label: "BA", value: "ba" },
+    { label: "CE", value: "ce" },
+    { label: "DF", value: "df" },
+    { label: "ES", value: "es" },
+    { label: "GO", value: "go" },
+    { label: "MA", value: "ma" },
+    { label: "MG", value: "mg" },
+    { label: "MS", value: "ms" },
+    { label: "MT", value: "mt" },
+    { label: "PA", value: "pa" },
+    { label: "PB", value: "pb" },
+    { label: "PE", value: "pe" },
+    { label: "PI", value: "pi" },
+    { label: "PR", value: "pr" },
+    { label: "RJ", value: "rj" },
+    { label: "RN", value: "rn" },
+    { label: "RO", value: "ro" },
+    { label: "RR", value: "rr" },
+    { label: "RS", value: "rs" },
+    { label: "SC", value: "sc" },
+    { label: "SE", value: "se" },
+    { label: "SP", value: "sp" },
+    { label: "TO", value: "to" }
+  ]
+
+  const esferaSelect = [
+    { label: "Pública", value: "PÚBLICA" },
+    { label: "Privada", value: "PRIVADA" },
+    { label: "Particular", value: "PARTICULAR" },
+    { label: "Não Informada", value: "NÃO INFORMADA" },
+    { label: "Mista", value: "MISTA" },
+    { label: "Outros", value: "OUTROS" }
+  ]
+
+  const fetchData = async (dadosFiltro: FormData) => {
+    setIsFetching(true)
+    try {
+      const filtrosFormatados: FiltroFormatado[] = []
+
+      if (dadosFiltro.nome) {
+        filtrosFormatados.push({
+          atributo: "nome",
+          operador: "like",
+          tipo: "string",
+          valores: [dadosFiltro.nome]
+        })
       }
-    },
-    state: {
-      columnFilters,
-      columnVisibility: visibility,
-      pagination: itensPagination
-        ? {
-            pageIndex: itensPagination.page - 1,
-            pageSize: itensPagination.limit
-          }
-        : frontendPagination // Usa o estado de paginação do frontend
-    },
-    autoResetPageIndex: false,
-    onColumnFiltersChange: setColumnFilters,
-    onColumnVisibilityChange: setVisibility,
-    onPaginationChange: !itensPagination
-      ? setFrontendPagination // Atualiza o estado de paginação no frontend
-      : undefined,
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getFacetedRowModel: getFacetedRowModel(),
-    getFacetedUniqueValues: getFacetedUniqueValues(),
-    getFacetedMinMaxValues: getFacetedMinMaxValues(),
-    manualPagination: !!itensPagination,
-    pageCount: itensPagination?.totalPages
-  })
 
-  const PaginationFooter = () => {
-    // Modo com paginação do backend
-    if (itensPagination) {
-      return (
-        <div className="table-footer">
-          <nav className="br-pagination" aria-label="paginação">
-            <div className="pagination-per-page">
-              <div className="br-select">
-                <div className="br-input">
-                  <label htmlFor="per-page-selection">Exibir</label>
-                  <select
-                    id="per-page-selection"
-                    value={itensPagination.limit}
-                    onChange={(e) =>
-                      itensPagination.onLimitChange(Number(e.target.value))
-                    }
-                  >
-                    {[10, 20, 30, 50].map((size) => (
-                      <option key={size} value={size}>
-                        {size}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            </div>
+      if (dadosFiltro.regiao?.length) {
+        filtrosFormatados.push({
+          atributo: "regiao",
+          operador: "eq",
+          tipo: "string",
+          valores: dadosFiltro.regiao
+        })
+      }
 
-            <span className="br-divider d-none d-sm-block mx-3"></span>
+      if (dadosFiltro.uf?.length) {
+        filtrosFormatados.push({
+          atributo: "endereco.uf",
+          operador: "eq",
+          tipo: "string",
+          valores: dadosFiltro.uf
+        })
+      }
 
-            <div className="pagination-information d-none d-sm-flex">
-              <span>
-                {(itensPagination.page - 1) * itensPagination.limit + 1}
-              </span>
-              &ndash;
-              <span>
-                {Math.min(
-                  itensPagination.page * itensPagination.limit,
-                  itensPagination.total
-                )}
-              </span>
-              &nbsp;de&nbsp;<span>{itensPagination.total}</span>
-              &nbsp;itens
-            </div>
+      if (dadosFiltro.municipio) {
+        filtrosFormatados.push({
+          atributo: "endereco.municipio",
+          operador: "like",
+          tipo: "string",
+          valores: [dadosFiltro.municipio]
+        })
+      }
 
-            <div className="pagination-go-to-page d-none d-sm-flex ml-auto">
-              <div className="br-input">
-                <label htmlFor="go-to-page">Página</label>
-                <input
-                  id="go-to-page"
-                  type="number"
-                  min="1"
-                  max={itensPagination.totalPages}
-                  value={itensPagination.page}
-                  onChange={(e) => {
-                    const page = Math.max(
-                      1,
-                      Math.min(
-                        Number(e.target.value),
-                        itensPagination.totalPages
-                      )
-                    )
-                    itensPagination.onPageChange(page)
-                  }}
-                />
-              </div>
-            </div>
+      if (dadosFiltro.bairro) {
+        filtrosFormatados.push({
+          atributo: "endereco.bairro",
+          operador: "like",
+          tipo: "string",
+          valores: [dadosFiltro.bairro]
+        })
+      }
 
-            <span className="br-divider d-none d-sm-block mx-3"></span>
+      if (dadosFiltro.esferaAdministraiva?.length) {
+        filtrosFormatados.push({
+          atributo: "esferaAdministraiva",
+          operador: "like",
+          tipo: "string",
+          valores: dadosFiltro.esferaAdministraiva
+        })
+      }
 
-            <div className="pagination-arrows ml-auto ml-sm-0">
-              <button
-                className="br-button circle"
-                type="button"
-                aria-label="Voltar página"
-                onClick={() =>
-                  itensPagination.onPageChange(itensPagination.page - 1)
-                }
-                disabled={itensPagination.page <= 1}
-              >
-                <i className="fas fa-angle-left" aria-hidden="true"></i>
-              </button>
-              <button
-                className="br-button circle"
-                type="button"
-                aria-label="Página seguinte"
-                onClick={() =>
-                  itensPagination.onPageChange(itensPagination.page + 1)
-                }
-                disabled={itensPagination.page >= itensPagination.totalPages}
-              >
-                <i className="fas fa-angle-right" aria-hidden="true"></i>
-              </button>
-            </div>
-          </nav>
-        </div>
-      )
+      const res = await request("/api/admin/museus/search", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          pagina: page,
+          tamanho: limit,
+          filtros: filtrosFormatados
+        })
+      })
+
+      const response: ApiResponse = await res.json()
+
+      setData({
+        itens: response.dados || [],
+        total: response.total || 0,
+        totalPages: Math.ceil((response.total || 0) / limit)
+      })
+    } catch (error) {
+      setData(null)
+    } finally {
+      setIsFetching(false)
     }
+  }
 
-    // Modo com paginação do frontend
-    return (
-      <div className="table-footer">
-        <nav className="br-pagination" aria-label="paginação">
-          <div className="pagination-per-page">
-            <div className="br-select">
-              <div className="br-input">
-                <label htmlFor="per-page-selection">Exibir</label>
-                <select
-                  id="per-page-selection"
-                  value={frontendPagination.pageSize}
-                  onChange={(e) =>
-                    setFrontendPagination((prev) => ({
-                      ...prev,
-                      pageSize: Number(e.target.value),
-                      pageIndex: 0 // Reseta para a primeira página
-                    }))
-                  }
-                >
-                  {[10, 20, 30, 50].map((size) => (
-                    <option key={size} value={size}>
-                      {size}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
+  useEffect(() => {
+    if (!isInitialLoad) {
+      fetchData(filtros)
+    }
+  }, [page, limit, filtros])
 
-          <span className="br-divider d-none d-sm-block mx-3"></span>
+  useEffect(() => {
+    if (isInitialLoad) {
+      setIsInitialLoad(false)
+      fetchData({})
+    }
+  }, [])
 
-          <div className="pagination-go-to-page d-none d-sm-flex ml-auto">
-            <span>
-              {frontendPagination.pageIndex * frontendPagination.pageSize + 1}
-            </span>
-            &ndash;
-            <span>
-              {Math.min(
-                (frontendPagination.pageIndex + 1) *
-                  frontendPagination.pageSize,
-                data.length
-              )}
-            </span>
-            &nbsp;de&nbsp;<span>{data.length}</span>
-            &nbsp;itens
-          </div>
-
-          <div className="pagination-arrows ml-auto ml-sm-0">
-            <button
-              className="br-button circle"
-              type="button"
-              aria-label="Voltar página"
-              onClick={() =>
-                setFrontendPagination((prev) => ({
-                  ...prev,
-                  pageIndex: prev.pageIndex - 1
-                }))
-              }
-              disabled={frontendPagination.pageIndex <= 0}
-            >
-              <i className="fas fa-angle-left" aria-hidden="true"></i>
-            </button>
-            <button
-              className="br-button circle"
-              type="button"
-              aria-label="Página seguinte"
-              onClick={() =>
-                setFrontendPagination((prev) => ({
-                  ...prev,
-                  pageIndex: prev.pageIndex + 1
-                }))
-              }
-              disabled={
-                (frontendPagination.pageIndex + 1) *
-                  frontendPagination.pageSize >=
-                data.length
-              }
-            >
-              <i className="fas fa-angle-right" aria-hidden="true"></i>
-            </button>
-          </div>
-        </nav>
-      </div>
-    )
+  const onSubmit = (data: FormData) => {
+    setFiltros(data)
+    setPage(1)
   }
 
   return (
-    <div
-      className="br-table "
-      data-search="data-search"
-      data-selection="data-selection"
-      data-collapse="data-collapse"
-      data-random="data-random"
-    >
-      {(title || actions) && (
-        <div className="table-header">
-          <div className="top-bar">
-            <div className="table-title">{title}</div>
-            {actions && (
-              <div className="actions-trigger text-nowrap">{actions}</div>
+    <div className="flex flex-col gap-4">
+      <fieldset
+        className="rounded-lg p-3"
+        style={{ border: "2px solid #e0e0e0" }}
+      >
+        <legend className="text-lg font-extrabold px-3 m-0">
+          Filtrar museus
+        </legend>
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="grid grid-cols-3 gap-2 w-full p-2"
+        >
+          <Controller
+            name="nome"
+            control={control}
+            render={({ field }) => (
+              <Input
+                type="text"
+                label="Nome"
+                placeholder="Digite o nome do museu"
+                className="w-full"
+                {...field}
+              />
             )}
-          </div>
-        </div>
-      )}
-      <table>
-        <thead>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <tr key={headerGroup.id}>
-              {headerGroup.headers.map((header) => (
-                <th
-                  key={header.id}
-                  colSpan={header.colSpan}
-                  scope="col"
-                  className="cursor-pointer select-none hover:active text-xs p-2"
-                  onClick={() => header.column.getToggleSortingHandler()}
-                  style={{ minWidth: "80px" }}
-                >
-                  {header.isPlaceholder ? null : (
-                    <>
-                      <div>
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                        {header.column.getCanSort() &&
-                          {
-                            asc: <FaCaretUp />,
-                            desc: <FaCaretDown />
-                          }[header.column.getIsSorted() as string]}
-                      </div>
-                      {header.column.getCanFilter() && (
-                        <Filter
-                          column={header.column as Column<unknown, unknown>}
-                        />
-                      )}
-                    </>
-                  )}
-                </th>
-              ))}
-            </tr>
-          ))}
-        </thead>
-        <tbody>
-          {table.getRowModel().rows.map((row) => (
-            <tr key={row.id}>
-              {row.getVisibleCells().map((cell) => {
-                // Verifica se a coluna é a de status
-                const isStatusColumn = cell.column.id === "status"
+          />
 
-                return (
-                  <td
-                    key={cell.id}
-                    data-th={cell.column.columnDef.header}
-                    className="text-xs p-2"
-                    style={{ wordBreak: "break-word" }}
-                  >
-                    <span
-                      className={`text-base text-center ${isStatusColumn ? "font-bold" : ""}`}
-                    >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </span>
-                  </td>
-                )
-              })}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <PaginationFooter />
+          <Controller
+            name="regiao"
+            control={control}
+            render={({ field }) => (
+              <Select
+                type="multiple"
+                selectAllText="Selecionar todas"
+                placeholder="Selecione as regiões"
+                label="Regiões"
+                options={regiaoSelect}
+                value={field.value || []}
+                onChange={field.onChange}
+                className="w-full"
+                error={errors.regiao}
+              />
+            )}
+          />
+
+          <Controller
+            name="uf"
+            control={control}
+            render={({ field }) => (
+              <Select
+                type="multiple"
+                selectAllText="Selecionar todas"
+                placeholder="Selecione os estados"
+                label="Estados"
+                options={ufSelect}
+                value={field.value || []}
+                onChange={field.onChange}
+                className="w-full"
+                error={errors.uf}
+              />
+            )}
+          />
+
+          <Controller
+            name="municipio"
+            control={control}
+            render={({ field }) => (
+              <Input
+                type="text"
+                label="Município"
+                placeholder="Digite o município"
+                className="w-full"
+                {...field}
+              />
+            )}
+          />
+
+          <Controller
+            name="bairro"
+            control={control}
+            render={({ field }) => (
+              <Input
+                type="text"
+                label="Bairro"
+                placeholder="Digite o bairro"
+                className="w-full"
+                {...field}
+              />
+            )}
+          />
+
+          <Controller
+            name="esferaAdministraiva"
+            control={control}
+            render={({ field }) => (
+              <Select
+                type="multiple"
+                selectAllText="Selecionar todas"
+                placeholder="Selecione a esfera administrativa"
+                label="Esfera Administrativa"
+                options={esferaSelect}
+                value={field.value || []}
+                onChange={field.onChange}
+                className="w-full"
+                error={errors.esferaAdministraiva}
+              />
+            )}
+          />
+
+          <div className="col-span-3 flex justify-end gap-2 pt-2">
+            <Button
+              type="button"
+              onClick={() => {
+                reset()
+                setFiltros({})
+                setPage(1)
+                fetchData({})
+              }}
+            >
+              Limpar Filtros
+            </Button>
+
+            <Button type="submit" loading={isFetching}>
+              Aplicar Filtros
+            </Button>
+          </div>
+        </form>
+      </fieldset>
+
+      {!isInitialLoad && data && (
+        <Table
+          data={data.itens}
+          columns={columns}
+          itensPagination={{
+            page,
+            limit,
+            total: data.total,
+            totalPages: data.totalPages,
+            onPageChange: setPage,
+            onLimitChange: (newLimit) => {
+              setLimit(newLimit)
+              setPage(1)
+            }
+          }}
+          isLoading={isFetching}
+        />
+      )}
     </div>
   )
 }
 
-export default Table
+export default TableMuseus
