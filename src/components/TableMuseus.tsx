@@ -21,7 +21,9 @@ interface Museu {
   nome: string
   endereco: Endereco
   esferaAdministraiva: string
-  regiao: string
+  estadoInfo: {
+    regiao: string
+  }
   __v: number
 }
 
@@ -87,7 +89,7 @@ const TableMuseus: React.FC = () => {
       header: "Esfera Administrativa",
       enableColumnFilter: false
     }),
-    columnHelper.accessor("regiao", {
+    columnHelper.accessor("estadoInfo.regiao", {
       header: "Região",
       enableColumnFilter: false
     }),
