@@ -53,7 +53,7 @@ const ExportacaoPage: React.FC = () => {
 
   const { mutateAsync, isPending } = useMutation({
     mutationFn: async () => {
-      const response = await fetch(
+      const response = await request(
         `/api/admin/exportador/exportacao/${id}/criar-colecoes`,
         {
           method: "POST"
@@ -83,7 +83,7 @@ const ExportacaoPage: React.FC = () => {
 
   const { mutateAsync: iniciarExportacao } = useMutation({
     mutationFn: async () => {
-      const response = await fetch(
+      const response = await request(
         `/api/admin/exportador/exportacao/${id}/exportar`,
         {
           method: "POST"
