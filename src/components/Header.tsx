@@ -19,7 +19,8 @@ const Header: React.FC = () => {
     "/declaracoes": "Declarações",
     "/usuarios": "Usuários",
     "/museus": "Museus",
-    "/configuracoes": "Configurações"
+    "/configuracoes": "Configurações",
+    "/exportacoes": "Portal público"
   }
 
   const { data: user } = useSuspenseQuery({

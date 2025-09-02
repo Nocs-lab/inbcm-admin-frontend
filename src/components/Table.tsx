@@ -168,7 +168,8 @@ const Table: React.FC<{
     onPageChange: (page: number) => void
     onLimitChange: (limit: number) => void
   }
-}> = ({ title, data, columns, actions, itensPagination }) => {
+  className?: string
+}> = ({ title, data, columns, actions, itensPagination, className }) => {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [visibility, setVisibility] = useState<VisibilityState>({})
   const [frontendPagination, setFrontendPagination] = useState({
@@ -414,7 +415,7 @@ const Table: React.FC<{
           </div>
         </div>
       )}
-      <table>
+      <table className={className}>
         <thead>
           {table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id}>

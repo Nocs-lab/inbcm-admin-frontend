@@ -1,10 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react"
 import { useParams } from "react-router"
-import {
-  useMutation,
-  useSuspenseQueries,
-  useQuery
-} from "@tanstack/react-query"
+import { useMutation, useQuery, useSuspenseQuery } from "@tanstack/react-query"
 import { type ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import Input from "../../../components/Input"
 import { Row, Col, Button, Modal, Checkbox } from "react-dsgov"
@@ -120,8 +116,9 @@ const EditUser: React.FC = () => {
   }, [museus])
 
   const { id } = useParams<{ id: string }>()
-  const [{ data: user }] = useSuspenseQueries({
-    queries: [{ queryKey: ["user", id], queryFn: () => userById(id!) }]
+  const { data: user } = useSuspenseQuery({
+    queryKey: ["user", id],
+    queryFn: () => userById(id!)
   })
 
   const {

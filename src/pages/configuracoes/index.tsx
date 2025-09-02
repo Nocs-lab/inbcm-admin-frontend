@@ -1,6 +1,7 @@
 import {
   useMutation,
   useQueryClient,
+  useSuspenseQueries,
   useSuspenseQuery
 } from "@tanstack/react-query"
 import Table from "../../components/Table"
@@ -34,6 +35,12 @@ interface EmailConfig {
   emailUser: string
   emailPass: string
   emailFrom: string
+}
+
+interface PortalConfig {
+  url: string
+  node_de_usuario: string
+  senha: string
 }
 
 const ActionsCell: React.FC<{ id: string; declaracaoVinculada: boolean }> = ({
@@ -106,7 +113,7 @@ const ActionsCell: React.FC<{ id: string; declaracaoVinculada: boolean }> = ({
 const columnHelper = createColumnHelper<Ano>()
 
 const Gestao: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<"emails" | "submissao">(
+  const [activeTab, setActiveTab] = useState<"emails" | "submissao" | "portal">(
     "submissao"
   )
 
@@ -183,12 +190,23 @@ const Gestao: React.FC = () => {
     [activeTab]
   )
 
-  const { data: emailConfig } = useSuspenseQuery<EmailConfig>({
-    queryKey: ["emailConfig"],
-    queryFn: async () => {
-      const response = await request("/api/admin/emailconfig")
-      return response.json()
-    }
+  const [{ data: emailConfig }, { data: portalConfig }] = useSuspenseQueries({
+    queries: [
+      {
+        queryKey: ["emailConfig"],
+        queryFn: async () => {
+          const response = await request("/api/admin/config/email")
+          return response.json() as Promise<EmailConfig>
+        }
+      },
+      {
+        queryKey: ["portalConfig"],
+        queryFn: async () => {
+          const response = await request("/api/admin/config/portal")
+          return response.json() as Promise<PortalConfig>
+        }
+      }
+    ]
   })
 
   const [formEmail, setFformEmail] = useState<EmailConfig>({
@@ -199,16 +217,29 @@ const Gestao: React.FC = () => {
     emailFrom: ""
   })
 
+  const [formPortal, setFformPortal] = useState<PortalConfig>({
+    url: "",
+    node_de_usuario: "",
+    senha: ""
+  })
+
   useEffect(() => {
     if (emailConfig) {
       setFformEmail(emailConfig)
     }
   }, [emailConfig])
 
+  useEffect(() => {
+    if (portalConfig) {
+      setFformPortal(portalConfig)
+    }
+  }, [portalConfig])
+
   const queryClient = useQueryClient()
+
   const { mutateAsync: updateEmailConfig } = useMutation({
     mutationFn: async (data: EmailConfig) => {
-      const response = await request("/api/admin/emailconfig", {
+      const response = await request("/api/admin/config/email", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json"
@@ -223,6 +254,23 @@ const Gestao: React.FC = () => {
     }
   })
 
+  const { mutateAsync: updatePortalConfig } = useMutation({
+    mutationFn: async (data: PortalConfig) => {
+      const response = await request("/api/admin/config/portal", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
+      })
+      return response.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["portalConfig"] })
+      window.location.reload()
+    }
+  })
+
   const handleEmailConfigSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     toast.promise(updateEmailConfig(formEmail), {
@@ -232,9 +280,26 @@ const Gestao: React.FC = () => {
     })
   }
 
+  const handlePortalConfigSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    toast.promise(updatePortalConfig(formPortal), {
+      loading: "Atualizando...",
+      success: "Configurações atualizadas com sucesso",
+      error: "Erro ao atualizar configurações"
+    })
+  }
+
   const handleEmailConfigChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFformEmail((prev) => ({
+      ...prev,
+      [name]: value
+    }))
+  }
+
+  const handlePortalConfigChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setFformPortal((prev) => ({
       ...prev,
       [name]: value
     }))
@@ -262,6 +327,13 @@ const Gestao: React.FC = () => {
             >
               <button type="button" onClick={() => setActiveTab("emails")}>
                 <span className="name">Notificações</span>
+              </button>
+            </li>
+            <li
+              className={clsx("tab-item", activeTab === "portal" && "active")}
+            >
+              <button type="button" onClick={() => setActiveTab("portal")}>
+                <span className="name">Portal público</span>
               </button>
             </li>
           </ul>
@@ -352,6 +424,53 @@ const Gestao: React.FC = () => {
                     name="emailPass"
                     value={formEmail.emailPass}
                     onChange={handleEmailConfigChange}
+                  />
+                </div>
+              </fieldset>
+              <div className="flex justify-end space-x-4 p-2">
+                <button className={clsx("br-button primary")} type="submit">
+                  Atualizar
+                </button>
+              </div>
+            </form>
+          </div>
+        </>
+      )}
+
+      {activeTab === "portal" && (
+        <>
+          <div className="container mx-auto p-8">
+            <form className="space-y-6" onSubmit={handlePortalConfigSubmit}>
+              <fieldset
+                className="rounded-lg p-3 pb-6"
+                style={{ border: "2px solid #e0e0e0" }}
+              >
+                <legend className="text-lg font-semibold">
+                  Configurações do portal público
+                </legend>
+                <div className="grid grid-cols-1 gap-2 w-1/2 p-2">
+                  <Input
+                    type="text"
+                    label="URL"
+                    placeholder="https://portal.exemplo.com"
+                    name="url"
+                    value={formPortal.url}
+                    onChange={handlePortalConfigChange}
+                  />
+                  <Input
+                    type="text"
+                    label="Node de usuário"
+                    placeholder="usuario@email.com"
+                    name="node_de_usuario"
+                    value={formPortal.node_de_usuario}
+                    onChange={handlePortalConfigChange}
+                  />
+                  <Input
+                    type="password"
+                    label="Senha"
+                    name="senha"
+                    value={formPortal.senha}
+                    onChange={handlePortalConfigChange}
                   />
                 </div>
               </fieldset>
