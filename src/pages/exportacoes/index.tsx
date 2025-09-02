@@ -186,7 +186,7 @@ const ExportacoesPage: React.FC = () => {
       />
       <Modal
         showCloseButton
-        title="Museu não associado"
+        title="Nova Exportação"
         onCloseButtonClick={() => setOpenModal(false)}
         useScrim
         modalOpened={openModal}
