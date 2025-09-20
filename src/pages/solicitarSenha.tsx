@@ -34,14 +34,11 @@ const SolicitarSenhaPage: React.FC = () => {
 
   const { mutateAsync } = useMutation({
     mutationFn: async ({ email }: FormData) => {
-      const formData = new FormData()
-      formData.append("email", email)
-
-      const res = await request("/api/public/users/recuperarSenha", {
+      const res = await request("/api/admin/users/recuperar-senha", {
         method: "POST",
-        body: formData
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email })
       })
-
       return res.json()
     }
   })

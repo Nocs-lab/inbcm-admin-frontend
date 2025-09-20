@@ -13,9 +13,9 @@ const solicitarAcessoRoute =
 const solicitarSenhaRoute =
   routes.find((route) => route.path === "/solicitarSenha") ||
   routes.find((route) => route.path === "solicitarSenha")
-const mudancaSenhaRoute =
-  routes.find((route) => route.path === "/mudancaSenha") ||
-  routes.find((route) => route.path === "mudancaSenha")
+const resetarSenhaRoute =
+  routes.find((route) => route.path === "/resetarSenha") ||
+  routes.find((route) => route.path === "resetarSenha")
 
 // Filtra as rotas privadas
 const privateRoutes = routes.filter(
@@ -23,7 +23,7 @@ const privateRoutes = routes.filter(
     route !== loginRoute &&
     route !== solicitarAcessoRoute &&
     route !== solicitarSenhaRoute &&
-    route !== mudancaSenhaRoute
+    route !== resetarSenhaRoute
 )
 
 const router = createBrowserRouter([
@@ -31,7 +31,7 @@ const router = createBrowserRouter([
   ...(loginRoute ? [loginRoute] : []),
   ...(solicitarAcessoRoute ? [solicitarAcessoRoute] : []),
   ...(solicitarSenhaRoute ? [solicitarSenhaRoute] : []),
-  ...(mudancaSenhaRoute ? [mudancaSenhaRoute] : []),
+  ...(resetarSenhaRoute ? [resetarSenhaRoute] : []),
 
   // Rotas privadas (com layout)
   {

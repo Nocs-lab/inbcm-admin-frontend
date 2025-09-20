@@ -1,23 +1,19 @@
 import { useMutation } from "@tanstack/react-query"
-import Input from "../components/Input"
+import Input from "../../components/Input"
 import { Button, Modal } from "react-dsgov"
 import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import clsx from "clsx"
-import { Link } from "react-router"
-import request from "../utils/request"
+import { Link, useParams } from "react-router"
+import request from "../../utils/request"
 import toast from "react-hot-toast"
-import { useModal } from "../utils/modal"
+import { useModal } from "../../utils/modal"
 
 const schema = z
   .object({
     password: z.string().min(1, "Este campo é obrigatório"),
-    confirmPassword: z.string().min(1, "Este campo é obrigatório"),
-    especialidadeAnalista: z.array(z.string()).optional(),
-    file: z.custom<File>((value) => value instanceof File, {
-      message: "Este campo é obrigatório"
-    })
+    confirmPassword: z.string().min(1, "Este campo é obrigatório")
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "As senhas não são iguais",
@@ -26,6 +22,7 @@ const schema = z
 type FormData = z.infer<typeof schema>
 
 const MudancaSenhaPage: React.FC = () => {
+  const { id: token } = useParams<{ id: string }>()
   const {
     register,
     handleSubmit,
@@ -37,14 +34,15 @@ const MudancaSenhaPage: React.FC = () => {
 
   const { mutateAsync } = useMutation({
     mutationFn: async ({ password }: FormData) => {
-      const formData = new FormData()
-      formData.append("senha", password)
-
-      const res = await request("/api/public/users/registroAnalista", {
+      const body = {
+        novaSenha: password,
+        token: token
+      }
+      const res = await request("/api/admin/users/redefinir-senha", {
         method: "POST",
-        body: formData
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
       })
-
       return res.json()
     }
   })
