@@ -5,7 +5,7 @@ import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import clsx from "clsx"
-import { Link, useParams } from "react-router"
+import { Link, useNavigate, useParams } from "react-router"
 import request from "../../utils/request"
 import toast from "react-hot-toast"
 import { useModal } from "../../utils/modal"
@@ -23,6 +23,7 @@ type FormData = z.infer<typeof schema>
 
 const MudancaSenhaPage: React.FC = () => {
   const { id: token } = useParams<{ id: string }>()
+  const navigate = useNavigate()
   const {
     register,
     handleSubmit,
@@ -44,6 +45,9 @@ const MudancaSenhaPage: React.FC = () => {
         body: JSON.stringify(body)
       })
       return res.json()
+    },
+    onSuccess: () => {
+      navigate("/login")
     }
   })
 
