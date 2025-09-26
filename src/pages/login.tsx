@@ -137,6 +137,14 @@ const LoginPage: React.FC = () => {
           </button>
           <div className="text-center mt-4">
             <span>
+              <Link to="/solicitarSenha" className="inline-flex items-center">
+                <i className="fa-solid fa-unlock-keyhole p-1"></i>
+                <span>Esqueci minha senha</span>
+              </Link>
+            </span>
+          </div>
+          <div className="text-center mt-4">
+            <span>
               Novo usuário?{" "}
               <Link to="/solicitarAcesso" className="inline-flex items-center">
                 <i className="fa-solid fa-user-check p-1"></i>
