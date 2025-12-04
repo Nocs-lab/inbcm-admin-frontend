@@ -37,4 +37,4 @@
 
 1. Clone o repositório
 2. Instale as dependências com `pnpm install`
-3. Execute o servidor de desenvolvimento com `pnpm dev`
+3. Execute o servidor de desenvolvimento com `pnpm dev`.
