@@ -111,34 +111,45 @@ const ExportacaoPage: React.FC = () => {
     })
   }
 
-  const baixarArquivos = async () => {
-    try {
-      const response = await fetch(`/api/admin/exportador/exportacao/${id}/download`, {
-        method: 'GET',
-        credentials: 'include'
-      })
+  const baixarArquivos = () => {
+    toast.promise(
+      (async () => {
+        const response = await fetch(`/api/admin/exportador/exportacao/${id}/download`, {
+          method: "GET",
+          credentials: "include"
+        })
 
-      if (response.status === 401) {
-         toast.error("Sessão expirada. Recarregue a página.")
-         return
+        if (response.status === 401) {
+          throw new Error("Sessão expirada. Recarregue a página.")
+        }
+
+        if (!response.ok) {
+          throw new Error("Erro ao baixar arquivos")
+        }
+
+        const blob = await response.blob()
+        let url: string | null = null
+        try {
+          url = window.URL.createObjectURL(blob)
+          const a = document.createElement("a")
+          a.href = url
+          a.download = `exportacao-${id}.zip`
+          document.body.appendChild(a)
+          a.click()
+          a.remove()
+        } finally {
+          if (url) {
+            window.URL.revokeObjectURL(url)
+          }
+        }
+      })(),
+      {
+        loading: "Baixando arquivos...",
+        success: "Download iniciado com sucesso!",
+        error: (error: Error) =>
+          error.message || "Erro ao baixar arquivos"
       }
-
-      if (!response.ok) {
-        throw new Error("Erro ao baixar arquivos")
-      }
-
-      const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `exportacao-${id}.zip`
-      document.body.appendChild(a)
-      a.click()
-      a.remove()
-      window.URL.revokeObjectURL(url)
-    } catch (error) {
-      toast.error("Erro ao baixar arquivos")
-    }
+    )
   }
 
   return (
@@ -191,6 +202,7 @@ const ExportacaoPage: React.FC = () => {
         </button>
         <button
           className="br-button secondary"
+          disabled={data.status !== "concluida"}
           onClick={baixarArquivos}
         >
           Baixar Arquivos
