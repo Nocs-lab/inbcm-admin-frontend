@@ -111,6 +111,47 @@ const ExportacaoPage: React.FC = () => {
     })
   }
 
+  const baixarArquivos = () => {
+    toast.promise(
+      (async () => {
+        const response = await fetch(`/api/admin/exportador/exportacao/${id}/download`, {
+          method: "GET",
+          credentials: "include"
+        })
+
+        if (response.status === 401) {
+          throw new Error("Sessão expirada. Recarregue a página.")
+        }
+
+        if (!response.ok) {
+          throw new Error("Erro ao baixar arquivos")
+        }
+
+        const blob = await response.blob()
+        let url: string | null = null
+        try {
+          url = window.URL.createObjectURL(blob)
+          const a = document.createElement("a")
+          a.href = url
+          a.download = `exportacao-${id}.zip`
+          document.body.appendChild(a)
+          a.click()
+          a.remove()
+        } finally {
+          if (url) {
+            window.URL.revokeObjectURL(url)
+          }
+        }
+      })(),
+      {
+        loading: "Baixando arquivos...",
+        success: "Download iniciado com sucesso!",
+        error: (error: Error) =>
+          error.message || "Erro ao baixar arquivos"
+      }
+    )
+  }
+
   return (
     <div className="container mx-auto p-8">
       <Link to="/exportacoes" className="text-lg">
@@ -158,6 +199,13 @@ const ExportacaoPage: React.FC = () => {
           onClick={iniciar}
         >
           Iniciar exportação
+        </button>
+        <button
+          className="br-button secondary"
+          disabled={data.status !== "concluida"}
+          onClick={baixarArquivos}
+        >
+          Baixar Arquivos
         </button>
       </div>
     </div>
