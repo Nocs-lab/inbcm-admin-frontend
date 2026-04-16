@@ -9,40 +9,7 @@ import Table from "../../components/Table"
 import request from "../../utils/request"
 import clsx from "clsx"
 import toast from "react-hot-toast"
-
-interface Declaracao {
-  _id: string
-  anoDeclaracao: {
-    ano: number
-  }
-  retificacao: boolean
-  status: string
-  responsavelEnvioNome: string
-  dataCriacao: Date
-  dataEnvioAnalise: Date
-  dataFimAnalise: Date
-  dataExclusao: Date
-  regiao: string
-  museu_id: {
-    _id: string
-    nome: string
-    endereco: {
-      municipio: string
-      uf: string
-      regiao: string
-    }
-  }
-  analistasResponsaveisNome: string[]
-  museologico?: {
-    analistasResponsaveisNome: string[]
-  }
-  arquivistico?: {
-    analistasResponsaveisNome: string[]
-  }
-  bibliografico?: {
-    analistasResponsaveisNome: string[]
-  }
-}
+import { Declaracao } from "../../types/declaracao"
 
 export default function Declaracoes() {
   const [activeTab, setActiveTab] = useState<

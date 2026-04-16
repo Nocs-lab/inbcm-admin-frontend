@@ -17,31 +17,7 @@ import toast from "react-hot-toast"
 import { useState, useMemo, useEffect } from "react"
 import clsx from "clsx"
 import Input from "../../components/Input"
-
-interface Ano {
-  _id: string
-  ano: number
-  dataFimSubmissao: Date
-  dataInicioSubmissao: Date
-  dataInicioRetificacao: Date
-  dataFimRetificacao: Date
-  metaDeclaracoesEnviadas: number
-  declaracaoVinculada: boolean
-}
-
-interface EmailConfig {
-  emailHost: string
-  emailPort: string
-  emailUser: string
-  emailPass: string
-  emailFrom: string
-}
-
-interface PortalConfig {
-  url: string
-  node_de_usuario: string
-  senha: string
-}
+import { Ano, EmailConfig, PortalConfig } from "../../types/email"
 
 const ActionsCell: React.FC<{ id: string; declaracaoVinculada: boolean }> = ({
   id,

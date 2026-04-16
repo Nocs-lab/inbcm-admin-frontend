@@ -21,6 +21,8 @@ const EnviarParaAnalise: React.FC = () => {
     }
   })
 
+  console.log(declaracao)
+
   const [analistas, setAnalistas] = useState({
     museologico: [],
     bibliografico: [],

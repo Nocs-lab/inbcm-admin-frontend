@@ -7,39 +7,7 @@ import { Button } from "react-dsgov"
 import Table from "../../components/Table"
 import request from "../../utils/request"
 import clsx from "clsx"
-
-interface Declaracao {
-  _id: string
-  dataCriacao: Date
-  responsavelEnvioNome: string
-  dataEnvioAnalise: Date
-  dataFimAnalise: Date
-  anoDeclaracao: {
-    ano: number
-  }
-  retificacao: boolean
-  museu_id: {
-    _id: string
-    nome: string
-  }
-  responsavelEnvio: {
-    nome: string
-  }
-  status: string
-  museologico: {
-    status: string
-    pendencias: string[]
-  }
-  bibliografico: {
-    status: string
-    pendencias: string[]
-  }
-  arquivistico: {
-    status: string
-    pendencias: string[]
-  }
-  refificacao: boolean
-}
+import { Declaracao } from "../../types/declaracao"
 
 export default function Declaracoes() {
   const [activeTab, setActiveTab] = useState<

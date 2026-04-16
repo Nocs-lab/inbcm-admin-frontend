@@ -8,24 +8,7 @@ import Select from "../components/MultiSelect"
 import { useForm, Controller } from "react-hook-form"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
-
-interface Endereco {
-  municipio: string
-  uf: string
-  bairro: string
-}
-
-interface Museu {
-  _id: string
-  codIbram: string
-  nome: string
-  endereco: Endereco
-  esferaAdministraiva: string
-  estadoInfo: {
-    regiao: string
-  }
-  __v: number
-}
+import { Museu } from "../types/museu"
 
 interface ApiResponse {
   dados: Museu[]
@@ -244,6 +227,7 @@ const TableMuseus: React.FC = () => {
     if (!isInitialLoad) {
       fetchData(filtros)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, limit, filtros])
 
   useEffect(() => {
@@ -251,6 +235,7 @@ const TableMuseus: React.FC = () => {
       setIsInitialLoad(false)
       fetchData({})
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const onSubmit = (data: FormData) => {

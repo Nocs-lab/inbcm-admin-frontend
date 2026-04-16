@@ -12,6 +12,8 @@ import request from "../../utils/request"
 import toast from "react-hot-toast"
 import { debounce } from "lodash"
 import Select from "../../components/MultiSelect"
+import { Museu, RespostaMuseus } from "../../types/museu"
+import { Profile } from "../../types/user"
 
 const validateCPF = (cpf: string): boolean => {
   cpf = cpf.replace(/[^\d]+/g, "")
@@ -54,35 +56,12 @@ const schema = z
   })
 type FormData = z.infer<typeof schema>
 
-interface Profile {
-  _id: string
-  name: string
-  description: string
-}
-
-interface Museu {
-  _id: string
-  nome: string
-}
-
-interface Paginacao {
-  currentPage: number
-  totalPages: number
-  totalItems: number
-  itemsPerPage: number
-}
-
-interface RespostaMuseus {
-  museus: Museu[]
-  pagination: Paginacao
-}
-
 const fetchMuseus = async (
   search: string,
   page: number
 ): Promise<RespostaMuseus> => {
   const response = await request(
-    `/api/admin/museus?semVinculoUsuario=true&search=${search}&page=${page}`
+    `/api/admin/museus?search=${search}&page=${page}`
   )
   if (!response.ok) throw new Error("Erro ao carregar museus")
 
@@ -103,7 +82,7 @@ const CreateUser: React.FC = () => {
   const [isAnalyst, setIsAnalyst] = useState(false)
   const [isDeclarant, setIsDeclarant] = useState(false)
   const [selectedMuseus, setSelectedMuseus] = useState<string[]>([])
-  const [selectedMuseusNames, setSelectedMuseusNames] = useState<string[]>([])
+  const [selectedMuseusNames, setSelectedMuseusNames] = useState<Museu[]>([])
   const [selectedEspecialidades, setSelectedEspecialidades] = useState<
     string[]
   >([])
@@ -114,11 +93,10 @@ const CreateUser: React.FC = () => {
   const { data: museusData } = useQuery<RespostaMuseus>({
     queryKey: ["museus", search, page],
     queryFn: () => fetchMuseus(search, page),
-    enabled: !!search
+    enabled: search.length >= 3
   })
-
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const museus = museusData?.museus || []
+  const museus = search.length >= 3 ? museusData?.museus || [] : []
 
   const debounceSearch = debounce((value: string) => {
     console.log(value)
@@ -193,6 +171,24 @@ const CreateUser: React.FC = () => {
       toast.success("Usuário criado com sucesso")
     }
   })
+
+  useEffect(() => {
+    if (selectedMuseus.length > 0) {
+      const museusSelecionados = selectedMuseus
+        .map((item) => {
+          const [id] = item.split(",")
+          return (
+            museus.find((m) => m._id === id) ||
+            selectedMuseusNames.find((m) => m._id === id)
+          )
+        })
+        .filter((m) => m !== undefined) as Museu[]
+
+      setSelectedMuseusNames(museusSelecionados)
+    } else {
+      setSelectedMuseusNames([])
+    }
+  }, [selectedMuseus, museus]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const onSubmit = ({
     email,
@@ -365,12 +361,14 @@ const CreateUser: React.FC = () => {
                                     <span className="text-red-500">*</span>
                                   </span>
                                 }
-                                placeholder="Digite para buscar..."
+                                placeholder="Digite pelo menos 3 caracteres para buscar..."
                                 options={
                                   museus.length > 0
                                     ? museus.map((m: Museu) => ({
-                                        label: m.nome,
-                                        value: `${m._id},${m.nome}`
+                                        // Exibição da pseudochave
+                                        label: `${m.nome} - ${m.endereco?.municipio}/${m.endereco?.uf}`,
+                                        // Salvamos o ID e a pseudochave no value
+                                        value: `${m._id},${m.nome} - ${m.endereco?.municipio}/${m.endereco?.uf}`
                                       }))
                                     : []
                                 }
@@ -385,12 +383,7 @@ const CreateUser: React.FC = () => {
                                 }}
                                 onChange={(selected: string[]) => {
                                   field.onChange(selected)
-
-                                  const nomesMuseus = selected.map(
-                                    (item) => item.split(",")[1]
-                                  )
                                   setSelectedMuseus(selected)
-                                  setSelectedMuseusNames(nomesMuseus)
                                 }}
                               />
                               {isLoading && (
@@ -413,28 +406,40 @@ const CreateUser: React.FC = () => {
                       {selectedMuseusNames.length} museu(s) selecionado(s):
                     </p>
                     <div className="flex flex-wrap gap-2 p-2">
-                      {selectedMuseusNames.map((name, index) => (
+                      {selectedMuseusNames.map((museu, index) => (
                         <Button
                           key={index}
-                          className="gap-2 flex items-center justify-between"
+                          className="gap-2 flex items-center justify-between p-4"
                           primary
                           inverted
                         >
                           <i
-                            className="fa-solid fa-xmark ml-2 cursor-pointer"
+                            className="fa-solid fa-xmark ml-2 cursor-pointer pr-4"
                             onClick={() => {
-                              const updatedMuseus = selectedMuseus.filter(
-                                (_, i) => i !== index
+                              setSelectedMuseus((prev) =>
+                                prev.filter(
+                                  (m) => m.split(",")[0] !== museu._id
+                                )
                               )
-                              const updatedNames = selectedMuseusNames.filter(
-                                (_, i) => i !== index
+                              setSelectedMuseusNames((prev) =>
+                                prev.filter((m) => m._id !== museu._id)
                               )
-
-                              setSelectedMuseus(updatedMuseus)
-                              setSelectedMuseusNames(updatedNames)
                             }}
                           ></i>
-                          {name}
+
+                          <div className="flex flex-col">
+                            <div className="text-left font-semibold">
+                              {museu?.nome}
+                            </div>
+                            {museu?.endereco && (
+                              <div className="text-sm text-left text-gray-500">
+                                {museu.endereco.logradouro
+                                  ? `${museu.endereco.logradouro}, ${museu.endereco.numero} - `
+                                  : ""}
+                                {museu.endereco.municipio}/{museu.endereco.uf}
+                              </div>
+                            )}
+                          </div>
                         </Button>
                       ))}
                     </div>

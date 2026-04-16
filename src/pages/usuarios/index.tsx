@@ -12,30 +12,13 @@ import toast from "react-hot-toast"
 import Table from "../../components/Table"
 import clsx from "clsx"
 import { useModal } from "../../utils/modal"
-import { pdfjs, Document } from "react-pdf"
+import { pdfjs } from "react-pdf"
+import { User } from "../../types/user"
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.mjs",
   import.meta.url
 ).toString()
-
-interface User {
-  _id: string
-  nome: string
-  email: string
-  cpf?: string
-  profile?: {
-    name: string
-  }
-  situacao: number
-  museus: Museu[]
-  especialidadeAnalista?: string[]
-}
-
-interface Museu {
-  _id: string
-  nome: string
-}
 
 const formatCPF = (cpf: string): string => {
   if (!cpf) return "" // Caso o CPF seja undefined ou vazio
@@ -82,39 +65,39 @@ const labelMapping = (value: string) => {
   }
 }
 
-const DocumentosModal: React.FC<{
-  close: () => void
-  data: { url: string }
-  error: Error | null
-  isLoading: boolean
-}> = ({ close, data, error, isLoading }) => {
-  if (isLoading || !data) {
-    return <p>Carregando...</p>
-  }
+// const DocumentosModal: React.FC<{
+//   close: () => void
+//   data: { url: string }
+//   error: Error | null
+//   isLoading: boolean
+// }> = ({ close, data, error, isLoading }) => {
+//   if (isLoading || !data) {
+//     return <p>Carregando...</p>
+//   }
 
-  if (error) {
-    return <p>Erro ao carregar documento</p>
-  }
+//   if (error) {
+//     return <p>Erro ao carregar documento</p>
+//   }
 
-  return (
-    <Modal
-      title="Documento comprobatório do usuário"
-      showCloseButton
-      onCloseButtonClick={close}
-    >
-      <Modal.Body>
-        <div>
-          <Document file={data.url} />
-        </div>
-      </Modal.Body>
-      <Modal.Footer justify-content="end">
-        <Button primary small m={2} onClick={close}>
-          Fechar
-        </Button>
-      </Modal.Footer>
-    </Modal>
-  )
-}
+//   return (
+//     <Modal
+//       title="Documento comprobatório do usuário"
+//       showCloseButton
+//       onCloseButtonClick={close}
+//     >
+//       <Modal.Body>
+//         <div>
+//           <Document file={data.url} />
+//         </div>
+//       </Modal.Body>
+//       <Modal.Footer justify-content="end">
+//         <Button primary small m={2} onClick={close}>
+//           Fechar
+//         </Button>
+//       </Modal.Footer>
+//     </Modal>
+//   )
+// }
 
 const PendingActions: React.FC<{
   info: CellContext<User, string>
