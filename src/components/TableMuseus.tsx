@@ -8,7 +8,29 @@ import Select from "../components/MultiSelect"
 import { useForm, Controller } from "react-hook-form"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Museu } from "../types/museu"
+
+interface Endereco {
+  municipio: string
+  uf: string
+  bairro: string
+}
+
+interface Localidade {
+  regiao: string
+  uf: string
+  municipio: string
+}
+
+interface Museu {
+  _id: string
+  codIbram: string
+  nome: string
+  endereco: Endereco
+  esferaAdministraiva: string
+  localidade: Localidade
+  declarante: string
+  __v: number
+}
 
 interface ApiResponse {
   dados: Museu[]
@@ -62,32 +84,78 @@ const TableMuseus: React.FC = () => {
   const columns = [
     columnHelper.accessor("codIbram", {
       header: "Cód. IBRAM",
-      enableColumnFilter: false
+      enableColumnFilter: false,
+      cell: (info) => <div className="text-left">{info.getValue()}</div>
     }),
     columnHelper.accessor("nome", {
       header: "Nome",
-      enableColumnFilter: false
+      enableColumnFilter: false,
+      cell: (info) => (
+        <div
+          className="whitespace-normal break-words leading-tight text-left"
+          style={{ maxWidth: "350px" }}
+        >
+          {info.getValue()}
+        </div>
+      )
     }),
     columnHelper.accessor("esferaAdministraiva", {
       header: "Esfera Administrativa",
-      enableColumnFilter: false
-    }),
-    columnHelper.accessor("estadoInfo.regiao", {
-      header: "Região",
-      enableColumnFilter: false
-    }),
-    columnHelper.accessor("endereco.uf", {
-      header: "UF",
       enableColumnFilter: false,
-      cell: (info) => info.getValue().toUpperCase()
+      cell: (info) => {
+        const valor = info.getValue()
+        if (!valor) return <div className="text-left">—</div>
+
+        // Divide a string considerando o traço (ex: "PÚBLICA – Federal")
+        const partes = valor.split(/\s*[-–]\s*/)
+
+        if (partes.length >= 2) {
+          return (
+            <div className="flex flex-col text-sm text-left items-start">
+              <span className="font-semibold">{partes[0]}</span>
+              <span className="text-gray-600">{partes[1]}</span>
+            </div>
+          )
+        }
+
+        return <div className="text-left">{valor}</div>
+      }
     }),
-    columnHelper.accessor("endereco.municipio", {
-      header: "Município",
-      enableColumnFilter: false
+    columnHelper.accessor("localidade", {
+      header: "Localidade",
+      enableColumnFilter: false,
+      cell: (info) => {
+        const loc = info.getValue()
+        if (!loc) return <div className="text-left">—</div>
+        return (
+          <div className="flex flex-col gap-0.5 text-sm text-left items-start">
+            <span>
+              <strong>Região:</strong> {loc.regiao || "—"}
+            </span>
+            <span>
+              <strong>UF:</strong> {loc.uf || "—"}
+            </span>
+            <span>
+              <strong>Município:</strong> {loc.municipio || "—"}
+            </span>
+          </div>
+        )
+      }
     }),
-    columnHelper.accessor("endereco.bairro", {
-      header: "Bairro",
-      enableColumnFilter: false
+    columnHelper.accessor("declarante", {
+      header: "Declarante",
+      enableColumnFilter: false,
+      cell: (info) => {
+        const val = info.getValue()
+        if (!val || val === "Não informado") {
+          return (
+            <div className="text-left text-gray-400 italic text-sm">
+              Não informado
+            </div>
+          )
+        }
+        return <div className="text-left text-sm">{val}</div>
+      }
     })
   ]
 
@@ -227,7 +295,6 @@ const TableMuseus: React.FC = () => {
     if (!isInitialLoad) {
       fetchData(filtros)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, limit, filtros])
 
   useEffect(() => {
@@ -235,7 +302,6 @@ const TableMuseus: React.FC = () => {
       setIsInitialLoad(false)
       fetchData({})
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const onSubmit = (data: FormData) => {
