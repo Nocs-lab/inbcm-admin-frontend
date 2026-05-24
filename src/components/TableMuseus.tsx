@@ -15,15 +15,20 @@ interface Endereco {
   bairro: string
 }
 
+interface Localidade {
+  regiao: string
+  uf: string
+  municipio: string
+}
+
 interface Museu {
   _id: string
   codIbram: string
   nome: string
   endereco: Endereco
   esferaAdministraiva: string
-  estadoInfo: {
-    regiao: string
-  }
+  localidade: Localidade
+  declarante: string
   __v: number
 }
 
@@ -89,22 +94,39 @@ const TableMuseus: React.FC = () => {
       header: "Esfera Administrativa",
       enableColumnFilter: false
     }),
-    columnHelper.accessor("estadoInfo.regiao", {
-      header: "Região",
-      enableColumnFilter: false
-    }),
-    columnHelper.accessor("endereco.uf", {
-      header: "UF",
+    columnHelper.accessor("localidade", {
+      header: "Localidade",
       enableColumnFilter: false,
-      cell: (info) => info.getValue().toUpperCase()
+      cell: (info) => {
+        const loc = info.getValue()
+        if (!loc) return "—"
+        return (
+          <div className="flex flex-col gap-1 text-sm items-start">
+            <span className="text-gray-600">
+              <strong>Região:</strong> {loc.regiao || "—"}
+            </span>
+            <span className="text-gray-600">
+              <strong>UF:</strong> {loc.uf || "—"}
+            </span>
+            <span className="text-gray-600">
+              <strong>Município:</strong> {loc.municipio || "—"}
+            </span>
+          </div>
+        )
+      }
     }),
-    columnHelper.accessor("endereco.municipio", {
-      header: "Município",
-      enableColumnFilter: false
-    }),
-    columnHelper.accessor("endereco.bairro", {
-      header: "Bairro",
-      enableColumnFilter: false
+    columnHelper.accessor("declarante", {
+      header: "Declarante",
+      enableColumnFilter: false,
+      cell: (info) => {
+        const val = info.getValue()
+        if (!val || val === "Não informado") {
+          return (
+            <span className="text-gray-400 italic text-sm">Não informado</span>
+          )
+        }
+        return <span className="text-sm">{val}</span>
+      }
     })
   ]
 
