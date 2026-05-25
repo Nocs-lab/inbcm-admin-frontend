@@ -15,15 +15,20 @@ interface Endereco {
   bairro: string
 }
 
+interface Localidade {
+  regiao: string
+  uf: string
+  municipio: string
+}
+
 interface Museu {
   _id: string
   codIbram: string
   nome: string
   endereco: Endereco
   esferaAdministraiva: string
-  estadoInfo: {
-    regiao: string
-  }
+  localidade: Localidade
+  declarante: string
   __v: number
 }
 
@@ -86,25 +91,66 @@ const TableMuseus: React.FC = () => {
       enableColumnFilter: false
     }),
     columnHelper.accessor("esferaAdministraiva", {
-      header: "Esfera Administrativa",
-      enableColumnFilter: false
-    }),
-    columnHelper.accessor("estadoInfo.regiao", {
-      header: "Região",
-      enableColumnFilter: false
-    }),
-    columnHelper.accessor("endereco.uf", {
-      header: "UF",
+      header: () => (
+        <span className="flex items-center h-full">Esfera Administrativa</span>
+      ),
       enableColumnFilter: false,
-      cell: (info) => info.getValue().toUpperCase()
+      cell: (info) => {
+        const val = info.getValue()
+        if (!val) return "—"
+
+        const words = val.split(" ")
+        const primeira = words[0]
+        const resto = words.slice(1).join(" ").replace(/^–\s*/, "")
+
+        return (
+          <span className="text-sm block leading-snug">
+            <span className="block">{primeira}</span>
+            {resto && (
+              <span className="block text-gray-600 text-xs">{resto}</span>
+            )}
+          </span>
+        )
+      }
     }),
-    columnHelper.accessor("endereco.municipio", {
-      header: "Município",
-      enableColumnFilter: false
+    columnHelper.accessor("localidade", {
+      header: () => (
+        <span className="flex items-center h-full">Localidade</span>
+      ),
+      enableColumnFilter: false,
+      cell: (info) => {
+        const loc = info.getValue()
+        if (!loc) return "—"
+        return (
+          <div className="flex flex-col gap-1 text-sm align-middle py-1">
+            <div className="flex items-center">
+              <strong className="min-w-fit mr-2">Região:</strong>
+              <span>{loc.regiao || "—"}</span>
+            </div>
+            <div className="flex items-center">
+              <strong className="min-w-fit mr-2">UF:</strong>
+              <span>{loc.uf || "—"}</span>
+            </div>
+            <div className="flex items-center">
+              <strong className="min-w-fit mr-2">Município:</strong>
+              <span>{loc.municipio || "—"}</span>
+            </div>
+          </div>
+        )
+      }
     }),
-    columnHelper.accessor("endereco.bairro", {
-      header: "Bairro",
-      enableColumnFilter: false
+    columnHelper.accessor("declarante", {
+      header: "Declarante",
+      enableColumnFilter: false,
+      cell: (info) => {
+        const val = info.getValue()
+        if (!val || val === "Não informado") {
+          return (
+            <span className="text-gray-400 italic text-sm">Não informado</span>
+          )
+        }
+        return <span className="text-sm">{val}</span>
+      }
     })
   ]
 
