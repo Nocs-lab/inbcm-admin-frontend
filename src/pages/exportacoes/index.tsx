@@ -173,12 +173,14 @@ const ExportacoesPage: React.FC = () => {
     <>
       <div className="flex justify-between items-center mb-4">
         <h2>Exportações</h2>
-        <button
-          className="br-link text-xl p-3"
+        <a
+          className="text-xl"
+          href="#"
           onClick={() => setOpenModal(true)}
+          role="button"
         >
           <i className="fa-solid fa-plus"></i> Novo
-        </button>
+        </a>
       </div>
       <Table
         columns={columns as unknown as ColumnDef<unknown>[]}
@@ -186,12 +188,12 @@ const ExportacoesPage: React.FC = () => {
       />
       <Modal
         showCloseButton
-        title="Nova Exportação"
+        title="Nova exportação"
         onCloseButtonClick={() => setOpenModal(false)}
         useScrim
         modalOpened={openModal}
       >
-        <Modal.Body className="overflow-visible">
+        <Modal.Body className="overflow-visible min-h-[300px]">
           <Select
             label="Selecione o ano para exportação"
             options={anos.map((ano) => ({
@@ -203,7 +205,10 @@ const ExportacoesPage: React.FC = () => {
             }}
           />
         </Modal.Body>
-        <Modal.Footer justify-content="center">
+        <Modal.Footer justify-content="center" className="gap-4">
+          <Button secondary onClick={() => setOpenModal(false)}>
+            Cancelar
+          </Button>
           <Button
             primary
             onClick={() => {
@@ -212,10 +217,7 @@ const ExportacoesPage: React.FC = () => {
             }}
             disabled={ano === null || isPending}
           >
-            {isPending ? "Criando exportação..." : "Criar Exportação"}
-          </Button>
-          <Button secondary onClick={() => setOpenModal(false)}>
-            Cancelar
+            {isPending ? "Criando exportação..." : "Criar exportação"}
           </Button>
         </Modal.Footer>
       </Modal>

@@ -29,7 +29,17 @@ const ExportacaoPage: React.FC = () => {
       }
       return response.json() as Promise<Exportacao>
     },
-    refetchInterval: 5000
+    refetchInterval: (query) => {
+      const estadoAtual = query.state.data as Exportacao | undefined
+      if (
+        estadoAtual &&
+        (estadoAtual.status === "em_andamento" ||
+          estadoAtual.status === "nao_iniciada")
+      ) {
+        return 5000
+      }
+      return false
+    }
   })
 
   let statusText = ""
@@ -114,10 +124,13 @@ const ExportacaoPage: React.FC = () => {
   const baixarArquivos = () => {
     toast.promise(
       (async () => {
-        const response = await fetch(`/api/admin/exportador/exportacao/${id}/download`, {
-          method: "GET",
-          credentials: "include"
-        })
+        const response = await fetch(
+          `/api/admin/exportador/exportacao/${id}/download`,
+          {
+            method: "GET",
+            credentials: "include"
+          }
+        )
 
         if (response.status === 401) {
           throw new Error("Sessão expirada. Recarregue a página.")
@@ -146,8 +159,7 @@ const ExportacaoPage: React.FC = () => {
       {
         loading: "Baixando arquivos...",
         success: "Download iniciado com sucesso!",
-        error: (error: Error) =>
-          error.message || "Erro ao baixar arquivos"
+        error: (error: Error) => error.message || "Erro ao baixar arquivos"
       }
     )
   }
