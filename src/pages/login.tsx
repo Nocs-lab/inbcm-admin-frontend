@@ -83,10 +83,11 @@ const LoginPage: React.FC = () => {
     <div className="flex h-screen">
       <div className="w-full lg:w-5/12">
         <form
-          className="flex flex-col gap-4 justify-center items-center h-full md:w-1/2 lg:w-2/3 xl:w-1/2 p-10 mx-auto"
+          className="flex flex-col gap-4 justify-center h-full w-full sm:w-10/12 md:w-8/12 lg:w-10/12 xl:w-8/12 p-8 mx-auto"
           onSubmit={handleSubmit(onSubmit)}
         >
-          <img src={logoIbram} alt="Logo do Ibram" className="mb-3" />
+          <img src={logoIbram} alt="Logo do Ibram" className="mb-6 mx-auto" />
+
           {showError && isError && (
             <div className="br-message danger">
               <div className="icon">
@@ -112,6 +113,7 @@ const LoginPage: React.FC = () => {
               </div>
             </div>
           )}
+
           <Input
             type="email"
             label="E-mail"
@@ -119,6 +121,7 @@ const LoginPage: React.FC = () => {
             error={errors.email}
             {...register("email")}
           />
+
           <Input
             type="password"
             label="Senha"
@@ -126,15 +129,17 @@ const LoginPage: React.FC = () => {
             error={errors.password}
             {...register("password")}
           />
+
           <button
             className={clsx(
-              "br-button block primary mt-3",
+              "br-button block w-full primary mt-3",
               isSubmitting && "loading"
             )}
             type="submit"
           >
             Entrar
           </button>
+
           <div className="text-center mt-4">
             <span>
               <Link to="/solicitarSenha" className="inline-flex items-center">
@@ -143,6 +148,7 @@ const LoginPage: React.FC = () => {
               </Link>
             </span>
           </div>
+
           <div className="text-center mt-4">
             <span>
               Novo usuário?{" "}
