@@ -1,0 +1,71 @@
+{
+  "versao": "2.5.0",
+  "releases": [
+    {
+      "versao": "2.5.0",
+      "data": "29/08/2026",
+      "novidades": [
+        "Exibição da versão da aplicação no rodapé com histórico de novidades e correções"
+      ],
+      "bugs": []
+    },
+    {
+      "versao": "2.4.0",
+      "data": "29/08/2026",
+      "novidades": [
+        "Suporte a envio de acervos no formato CSV"
+      ],
+      "bugs": [
+        "Correção do CPF exibindo apenas 3 dígitos no painel administrativo"
+      ]
+    },
+    {
+      "versao": "2.3.0",
+      "data": "23/08/2026",
+      "novidades": [
+        "Migração do acervo único para o modelo S14",
+        "Novo status 'Arquivada' para declarações"
+      ],
+      "bugs": [
+        "Correção de permissão do analista para atualizar o próprio perfil",
+        "Correção nas validações de CPF e e-mail no cadastro"
+      ]
+    },
+    {
+      "versao": "2.2.0",
+      "data": "14/08/2026",
+      "novidades": [
+        "Download do acervo atualizado disponível para declarantes",
+        "Melhorias no formulário de cadastro de análise"
+      ],
+      "bugs": [
+        "Correção no cadastro de usuário externo",
+        "Correção na tela de login"
+      ]
+    },
+    {
+      "versao": "2.1.0",
+      "data": "30/07/2026",
+      "novidades": [
+        "Novos status de análise: 'Aguardando Análise' e 'Iniciar Análise'",
+        "Download do parecer disponível para o declarante",
+        "Timeline detalhada de declarações"
+      ],
+      "bugs": [
+        "Correção em análises com múltiplas tipologias na timeline"
+      ]
+    },
+    {
+      "versao": "2.0.0",
+      "data": "12/07/2026",
+      "novidades": [
+        "Declaração por tipologia 1:1 — cada acervo (museológico, bibliográfico ou arquivístico) passa a ser uma declaração independente",
+        "Parecer técnico por tipologia de acervo",
+        "Validação de status por tipologia antes de permitir envio ou retificação"
+      ],
+      "bugs": [
+        "Correções de segurança: rate limiting no login, JWT e proteção contra enumeração de usuários"
+      ]
+    }
+  ]
+}
